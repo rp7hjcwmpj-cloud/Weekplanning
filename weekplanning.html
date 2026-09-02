@@ -1492,9 +1492,24 @@ async function m365ShowDebugUrl(){
 async function m365Connect(){
   saveM365Config();
   if(!m365Configured()){ m365StatusMsg('Vul alle vier de velden in.'); return; }
-  m365StatusMsg('Verbinding testen… u wordt doorgestuurd naar Microsoft login.');
+  m365StatusMsg('Verbinding testen…');
   _oStore('set', _OAUTH.INTENT, 'connect');
-  await acquireToken(true); // start redirect — pagina navigeert weg
+  const token = await acquireToken(true);
+  if(token){
+    // Token was al gecached — voer verbindingstest direct uit
+    _graphToken = token;
+    setSyncChip('syncing','⟳ Verbinding testen…');
+    const res = await graphFetch('GET', _spListBase());
+    if(res?.id){
+      m365StatusMsg('✓ Verbinding gelukt! Lijst "' + (res.displayName || _m365Cfg.listName) + '" gevonden.');
+      setSyncChip('ok','✓ Verbonden');
+      setTimeout(()=>setSyncChip('idle','☁️ M365'),3000);
+    } else {
+      m365StatusMsg('✕ Lijst niet gevonden. Controleer de site-URL en lijstnaam.');
+      setSyncChip('err','✕ Fout');
+    }
+  }
+  // Anders: redirect gestart — pagina navigeert weg naar Microsoft
 }
 
 async function m365Init(){
@@ -1575,14 +1590,12 @@ async function loginWithMicrosoft(){
   if(errEl) errEl.style.display='none';
   loadM365Cfg(); // zorg dat config geladen is
   if(!m365Configured()){
-    alert('M365 niet geconfigureerd: clientId=' + _m365Cfg.clientId + ' tenantId=' + _m365Cfg.tenantId);
     if(errEl){
       errEl.textContent='Microsoft 365 is nog niet gekoppeld. Vraag de admin om dit eerst in te stellen via ⚙️ Admin → ☁️ Microsoft 365.';
       errEl.style.display='block';
     }
     return;
   }
-  alert('Config OK, starten redirect naar Microsoft...');
   _oStore('set', _OAUTH.INTENT, 'login');
   _oStore('set', '_wp_last_intent', 'login');
   await acquireToken(true); // redirect naar Microsoft — pagina navigeert weg
