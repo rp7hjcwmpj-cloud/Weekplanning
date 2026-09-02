@@ -1598,7 +1598,13 @@ async function loginWithMicrosoft(){
   }
   _oStore('set', _OAUTH.INTENT, 'login');
   _oStore('set', '_wp_last_intent', 'login');
-  await acquireToken(true); // redirect naar Microsoft — pagina navigeert weg
+  const token = await acquireToken(true);
+  if(token){
+    // Geldig gecached token — direct inloggen zonder redirect
+    _graphToken = token;
+    await _tryMsAutoLogin();
+  }
+  // Anders: redirect gestart naar Microsoft, pagina navigeert weg
 }
 
 /* ══ PERSIST / HYDRATE ══════════════════════════════ */
