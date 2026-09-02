@@ -1571,17 +1571,18 @@ function _applyRoleMapping(mapping, email){
 }
 
 async function loginWithMicrosoft(){
-  alert('loginWithMicrosoft aangeroepen');
   const errEl = document.getElementById('ms-login-err');
   if(errEl) errEl.style.display='none';
   loadM365Cfg(); // zorg dat config geladen is
   if(!m365Configured()){
+    alert('M365 niet geconfigureerd: clientId=' + _m365Cfg.clientId + ' tenantId=' + _m365Cfg.tenantId);
     if(errEl){
       errEl.textContent='Microsoft 365 is nog niet gekoppeld. Vraag de admin om dit eerst in te stellen via ⚙️ Admin → ☁️ Microsoft 365.';
       errEl.style.display='block';
     }
     return;
   }
+  alert('Config OK, starten redirect naar Microsoft...');
   _oStore('set', _OAUTH.INTENT, 'login');
   _oStore('set', '_wp_last_intent', 'login');
   await acquireToken(true); // redirect naar Microsoft — pagina navigeert weg
