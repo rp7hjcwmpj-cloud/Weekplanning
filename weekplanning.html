@@ -1600,8 +1600,11 @@ async function loginWithMicrosoft(){
   _oStore('set', '_wp_last_intent', 'login');
   const token = await acquireToken(true);
   if(token){
-    // Geldig gecached token — direct inloggen zonder redirect
+    // Geldig gecached token — data laden en direct inloggen
     _graphToken = token;
+    setSyncChip('syncing','⟳ Laden…');
+    const loaded = await spLoad();
+    if(loaded){ setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
     await _tryMsAutoLogin();
   }
   // Anders: redirect gestart naar Microsoft, pagina navigeert weg
@@ -1625,10 +1628,14 @@ function persist(){
     localStorage.setItem('wp_roleMap', JSON.stringify(S.roleMap));
     localStorage.setItem('wp_adminPw', S.adminPassword||'');
   }catch(e){}
-  // Async sync to SharePoint (fire-and-forget)
+  // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
-    setSyncChip('syncing','⟳ Opslaan…');
-    spSyncAll().catch(()=>{});
+    clearTimeout(window._spSyncTimer);
+    setSyncChip('idle','☁️ Opslaan…');
+    window._spSyncTimer = setTimeout(()=>{
+      setSyncChip('syncing','⟳ Opslaan…');
+      spSyncAll().catch(()=>{});
+    }, 3000);
   }
 }
 function hydrate(){
