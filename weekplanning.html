@@ -1011,6 +1011,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
           <button class="hb" style="background:var(--brand);color:#fff;" onclick="m365Connect()">🔗 Verbinding testen</button>
           <button class="hb" style="background:var(--brand);color:#fff;" onclick="spSyncAll()">☁️ Nu synchroniseren</button>
           <button class="hb" onclick="m365SignOut()">Afmelden</button>
+          <button class="hb" style="background:#e67e22;color:#fff;" onclick="m365ShowDebugUrl()">🐛 Debug URL tonen</button>
         </div>
         <p id="m365-status" class="card-note" style="margin-top:.8rem;min-height:1.2em;"></p>
         <div class="adm-card" style="margin-top:1rem;background:var(--surf-2);border:1px dashed var(--border);">
@@ -1440,6 +1441,30 @@ function m365SignOut(){
   setSyncChip('', '');
   document.getElementById('btn-m365-login').style.display = m365Configured() ? '' : 'none';
   m365StatusMsg('Afgemeld van Microsoft 365.');
+}
+
+async function m365ShowDebugUrl(){
+  saveM365Config();
+  if(!m365Configured()){ m365StatusMsg('Vul alle vier de velden in.'); return; }
+  const {verifier, challenge} = await _pkcePair();
+  const state = _b64url(crypto.getRandomValues(new Uint8Array(12)));
+  const redirectUri = _cleanRedirectUri();
+  const scopes = 'https://graph.microsoft.com/Sites.ReadWrite.All https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/User.ReadBasic.All offline_access openid profile';
+  const url = `https://login.microsoftonline.com/${_m365Cfg.tenantId}/oauth2/v2.0/authorize`
+    + `?client_id=${_m365Cfg.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}`
+    + `&scope=${encodeURIComponent(scopes)}&code_challenge=${challenge}&code_challenge_method=S256`
+    + `&state=${state}&response_mode=query&prompt=select_account`;
+  const info = `REDIRECT URI (moet exact in Azure staan):\n${redirectUri}\n\nVolledig OAuth URL:\n${url}`;
+  const box = document.createElement('textarea');
+  box.value = info;
+  box.style.cssText = 'position:fixed;top:10%;left:5%;width:90%;height:70%;z-index:99999;font-size:12px;padding:10px;';
+  const close = document.createElement('button');
+  close.textContent = '✕ Sluiten';
+  close.style.cssText = 'position:fixed;top:9%;right:5%;z-index:99999;padding:8px 16px;background:red;color:#fff;border:none;cursor:pointer;font-size:16px;';
+  close.onclick = ()=>{ box.remove(); close.remove(); };
+  document.body.appendChild(box);
+  document.body.appendChild(close);
+  box.select();
 }
 
 async function m365Connect(){
