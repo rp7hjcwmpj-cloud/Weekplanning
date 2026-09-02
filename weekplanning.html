@@ -1572,10 +1572,14 @@ function _applyRoleMapping(mapping, email){
 
 async function loginWithMicrosoft(){
   const errEl = document.getElementById('ms-login-err');
-  errEl.style.display='none';
+  if(errEl) errEl.style.display='none';
+  loadM365Cfg(); // zorg dat config geladen is
   if(!m365Configured()){
-    errEl.textContent='Microsoft 365 is nog niet gekoppeld. Vraag de admin om dit eerst in te stellen via ⚙️ Admin → ☁️ Microsoft 365.';
-    errEl.style.display='block'; return;
+    if(errEl){
+      errEl.textContent='Microsoft 365 is nog niet gekoppeld. Vraag de admin om dit eerst in te stellen via ⚙️ Admin → ☁️ Microsoft 365.';
+      errEl.style.display='block';
+    }
+    return;
   }
   _oStore('set', _OAUTH.INTENT, 'login');
   _oStore('set', '_wp_last_intent', 'login');
