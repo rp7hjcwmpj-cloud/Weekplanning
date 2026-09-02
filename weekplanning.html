@@ -1571,6 +1571,7 @@ function _applyRoleMapping(mapping, email){
 }
 
 async function loginWithMicrosoft(){
+  alert('loginWithMicrosoft aangeroepen');
   const errEl = document.getElementById('ms-login-err');
   if(errEl) errEl.style.display='none';
   loadM365Cfg(); // zorg dat config geladen is
