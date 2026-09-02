@@ -438,48 +438,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 </style>
-<script>
-/* Iframe/storage detectie — v2026-09-02 */
-(function(){
-  console.log('Weekplanning app v2026-09-02 geladen');
 
-  function showOverlay(html){
-    var d=document.createElement('div');
-    d.style.cssText='position:fixed;inset:0;background:#1a3a5c;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;font-family:system-ui,sans-serif;padding:2rem;text-align:center;';
-    d.innerHTML=html;
-    document.body?document.body.appendChild(d):document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(d);});
-  }
-
-  // Zit de app in een iframe (SharePoint preview)?
-  if(window.self !== window.top){
-    var url = window.location.href;
-    showOverlay(
-      '<div style="font-size:3rem;margin-bottom:1rem">📋</div>' +
-      '<h2 style="margin:0 0 .75rem;font-size:1.4rem">Weekplanning — stap 1</h2>' +
-      '<p style="margin:0 0 1rem;opacity:.85;max-width:400px">SharePoint toont deze app in een preview.<br><strong>Kopieer de URL hieronder</strong> en plak hem in een nieuw browser-tabblad.</p>' +
-      '<div style="background:rgba(255,255,255,.15);border-radius:8px;padding:.6rem 1rem;margin-bottom:1rem;max-width:480px;word-break:break-all;font-size:.8rem;user-select:all" id="wp-url-box">'+url+'</div>' +
-      '<button onclick="(function(){var el=document.getElementById('wp-url-box');var r=document.createRange();r.selectNode(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');this.textContent='✓ Gekopieerd!'}catch(e){}}).call(this)" style="background:#fff;color:#1a3a5c;padding:.65rem 1.5rem;border-radius:8px;font-weight:700;border:none;font-size:1rem;cursor:pointer;margin-bottom:.75rem">📋 Kopieer URL</button>' +
-      '<p style="margin:.5rem 0 0;font-size:.8rem;opacity:.7">Plak daarna de URL in de adresbalk van een nieuw tabblad (⌘T)</p>'
-    );
-    // Probeer ook top-navigatie (werkt soms wel)
-    try{ window.top.location.href = url; }catch(e){}
-    return; // stop verdere initialisatie
-  }
-
-  // Geen iframe — test localStorage
-  try{
-    localStorage.setItem('_wp_test','1');
-    localStorage.removeItem('_wp_test');
-  }catch(e){
-    showOverlay(
-      '<div style="font-size:3rem;margin-bottom:1rem">⚠️</div>' +
-      '<h2 style="margin:0 0 .5rem;font-size:1.4rem">Opslag geblokkeerd</h2>' +
-      '<p style="margin:0 0 1rem;opacity:.85;max-width:380px">Safari blokkeert de opslag op deze pagina.<br>Open het bestand via een directe URL (niet als preview).</p>' +
-      '<p style="font-size:.85rem;opacity:.7;word-break:break-all;max-width:400px">'+window.location.href+'</p>'
-    );
-  }
-})();
-</script>
 
 <!-- ══ ROLE SELECT ══════════════════════════════════ -->
 <div id="screen-roles">
