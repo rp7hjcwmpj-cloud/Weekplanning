@@ -1261,8 +1261,10 @@ async function _handleOAuthCallback(){
   // Verwijder code/state uit URL direct
   history.replaceState(null,'', _cleanRedirectUri());
 
+  function _oauthErr(msg){ m365StatusMsg('❌ OAuth fout: ' + msg); console.error('OAuth:', msg); }
+
   if(error){
-    console.warn('OAuth fout:', params.get('error_description')||error);
+    _oauthErr((params.get('error_description')||error) + ' [' + error + ']');
     return null;
   }
 
@@ -1270,15 +1272,19 @@ async function _handleOAuthCallback(){
   const expectedState = _oStore('get', _OAUTH.STATE);
   _oStore('del', _OAUTH.STATE);
   if(state && expectedState && state !== expectedState){
-    console.warn('OAuth state mismatch'); return null;
+    _oauthErr('State mismatch — probeer opnieuw in te loggen.'); return null;
   }
 
   const verifier = _oStore('get', _OAUTH.VERIFIER);
   _oStore('del', _OAUTH.VERIFIER);
-  if(!verifier) return null;
+  if(!verifier){
+    _oauthErr('PKCE verifier kwijt (Safari heeft opslag gewist tijdens redirect). Probeer opnieuw.');
+    return null;
+  }
 
   // Token ophalen via fetch (geen popup, geen iframe!)
   try{
+    m365StatusMsg('🔄 Token ophalen bij Microsoft…');
     const resp = await fetch(
       `https://login.microsoftonline.com/${_m365Cfg.tenantId}/oauth2/v2.0/token`,
       {
@@ -1293,14 +1299,22 @@ async function _handleOAuthCallback(){
         }).toString(),
       }
     );
-    if(!resp.ok){ console.warn('Token exchange mislukt', await resp.text()); return null; }
+    if(!resp.ok){
+      const errTxt = await resp.text();
+      _oauthErr('Token exchange mislukt (HTTP ' + resp.status + '): ' + errTxt);
+      return null;
+    }
     const data = await resp.json();
     if(data.access_token){
       _oStore('set', _OAUTH.TOKEN,  data.access_token);
       _oStore('set', _OAUTH.EXPIRY, String(Date.now()+(data.expires_in||3600)*1000));
+      m365StatusMsg('✅ Aangemeld bij Microsoft!');
     }
     return data.access_token||null;
-  }catch(e){ console.error('Token exchange error', e); return null; }
+  }catch(e){
+    _oauthErr('Netwerkfout bij token exchange: ' + e.message);
+    return null;
+  }
 }
 
 function _getUserEmail(){
