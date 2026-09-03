@@ -1420,8 +1420,12 @@ async function graphFetch(method, path, body, extraHeaders){
 async function spLoad(){
   // Fetch all items from SharePoint list into localStorage
   const listBase = `${_spListBase()}/items`;
-  const data = await graphFetch('GET', listBase + '?$expand=fields($select=Title,Value)&$top=200');
-  if(!data?.value) return false;
+  const data = await graphFetchVerbose('GET', listBase + '?$expand=fields($select=Title,Value)&$top=200');
+  if(data?.error){
+    console.error('spLoad fout:', data.error);
+    return {ok:false, error: data.error};
+  }
+  if(!data?.value) return {ok:false, error:'Geen data ontvangen van SharePoint.'};
   _spItemIds = {};
   for(const item of data.value){
     const key = item.fields?.Title;
@@ -1429,7 +1433,25 @@ async function spLoad(){
     if(key){ _spItemIds[key] = item.id; }
     if(key && val !== undefined && val !== null){ localStorage.setItem(key, val); }
   }
-  return true;
+  return {ok:true};
+}
+
+async function graphFetchVerbose(method, path, body){
+  if(!_graphToken) return {error:'Geen Microsoft-token beschikbaar.'};
+  try{
+    const res = await fetch('https://graph.microsoft.com/v1.0' + path, {
+      method,
+      headers:{'Authorization':'Bearer '+_graphToken,'Content-Type':'application/json'},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if(!res.ok){
+      const txt = await res.text();
+      let msg = 'HTTP ' + res.status;
+      try{ const j=JSON.parse(txt); msg += ' — ' + (j.error?.message||j.error?.code||txt.slice(0,200)); }catch(e){ msg += ' — ' + txt.slice(0,200); }
+      return {error: msg};
+    }
+    return res.json();
+  }catch(e){ return {error: 'Netwerkfout: '+e.message}; }
 }
 
 async function spSetKey(key, value){
@@ -1559,17 +1581,16 @@ async function m365Init(){
         setSyncChip('err','✕ Fout');
       }
     } else if(intent === 'sync'){
-      // Admin wou synchroniseren — laad eerst, dan push alle data
+      // Admin wou synchroniseren — push lokale data naar SharePoint (GEEN spLoad, anders overschrijven we lokale data)
       setSyncChip('syncing','⟳ Synchroniseren…');
-      await spLoad(); hydrate();
       await spSyncAll();
       showAdmin();
-      return; // niet _tryMsAutoLogin, we zijn al admin
+      return;
     } else {
       setSyncChip('syncing','⟳ Laden…');
       const loaded = await spLoad();
-      if(loaded){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
-      else { setSyncChip('err','✕ Laadprobleem'); }
+      if(loaded?.ok){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
+      else { setSyncChip('err','✕ Laadprobleem'); _spLoadErr = loaded?.error||'Onbekende fout'; }
     }
     await _tryMsAutoLogin();
     return;
@@ -1580,14 +1601,15 @@ async function m365Init(){
   if(_graphToken){
     setSyncChip('syncing','⟳ Laden…');
     const loaded = await spLoad();
-    if(loaded){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
-    else { setSyncChip('err','✕ Laadprobleem'); }
+    if(loaded?.ok){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
+    else { setSyncChip('err','✕ Laadprobleem'); _spLoadErr = loaded?.error||'Onbekende fout'; }
     await _tryMsAutoLogin();
   } else {
     document.getElementById('btn-m365-login').style.display = '';
   }
 }
 
+let _spLoadErr = null;
 async function _tryMsAutoLogin(){
   const email = _getUserEmail();
   if(!email) return;
@@ -1596,10 +1618,18 @@ async function _tryMsAutoLogin(){
     const rollen = Object.keys(S.roleMap);
     const errEl = document.getElementById('ms-login-err');
     if(errEl){
-      errEl.innerHTML = '❌ <b>' + email + '</b> heeft geen toegang.<br>'
-        + (rollen.length === 0
-          ? '⚠️ Rollenlijst is leeg — sync nog niet ontvangen van SharePoint. Vraag de admin om te synchroniseren.'
-          : '📋 Bekende accounts in lijst:<br>' + rollen.map(r=>'• '+r).join('<br>') + '<br><small>Controleer of het bovenstaande Microsoft-adres exact overeenkomt met één van deze accounts.</small>');
+      if(rollen.length === 0 && _spLoadErr){
+        errEl.innerHTML = '❌ <b>SharePoint kon niet geladen worden.</b><br>'
+          + '🔴 Fout: <code style="font-size:.8em">' + _spLoadErr + '</code><br>'
+          + '<small>Jouw Microsoft-account: <b>' + email + '</b><br>Neem contact op met de admin als deze fout aanhoudt.</small>';
+      } else if(rollen.length === 0){
+        errEl.innerHTML = '❌ <b>' + email + '</b> heeft geen toegang.<br>'
+          + '⚠️ Rollenlijst is leeg — sync nog niet ontvangen van SharePoint. Vraag de admin om te synchroniseren.';
+      } else {
+        errEl.innerHTML = '❌ <b>' + email + '</b> heeft geen toegang.<br>'
+          + '📋 Bekende accounts in lijst:<br>' + rollen.map(r=>'• '+r).join('<br>')
+          + '<br><small>Controleer of het bovenstaande Microsoft-adres exact overeenkomt met één van deze accounts.</small>';
+      }
       errEl.style.display = 'block';
     }
     return;
@@ -1634,7 +1664,8 @@ async function loginWithMicrosoft(){
     _graphToken = token;
     setSyncChip('syncing','⟳ Laden…');
     const loaded = await spLoad();
-    if(loaded){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
+    if(loaded?.ok){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
+    else { setSyncChip('err','✕ Laadprobleem'); _spLoadErr = loaded?.error||'Onbekende fout'; }
     await _tryMsAutoLogin();
   }
   // Anders: redirect gestart naar Microsoft, pagina navigeert weg
