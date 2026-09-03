@@ -1440,31 +1440,55 @@ async function graphFetchVerbose(method, path, body){
   }catch(e){ return {error: 'Netwerkfout: '+e.message}; }
 }
 
+// Haal alleen SharePoint item-IDs op (zonder localStorage aan te raken)
+async function spFetchItemIds(){
+  const data = await graphFetch('GET', `${_spListBase()}/items?$expand=fields($select=Title)&$top=200`);
+  if(!data?.value) return false;
+  _spItemIds = {};
+  for(const item of data.value){
+    const key = item.fields?.Title;
+    if(key) _spItemIds[key] = item.id;
+  }
+  return true;
+}
+
 async function spSetKey(key, value){
   const listBase = `${_spListBase()}/items`;
   if(_spItemIds[key]){
-    await graphFetch('PATCH', listBase + '/' + _spItemIds[key], { fields:{ Value: value } });
+    const res = await graphFetch('PATCH', listBase + '/' + _spItemIds[key], { fields:{ Value: value } });
+    if(res === null) throw new Error('PATCH mislukt voor ' + key + ' (mogelijk verlopen token of geen toegang)');
   } else {
     const res = await graphFetch('POST', listBase, { fields:{ Title:key, Value:value } });
-    if(res?.id) _spItemIds[key] = res.id;
+    if(!res?.id) throw new Error('POST mislukt voor ' + key + ' (item bestaat mogelijk al — probeer opnieuw)');
+    _spItemIds[key] = res.id;
   }
 }
 
 async function spSyncAll(){
   if(!_graphToken){ m365StatusMsg('Niet aangemeld bij Microsoft 365.'); return; }
+  // Haal item-IDs op als die nog niet bekend zijn — anders mislukken PATCHes stilletjes
+  if(!Object.keys(_spItemIds).length){
+    setSyncChip('syncing','⟳ Voorbereiding…');
+    await spFetchItemIds();
+  }
   setSyncChip('syncing','⟳ Synchroniseren…');
   m365StatusMsg('Bezig met synchroniseren…');
-  try{
-    await Promise.all(SP_KEYS.map(k=>{
-      const v = localStorage.getItem(k);
-      return v !== null ? spSetKey(k, v) : Promise.resolve();
-    }));
+  const fouten = [];
+  // Promise.allSettled zodat één mislukking niet de rest blokkeert
+  await Promise.allSettled(SP_KEYS.map(async k=>{
+    const v = localStorage.getItem(k);
+    if(v === null) return;
+    try{ await spSetKey(k, v); }
+    catch(e){ fouten.push(e.message); }
+  }));
+  if(fouten.length){
+    setSyncChip('err','✕ ' + fouten.length + ' fout(en)');
+    m365StatusMsg('⚠️ ' + fouten.length + ' item(s) niet opgeslagen:\n' + fouten.join('\n'));
+    console.error('Sync fouten:', fouten);
+  } else {
     setSyncChip('ok','✓ Gesynchroniseerd');
     m365StatusMsg('✓ Alle data gesynchroniseerd om ' + new Date().toLocaleTimeString('nl-NL'));
     setTimeout(()=>setSyncChip('idle','☁️ M365'),4000);
-  }catch(e){
-    setSyncChip('err','✕ Synchronisatiefout');
-    m365StatusMsg('✕ Fout bij synchroniseren: ' + e.message);
   }
 }
 
@@ -1887,8 +1911,9 @@ function showAdmin(){
   document.getElementById('screen-main').classList.remove('show');
   document.getElementById('screen-admin').classList.add('show');
   switchAdmTab(0);
-  // Automatisch M365 verbinden als er een geldig token is
-  if(!_graphToken){ acquireToken(false).then(t=>{ if(t){ _graphToken=t; setSyncChip('idle','☁️ M365'); } }); }
+  // Automatisch M365 verbinden als er een geldig token is + item-IDs ophalen voor betrouwbare sync
+  if(!_graphToken){ acquireToken(false).then(async t=>{ if(t){ _graphToken=t; setSyncChip('idle','☁️ M365'); await spFetchItemIds(); } }); }
+  else if(!Object.keys(_spItemIds).length){ spFetchItemIds(); }
   // Set school name + year
   document.getElementById('a-schoolname').value=S.schoolName;
   document.getElementById('sn-ok').style.display='none';
