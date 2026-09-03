@@ -749,11 +749,10 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   <!-- Tabbladen -->
   <div class="adm-tabs">
     <button class="adm-tab active" onclick="switchAdmTab(0)">🏫 School</button>
-    <button class="adm-tab" onclick="switchAdmTab(1)">👨‍🏫 Docenten</button>
-    <button class="adm-tab" onclick="switchAdmTab(2)">🔑 Rollen</button>
-    <button class="adm-tab" onclick="switchAdmTab(3)">🗓️ Vakanties</button>
-    <button class="adm-tab" onclick="switchAdmTab(4)">👥 Leerlingen</button>
-    <button class="adm-tab" onclick="switchAdmTab(5)">☁️ Microsoft 365</button>
+    <button class="adm-tab" onclick="switchAdmTab(1)">🔑 Rollen</button>
+    <button class="adm-tab" onclick="switchAdmTab(2)">🗓️ Vakanties</button>
+    <button class="adm-tab" onclick="switchAdmTab(3)">👥 Leerlingen</button>
+    <button class="adm-tab" onclick="switchAdmTab(4)">☁️ Microsoft 365</button>
   </div>
 
   <div class="adm-body">
@@ -836,20 +835,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       </div>
     </div>
 
-    <!-- Tabblad 2: Docenten (wachtwoorden als terugval) -->
-    <div class="adm-panel">
-      <div class="adm-card">
-        <h3>👨‍🏫 Docenten — Wachtwoorden</h3>
-        <p class="card-note" style="margin-bottom:.8rem;">Docenten kunnen inloggen via Microsoft 365 (zie Rollen-tab). Als terugval kun je hier ook een wachtwoord per vak instellen.</p>
-        <div id="dpw-list"></div>
-        <div style="display:flex;gap:.6rem;align-items:center;margin-top:.8rem;">
-          <button class="btn-save-sm" onclick="saveTeacherPasswords()">💾 Opslaan</button>
-          <div class="ok-msg" id="dpw-ok" style="display:none;margin:0;">✓ Opgeslagen</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tabblad 3: Rollen (O365 e-mail → rol mapping) -->
+    <!-- Tabblad 2: Rollen (O365 e-mail → rol mapping) -->
     <div class="adm-panel">
       <div class="adm-card">
         <h3>🔑 Rollen — Microsoft 365 toegang</h3>
@@ -1097,7 +1083,7 @@ const PREEXAM_PERIODS = [
   {id:'P3.1',label:'Periode 3.1'},{id:'P3.2',label:'Periode 3.2'},{id:'P3.3',label:'Periode 3.3'},
 ];
 const PW_DEFAULT      = 'AdminAdmin';
-const SUBJECTS   = ['NE','EN','DU','FA','EC','BEC','BI','NA','SK','GS','AK'];
+const SUBJECTS   = ['NE','EN','DU','FA','EC','BEC','BI','NA','SK','GS','AK','WiA','WiB'];
 const BESCH_OPTIONS = [null,'lokaal107','afwezig','les-M3','les-M4','les-H4','les-H5','les-V4','les-V5','les-V6'];
 const BESCH_LBL  = {
   'lokaal107':'Lokaal 107','afwezig':'Afwezig',
@@ -1911,7 +1897,6 @@ function showAdmin(){
   document.getElementById('a-year-to').value=S.schoolYearTo||'';
   document.getElementById('sy-dates-ok').style.display='none';
   renderPeriodSettings();
-  renderTeacherPasswordList();
   renderSpecDaysList();
   renderStudentsList();
   renderStudentPasswordList();
@@ -2629,7 +2614,7 @@ function updateStudentBar(){
   })() : '';
   vd.innerHTML=(pid?`<span class="stu-vchip" style="background:rgba(255,255,255,.38);color:#fff;">${pidLabel}</span>`:'')
     +vakken.map(v=>`<span class="stu-vchip">${v}</span>`).join('');
-  if(!isLeerling){
+  if(!isLocked){
     ct.textContent=(idx+1)+' / '+S.students.length;
     prev.disabled=idx<=0;
     next.disabled=idx>=S.students.length-1;
