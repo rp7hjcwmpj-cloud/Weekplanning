@@ -1849,6 +1849,8 @@ function showAdmin(){
   document.getElementById('screen-main').classList.remove('show');
   document.getElementById('screen-admin').classList.add('show');
   switchAdmTab(0);
+  // Automatisch M365 verbinden als er een geldig token is
+  if(!_graphToken){ acquireToken(false).then(t=>{ if(t){ _graphToken=t; setSyncChip('idle','☁️ M365'); } }); }
   // Set school name + year
   document.getElementById('a-schoolname').value=S.schoolName;
   document.getElementById('sn-ok').style.display='none';
