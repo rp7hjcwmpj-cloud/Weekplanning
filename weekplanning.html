@@ -1572,14 +1572,14 @@ async function _tryMsAutoLogin(){
   if(!email) return;
   const mapping = S.roleMap[email];
   if(!mapping){
-    // Gebruiker is ingelogd bij Microsoft maar heeft geen rol
-    const intent = _oStore('get', '_wp_last_intent') || '';
-    if(intent === 'login'){
-      const errEl = document.getElementById('ms-login-err');
-      if(errEl){
-        errEl.textContent = email + ' heeft geen toegang. Vraag de admin om jouw account toe te voegen via ⚙️ Admin → 🔑 Rollen.';
-        errEl.style.display = 'block';
-      }
+    const rollen = Object.keys(S.roleMap);
+    const errEl = document.getElementById('ms-login-err');
+    if(errEl){
+      errEl.textContent = email + ' heeft geen toegang. '
+        + (rollen.length === 0
+          ? 'Rollenlijst is leeg — sync nog niet ontvangen van SharePoint.'
+          : 'Bekende accounts: ' + rollen.join(', '));
+      errEl.style.display = 'block';
     }
     return;
   }
