@@ -862,6 +862,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
             <input class="field-inp" type="email" id="rol-email" placeholder="naam@school.nl" style="margin-bottom:0;">
             <select class="field-inp" id="rol-role" style="margin-bottom:0;" onchange="onRolRoleChange()">
               <option value="">— Kies een rol —</option>
+              <option value="admin">🔧 Admin</option>
               <option value="coordinator">Coördinator</option>
               <option value="coach">Coach</option>
               <option value="docent">Docent</option>
@@ -1933,7 +1934,7 @@ function togglePwVis(vak){
 }
 
 /* ── ROLLEN BEHEER ───────────────────────────────── */
-const ROL_LABELS = {coordinator:'Coördinator',coach:'Coach',docent:'Docent',leerling:'Leerling'};
+const ROL_LABELS = {admin:'🔧 Admin',coordinator:'Coördinator',coach:'Coach',docent:'Docent',leerling:'Leerling'};
 
 function renderRollenList(){
   const list = document.getElementById('rol-list');
