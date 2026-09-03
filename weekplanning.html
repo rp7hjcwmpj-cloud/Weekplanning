@@ -1334,13 +1334,22 @@ function _getUserEmail(){
   }catch(e){ return null; }
 }
    // { key → SharePoint item id }
-let _m365Cfg = {};
+// Standaardinstellingen — ingebakken zodat alle gebruikers automatisch verbinding maken
+const _M365_DEFAULTS = {
+  clientId: '11fc6458-1069-4d36-b199-f3d0a0acba7d',
+  tenantId: '925a59f1-3e63-4c88-bab9-206837c69b53',
+  siteUrl:  'https://scholengroep.sharepoint.com/sites/msteams_c5c7cf',
+  listName: 'WeekplanningData',
+};
+
+let _m365Cfg = {..._M365_DEFAULTS};
 
 function loadM365Cfg(){
   try{
     const raw = localStorage.getItem('wp_m365cfg');
-    _m365Cfg = raw ? JSON.parse(raw) : {};
-  }catch(e){ _m365Cfg = {}; }
+    // Gebruik opgeslagen instellingen als die er zijn, anders de ingebakken standaard
+    _m365Cfg = raw ? {..._M365_DEFAULTS, ...JSON.parse(raw)} : {..._M365_DEFAULTS};
+  }catch(e){ _m365Cfg = {..._M365_DEFAULTS}; }
   // Populate admin inputs if panel exists
   const f = id => document.getElementById(id);
   if(f('m365-clientid')){
