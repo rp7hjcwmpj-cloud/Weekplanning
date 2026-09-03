@@ -1547,7 +1547,7 @@ async function m365Init(){
     } else {
       setSyncChip('syncing','⟳ Laden…');
       const loaded = await spLoad();
-      if(loaded){ setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
+      if(loaded){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
       else { setSyncChip('err','✕ Laadprobleem'); }
     }
     await _tryMsAutoLogin();
@@ -1559,7 +1559,7 @@ async function m365Init(){
   if(_graphToken){
     setSyncChip('syncing','⟳ Laden…');
     const loaded = await spLoad();
-    if(loaded){ setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
+    if(loaded){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
     else { setSyncChip('err','✕ Laadprobleem'); }
     await _tryMsAutoLogin();
   } else {
@@ -1613,7 +1613,7 @@ async function loginWithMicrosoft(){
     _graphToken = token;
     setSyncChip('syncing','⟳ Laden…');
     const loaded = await spLoad();
-    if(loaded){ setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
+    if(loaded){ hydrate(); setSyncChip('ok','✓ Geladen'); setTimeout(()=>setSyncChip('idle','☁️ M365'),2500); }
     await _tryMsAutoLogin();
   }
   // Anders: redirect gestart naar Microsoft, pagina navigeert weg
