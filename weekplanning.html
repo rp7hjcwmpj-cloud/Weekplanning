@@ -1596,10 +1596,10 @@ async function _tryMsAutoLogin(){
     const rollen = Object.keys(S.roleMap);
     const errEl = document.getElementById('ms-login-err');
     if(errEl){
-      errEl.textContent = email + ' heeft geen toegang. '
+      errEl.innerHTML = '❌ <b>' + email + '</b> heeft geen toegang.<br>'
         + (rollen.length === 0
-          ? 'Rollenlijst is leeg — sync nog niet ontvangen van SharePoint.'
-          : 'Bekende accounts: ' + rollen.join(', '));
+          ? '⚠️ Rollenlijst is leeg — sync nog niet ontvangen van SharePoint. Vraag de admin om te synchroniseren.'
+          : '📋 Bekende accounts in lijst:<br>' + rollen.map(r=>'• '+r).join('<br>') + '<br><small>Controleer of het bovenstaande Microsoft-adres exact overeenkomt met één van deze accounts.</small>');
       errEl.style.display = 'block';
     }
     return;
