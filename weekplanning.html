@@ -1010,7 +1010,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
         </div>
         <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;">
           <button class="hb" style="background:var(--brand);color:#fff;" onclick="m365Connect()">🔗 Verbinding testen</button>
-          <button class="hb" style="background:var(--brand);color:#fff;" onclick="spSyncAll()">☁️ Nu synchroniseren</button>
+          <button class="hb" style="background:var(--brand);color:#fff;" onclick="spSyncAllOrLogin()">☁️ Nu synchroniseren</button>
           <button class="hb" onclick="m365SignOut()">Afmelden</button>
           <button class="hb" style="background:#e67e22;color:#fff;" onclick="m365ShowDebugUrl()">🐛 Debug URL tonen</button>
         </div>
@@ -1460,6 +1460,19 @@ async function spSyncAll(){
   }
 }
 
+// Synchroniseer naar SharePoint — log eerst in bij Microsoft als token ontbreekt
+async function spSyncAllOrLogin(){
+  if(_graphToken){ spSyncAll(); return; }
+  // Probeer gecached token
+  const t = await acquireToken(false);
+  if(t){ _graphToken=t; setSyncChip('idle','☁️ M365'); spSyncAll(); return; }
+  // Geen token — redirect naar Microsoft login met sync-intent
+  if(!m365Configured()){ m365StatusMsg('Vul eerst de Microsoft 365-instellingen in.'); return; }
+  m365StatusMsg('Aanmelden bij Microsoft om te synchroniseren…');
+  _oStore('set', _OAUTH.INTENT, 'sync');
+  await acquireToken(true);
+}
+
 async function m365SignIn(){
   if(!m365Configured()){ alert('Vul eerst de Microsoft 365-instellingen in (Admin → Microsoft 365).'); return; }
   _oStore('set', _OAUTH.INTENT, 'sync');
@@ -1545,6 +1558,13 @@ async function m365Init(){
         m365StatusMsg('✕ Lijst niet gevonden. Controleer de site-URL en lijstnaam.');
         setSyncChip('err','✕ Fout');
       }
+    } else if(intent === 'sync'){
+      // Admin wou synchroniseren — laad eerst, dan push alle data
+      setSyncChip('syncing','⟳ Synchroniseren…');
+      await spLoad(); hydrate();
+      await spSyncAll();
+      showAdmin();
+      return; // niet _tryMsAutoLogin, we zijn al admin
     } else {
       setSyncChip('syncing','⟳ Laden…');
       const loaded = await spLoad();
@@ -2005,6 +2025,7 @@ function addRolEntry(){
   if(role==='docent') mapping.vak=vak;
   if(role==='leerling') mapping.studentId=stuId;
   S.roleMap[email]=mapping;
+  persist(); // sla op in localStorage en sync naar SharePoint
   // reset form
   document.getElementById('rol-email').value='';
   document.getElementById('rol-role').value='';
@@ -2015,6 +2036,7 @@ function addRolEntry(){
 
 function removeRolEntry(email){
   delete S.roleMap[email];
+  persist(); // sla op in localStorage en sync naar SharePoint
   renderRollenList();
 }
 
