@@ -144,9 +144,17 @@ body.dark .toets-icon-btn:hover{background:rgba(0,0,0,.6);}
 .toets-section-lbl{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx-2,#8893A4);margin-bottom:.4rem;}
 .toets-info-row{background:var(--surf-2);border-radius:8px;padding:.6rem .85rem;font-size:.87rem;margin-bottom:.9rem;display:flex;flex-wrap:wrap;gap:.3rem .8rem;}
 .toets-info-row strong{color:var(--tx);}
-.toets-check{display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.28rem 0;font-size:.88rem;user-select:none;}
-.toets-check input{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;}
-.toets-time-preview{font-size:.82rem;font-weight:600;color:var(--brand);margin-top:.35rem;min-height:1.1em;transition:opacity .2s;}
+/* Toets duration radio buttons */
+.toets-dur-opts{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.25rem;}
+.toets-dur-opt{display:flex;align-items:center;gap:.32rem;padding:.32rem .72rem;border-radius:8px;border:1.5px solid var(--border);background:var(--surf-2);cursor:pointer;font-size:.86rem;font-weight:500;transition:background .13s,border-color .13s;}
+.toets-dur-opt:has(input:checked){border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
+body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
+.toets-dur-opt input{width:14px;height:14px;accent-color:var(--brand);cursor:pointer;}
+.toets-time-preview{font-size:.82rem;font-weight:600;color:var(--brand);margin-top:.38rem;min-height:1.1em;transition:opacity .2s;}
+/* Partial toets fill — yellow strip on the left of a lesson cell */
+.dc.toets-partial{overflow:hidden;}
+.dc.toets-partial::before{content:'';position:absolute;top:0;left:0;bottom:0;width:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
+.dc.toets-partial .cell-lbl,.dc.toets-partial .cell-note,.dc.toets-partial .cell-note-input{position:relative;z-index:1;}
 .toets-search-wrap{position:relative;}
 .toets-results{position:absolute;left:0;right:0;top:calc(100% + 2px);background:var(--surface);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:300;box-shadow:0 6px 20px rgba(0,0,0,.14);}
 .toets-result-item{padding:.52rem .85rem;cursor:pointer;font-size:.86rem;display:flex;flex-direction:column;gap:.08rem;border-bottom:1px solid var(--border);}
@@ -159,6 +167,32 @@ body.dark .toets-icon-btn:hover{background:rgba(0,0,0,.6);}
 .toets-selected-clear{cursor:pointer;color:var(--muted,#8893A4);font-size:.9rem;padding:.1rem .3rem;border-radius:4px;}
 .toets-selected-clear:hover{color:var(--tx);background:rgba(0,0,0,.07);}
 .toets-no-m365{font-size:.8rem;color:var(--muted,#8893A4);font-style:italic;margin-top:.3rem;}
+
+/* ── Leerling aanwezigheid (docent) ── */
+.la-modal{max-width:min(94vw,960px);width:960px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;padding:1.6rem;}
+.la-modal h2{margin-bottom:.85rem;flex-shrink:0;}
+.la-scroll{overflow:auto;flex:1;min-height:0;}
+.la-day-tabs{display:flex;gap:.38rem;flex-wrap:wrap;margin-bottom:.85rem;flex-shrink:0;}
+.la-day-tab{padding:.28rem .72rem;border-radius:7px;border:1.5px solid var(--border);background:var(--surf-2);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .13s;color:var(--tx);}
+.la-day-tab:hover{border-color:var(--brand);background:var(--brand-light);}
+.la-day-tab.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+.la-day-tab.is-today:not(.on){border-color:var(--accent);color:var(--accent);}
+.la-table{border-collapse:collapse;font-size:.76rem;width:100%;}
+.la-table thead th{background:var(--surf-2);padding:.28rem .4rem;border:1px solid var(--border);white-space:nowrap;font-weight:700;font-size:.65rem;text-align:center;position:sticky;top:0;z-index:2;}
+.la-table thead th.la-name-hd{text-align:left;min-width:130px;font-size:.72rem;}
+.la-table tbody td{border:1px solid var(--border);padding:.18rem .25rem;vertical-align:middle;}
+.la-table tbody td.la-name{text-align:left;padding:.3rem .55rem;font-weight:600;white-space:nowrap;font-size:.8rem;background:var(--surface);position:sticky;left:0;z-index:1;}
+.la-table tbody tr:nth-child(even) td.la-name{background:var(--surf-2);}
+.la-cell{border-radius:5px;padding:.22rem .28rem;font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;min-height:26px;min-width:42px;white-space:nowrap;}
+.la-cell.c-green {background:var(--g-bg);color:var(--g-tx);}
+.la-cell.c-red   {background:var(--r-bg);color:var(--r-tx);}
+.la-cell.c-rose  {background:var(--ro-bg);color:var(--ro-tx);}
+.la-cell.c-blue  {background:var(--b-bg);color:var(--b-tx);}
+.la-cell.c-purple{background:var(--p-bg);color:var(--p-tx);}
+.la-cell.c-yellow{background:var(--y-bg);color:var(--y-tx);}
+.la-cell.c-orange{background:var(--o-bg);color:var(--o-tx);}
+.la-cell.c-null  {color:var(--tx3);background:transparent;}
+.la-empty{text-align:center;padding:1.5rem 0;color:var(--tx3);font-size:.87rem;}
 .edit-banner{background:var(--accent);color:#fff;text-align:center;padding:.42rem 1rem;font-size:.79rem;font-weight:600;letter-spacing:.01em;display:none;}
 .edit-banner.show{display:block;}
 
@@ -310,10 +344,10 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="yellow"] .cell-lbl{color:var(--y-tx);}
 .dc[data-c="orange"] .cell-lbl{color:var(--o-tx);}
 .dc[data-c="rose"]   .cell-lbl{color:var(--ro-tx);}
-.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.52rem;color:inherit;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.2;}
-.note-icon-btn{position:absolute;top:2px;right:2px;width:16px;height:16px;border:none;background:none;padding:0;cursor:pointer;font-size:.72rem;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center;}
-.dc[data-c="rose"]   .note-icon-btn,.dc[data-c="purple"] .note-icon-btn,.dc[data-c="orange"] .note-icon-btn{opacity:.8;}
-.dc[data-c="rose"]   .cell-lbl,.dc[data-c="purple"] .cell-lbl,.dc[data-c="orange"] .cell-lbl{padding-right:16px;}
+.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.5rem;color:inherit;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.2;}
+.cell-note-input{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.18);border-radius:3px;padding:1px 3px;font-size:.5rem;color:inherit;font-family:inherit;outline:none;z-index:2;min-width:0;}
+.cell-note-input:focus{background:rgba(0,0,0,.2);border-color:rgba(0,0,0,.3);}
+.dc[data-c="rose"]   .cell-lbl,.dc[data-c="purple"] .cell-lbl,.dc[data-c="orange"] .cell-lbl{padding-bottom:14px;}
 .pause-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.59rem;color:var(--pause-tx);font-style:italic;letter-spacing:.04em;pointer-events:none;}
 
 /* ── STD SCHEDULE MODAL ──────────────────────────── */
@@ -519,6 +553,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openBeschModal()">📅 Beschikbaarheid</button>
+        <button class="hb" onclick="openLaModal()">👥 Leerling aanwezigheid</button>
       </div>
       <div id="hdr-leerling-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openLeerlingBeschModal()">👁 Beschikbaarheid docenten</button>
@@ -701,39 +736,30 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   </div>
 </div>
 
-<!-- ══ NOTE POPUP ════════════════════════════════════ -->
-<div class="overlay" id="modal-note">
-  <div class="modal-card" style="max-width:420px;">
-    <h2 id="note-modal-title">📋 Opmerking</h2>
-    <p class="modal-sub" id="note-modal-sub"></p>
-    <label class="flabel" id="note-modal-lbl">Opmerking</label>
-    <textarea class="field-inp" id="note-textarea" rows="4"
-      placeholder="Typ hier een opmerking…"
-      style="resize:vertical;min-height:90px;font-family:inherit;"></textarea>
-    <div class="modal-actions">
-      <button class="btn-p sm" onclick="saveNote()">Opslaan</button>
-      <button class="btn-g sm" onclick="closeNoteModal()">Annuleren</button>
-    </div>
-  </div>
-</div>
-
 <!-- ══ TOETS POPUP ══════════════════════════════════ -->
 <div class="overlay" id="modal-toets">
   <div class="modal-card" style="max-width:500px;">
     <h2>📝 Toets ingepland</h2>
     <div class="toets-info-row" id="toets-info"></div>
 
-    <!-- Uitloop -->
+    <!-- Onderwerp -->
     <div class="toets-section">
-      <div class="toets-section-lbl">Uitloop toets</div>
-      <label class="toets-check">
-        <input type="checkbox" id="toets-ext1" onchange="onToetsExtChange()">
-        <span>Verlengen naar <strong id="toets-ext1-lbl">volgend uur</strong></span>
-      </label>
-      <label class="toets-check" id="toets-ext2-wrap" style="display:none;">
-        <input type="checkbox" id="toets-ext2" onchange="onToetsExtChange()">
-        <span>Ook verlengen naar <strong id="toets-ext2-lbl"></strong></span>
-      </label>
+      <div class="toets-section-lbl">Onderwerp toets</div>
+      <input class="field-inp" type="text" id="toets-subject"
+             placeholder="Bijv. Hoofdstuk 4 – fotosynthese…"
+             oninput="_refreshToetsMsg()"
+             style="margin-bottom:0;">
+    </div>
+
+    <!-- Duur -->
+    <div class="toets-section">
+      <div class="toets-section-lbl">Duur toets</div>
+      <div class="toets-dur-opts">
+        <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="30" onchange="_refreshToetsMsg()"> 30 min</label>
+        <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="45" onchange="_refreshToetsMsg()"> 45 min</label>
+        <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="50" onchange="_refreshToetsMsg()"> 50 min</label>
+        <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="100" onchange="_refreshToetsMsg()"> 100 min</label>
+      </div>
       <div class="toets-time-preview" id="toets-time-preview"></div>
     </div>
 
@@ -764,6 +790,16 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="btn-p" id="toets-send-btn" onclick="confirmToetsMail()">✉️ Mail sturen &amp; opslaan</button>
     <button class="btn-g" onclick="saveToetsNoMail()">Opslaan zonder mail</button>
     <button class="btn-ghost" onclick="cancelToets()">✕ Annuleren</button>
+  </div>
+</div>
+
+<!-- ══ LEERLING AANWEZIGHEID (DOCENT) ════════════════ -->
+<div class="overlay" id="modal-la">
+  <div class="modal-card la-modal">
+    <h2>👥 Leerling aanwezigheid — <span id="la-vak-title" style="color:var(--accent)"></span></h2>
+    <div id="la-day-tabs" class="la-day-tabs"></div>
+    <div id="la-content" class="la-scroll"></div>
+    <button class="btn-ghost" style="margin-top:.85rem;flex-shrink:0;" onclick="document.getElementById('modal-la').classList.remove('show')">✕ Sluiten</button>
   </div>
 </div>
 
@@ -2604,6 +2640,104 @@ function renderLeerlingBeschGrid(){
   ct.appendChild(buildBeschGridEl(vak,false));
 }
 
+/* ══ LEERLING AANWEZIGHEID (DOCENT) ════════════════ */
+let _laDi = 0; // geselecteerde dagindex in de la-modal
+
+function openLaModal(){
+  const vak = S.docentVak || '';
+  document.getElementById('la-vak-title').textContent = vak || '—';
+  // Bepaal huidige dag in de zichtbare week
+  const todayStr = toDS(new Date());
+  const dates = weekDates(S.wy.year, S.wy.week);
+  _laDi = 0;
+  for(let i = 0; i < 5; i++){
+    if(toDS(dates[i]) === todayStr){ _laDi = i; break; }
+  }
+  _renderLaDayTabs(dates, todayStr);
+  _renderLaContent();
+  document.getElementById('modal-la').classList.add('show');
+}
+
+function _renderLaDayTabs(dates, todayStr){
+  const wrap = document.getElementById('la-day-tabs');
+  wrap.innerHTML = '';
+  const DNAMES = ['Ma','Di','Wo','Do','Vr'];
+  dates.slice(0,5).forEach((d, i) => {
+    const btn = document.createElement('button');
+    const ds = toDS(d);
+    btn.className = 'la-day-tab' + (i===_laDi?' on':'') + (ds===todayStr?' is-today':'');
+    btn.textContent = DNAMES[i] + ' ' + fmt(d);
+    btn.addEventListener('click', () => {
+      _laDi = i;
+      _renderLaDayTabs(weekDates(S.wy.year,S.wy.week), toDS(new Date()));
+      _renderLaContent();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+function _renderLaContent(){
+  const ct = document.getElementById('la-content');
+  ct.innerHTML = '';
+  const vak = S.docentVak;
+  const key = S.wy.year + '-' + S.wy.week;
+  const di = _laDi;
+  // Alleen les-slots (geen pauze, geen extra)
+  const slots = SCHOOL.filter(s => s.kind === 'lesson');
+  // Leerlingen die dit vak volgen, alfabetisch
+  const stus = S.students
+    .filter(stu => getActiveVakken(stu).includes(vak))
+    .sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+
+  if(!stus.length){
+    const p = document.createElement('p');
+    p.className = 'la-empty';
+    p.innerHTML = `Geen leerlingen gevonden die <strong>${vak||'dit vak'}</strong> volgen in de huidige periode.`;
+    ct.appendChild(p);
+    return;
+  }
+
+  const SHORT = {green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
+
+  const table = document.createElement('table');
+  table.className = 'la-table';
+
+  // Koptekst
+  const thead = document.createElement('thead');
+  const hr = document.createElement('tr');
+  const th0 = document.createElement('th'); th0.className='la-name-hd'; th0.textContent='Leerling'; hr.appendChild(th0);
+  slots.forEach(slot => {
+    const th = document.createElement('th');
+    th.innerHTML = slot.label + '<br><span style="opacity:.55;font-weight:400">' + slot.time.split('–')[0] + '</span>';
+    hr.appendChild(th);
+  });
+  thead.appendChild(hr);
+  table.appendChild(thead);
+
+  // Datarijen
+  const tbody = document.createElement('tbody');
+  stus.forEach(stu => {
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td'); tdName.className='la-name'; tdName.textContent=stu.name; tr.appendChild(tdName);
+    const sd = S.studentData[stu.id] || {std:{},ovr:{}};
+    slots.forEach(slot => {
+      // Kleur ophalen (zelfde logica als getColor maar voor willekeurige student)
+      const o = sd.ovr?.[key];
+      let c = null;
+      if(o && o[di] && o[di][slot.id] !== undefined) c = o[di][slot.id];
+      else if(sd.std?.[di] && sd.std[di][slot.id] !== undefined) c = sd.std[di][slot.id];
+      const td = document.createElement('td');
+      const cell = document.createElement('div');
+      cell.className = 'la-cell' + (c ? ' c-'+c : ' c-null');
+      cell.textContent = c ? (SHORT[c]||c) : '—';
+      td.appendChild(cell); tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  ct.appendChild(table);
+}
+
 /* ══ MAIN SCREEN ════════════════════════════════════ */
 function showMain(){
   const now=new Date();
@@ -2840,19 +2974,21 @@ function setOvr(weekKey,di,sid,c){
   if(!ovr[weekKey][di]) ovr[weekKey][di]={};
   ovr[weekKey][di][sid]=c; persist();
 }
-function getNote(weekKey,di,sid){
+function getNote(weekKey,di,sid,color){
   const d=curData(); if(!d.notes) return '';
   const w=d.notes[weekKey]; if(!w) return '';
   const day=w[di]; if(!day) return '';
-  return day[sid]||'';
+  const cell=day[sid]; if(!cell) return '';
+  return (typeof cell==='object'?cell[color||'_']:cell)||'';
 }
-function setNote(weekKey,di,sid,text){
+function setNote(weekKey,di,sid,color,text){
   const d=curData();
   if(!d.notes) d.notes={};
   if(!d.notes[weekKey]) d.notes[weekKey]={};
   if(!d.notes[weekKey][di]) d.notes[weekKey][di]={};
-  if(text) d.notes[weekKey][di][sid]=text;
-  else delete d.notes[weekKey][di][sid];
+  if(!d.notes[weekKey][di][sid]||typeof d.notes[weekKey][di][sid]!=='object') d.notes[weekKey][di][sid]={};
+  if(text) d.notes[weekKey][di][sid][color||'_']=text;
+  else delete d.notes[weekKey][di][sid][color||'_'];
   persist();
 }
 
@@ -3017,17 +3153,37 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
       } else {
         const c=getColor(key,di,slot.id);
         applyCell(cell,c);
-        _refreshNoteBtn(cell,c,key,di,slot,false);
+        _refreshToetsBtn(cell,c,key,di,slot,slots,dates,editable);
+        _refreshNoteUI(cell,c,key,di,slot,editable);
+        // Apply partial toets fill if this slot is the overflow slot of a toets
+        const _dayToets = curData().toets?.[key]?.[di];
+        if(_dayToets){
+          for(const toetsData of Object.values(_dayToets)){
+            if(toetsData.partial && toetsData.partial.slotId === slot.id){
+              cell.classList.add('toets-partial');
+              cell.style.setProperty('--toets-fill', (toetsData.partial.fraction*100).toFixed(1)+'%');
+              break;
+            }
+          }
+        }
         if(editable){
           cell.classList.add('editable');
-          _refreshToetsBtn(cell,c,key,di,slot,slots,dates);
-          _refreshNoteBtn(cell,c,key,di,slot,true);
           cell.addEventListener('click',()=>{
-            const next=cycle(getColor(key,di,slot.id));
+            const prev=getColor(key,di,slot.id);
+            const next=cycle(prev);
+            // If cycling away from yellow: clean up toets extensions
+            if(prev==='yellow'){
+              const old=getToets(key,di,slot.id);
+              if(old.extended && old.extended.length) old.extended.forEach(sid=>setOvr(key,di,sid,null));
+              _clearToetsData(key,di,slot.id);
+              setOvr(key,di,slot.id,next);
+              renderSchedule();
+              return;
+            }
             setOvr(key,di,slot.id,next);
             applyCell(cell,next);
-            _refreshToetsBtn(cell,next,key,di,slot,slots,dates);
-            _refreshNoteBtn(cell,next,key,di,slot,true);
+            _refreshToetsBtn(cell,next,key,di,slot,slots,dates,true);
+            _refreshNoteUI(cell,next,key,di,slot,true);
           });
         }
       }
@@ -3039,7 +3195,9 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
 
 function applyCell(cell,c){
   if(c) cell.setAttribute('data-c',c); else cell.removeAttribute('data-c');
-  ['.cell-lbl','.toets-icon-btn','.note-icon-btn','.cell-note'].forEach(sel=>{
+  cell.classList.remove('toets-partial');
+  cell.style.removeProperty('--toets-fill');
+  ['.cell-lbl','.toets-icon-btn','.cell-note','.cell-note-input'].forEach(sel=>{
     const old=cell.querySelector(sel); if(old) old.remove();
   });
   if(c){
@@ -3048,9 +3206,18 @@ function applyCell(cell,c){
   }
 }
 
-function _refreshToetsBtn(cell, c, key, di, slot, slots, dates){
+function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
   const old=cell.querySelector('.toets-icon-btn'); if(old) old.remove();
+  const oldNote=cell.querySelector('.cell-note'); if(oldNote) oldNote.remove();
   if(c!=='yellow') return;
+  // Show subject on the origin slot cell (view + edit mode)
+  const toets = getToets(key, di, slot.id);
+  if(toets.subject){
+    const nt=document.createElement('div'); nt.className='cell-note';
+    nt.textContent=toets.subject.length>20?toets.subject.slice(0,18)+'…':toets.subject;
+    cell.appendChild(nt);
+  }
+  if(!editable) return;
   const btn=document.createElement('button');
   btn.className='toets-icon-btn';
   btn.title='Toets beheren / mail sturen';
@@ -3062,26 +3229,33 @@ function _refreshToetsBtn(cell, c, key, di, slot, slots, dates){
   cell.appendChild(btn);
 }
 
-function _refreshNoteBtn(cell, c, key, di, slot, editable){
-  const oldBtn=cell.querySelector('.note-icon-btn'); if(oldBtn) oldBtn.remove();
+function _refreshNoteUI(cell, c, key, di, slot, editable){
+  const oldInp=cell.querySelector('.cell-note-input'); if(oldInp) oldInp.remove();
   const oldTxt=cell.querySelector('.cell-note'); if(oldTxt) oldTxt.remove();
   if(c!=='rose'&&c!=='purple'&&c!=='orange') return;
-  const note=getNote(key,di,slot.id);
-  if(note){
+  if(editable){
+    // Inline text input — saves automatically on blur/debounce
+    const inp=document.createElement('input');
+    inp.type='text';
+    inp.className='cell-note-input';
+    const placeholder={rose:'Overig afwezig…',purple:'Opmerking…',orange:'Opmerking…'};
+    inp.placeholder=placeholder[c]||'Opmerking…';
+    inp.value=getNote(key,di,slot.id,c);
+    inp.addEventListener('click',e=>e.stopPropagation());
+    inp.addEventListener('input',()=>{
+      clearTimeout(inp._t);
+      inp._t=setTimeout(()=>setNote(key,di,slot.id,c,inp.value.trim()),600);
+    });
+    inp.addEventListener('blur',()=>setNote(key,di,slot.id,c,inp.value.trim()));
+    cell.appendChild(inp);
+  } else {
+    // View mode: show note text if set
+    const note=getNote(key,di,slot.id,c);
+    if(!note) return;
     const nt=document.createElement('div'); nt.className='cell-note';
-    nt.textContent=note.length>18?note.slice(0,16)+'…':note;
+    nt.textContent=note.length>22?note.slice(0,20)+'…':note;
     cell.appendChild(nt);
   }
-  if(!editable) return;
-  const btn=document.createElement('button');
-  btn.className='note-icon-btn';
-  btn.title='Opmerking toevoegen / wijzigen';
-  btn.textContent='📋';
-  btn.addEventListener('click',(e)=>{
-    e.stopPropagation();
-    openNoteModal(key,di,slot);
-  });
-  cell.appendChild(btn);
 }
 
 /* ══ STD SCHEDULE MODAL ═════════════════════════════ */
@@ -3130,45 +3304,66 @@ function renderStdGrid(){
 }
 function applyStd(cell,c){cell.setAttribute('data-c',c||'null');cell.textContent=STD_LBL[c||'null']||'—';}
 
+/* ── Toets data helpers ────────────────────────────── */
+function getToets(weekKey, di, sid){
+  const d = curData();
+  return (d.toets?.[weekKey]?.[di]?.[sid]) || {subject:'', duration:45, extended:[], partial:null};
+}
+function setToets(weekKey, di, sid, obj){
+  const d = curData();
+  if(!d.toets) d.toets = {};
+  if(!d.toets[weekKey]) d.toets[weekKey] = {};
+  if(!d.toets[weekKey][di]) d.toets[weekKey][di] = {};
+  d.toets[weekKey][di][sid] = obj;
+  persist();
+}
+function _clearToetsData(weekKey, di, sid){
+  const d = curData();
+  if(d.toets?.[weekKey]?.[di]?.[sid]) {
+    delete d.toets[weekKey][di][sid];
+    persist();
+  }
+}
+
+/* ── Time / duration helpers ────────────────────────── */
+function _parseTime(t){
+  const [h,m] = t.trim().split(':').map(Number);
+  return h*60 + (m||0);
+}
+function _slotDuration(slot){
+  const parts = slot.time.split('–');
+  return _parseTime(parts[1]) - _parseTime(parts[0]);
+}
+// Returns [{slot, fraction}] for all lesson slots covered by durationMin minutes,
+// starting from startSlot. Pauses consume time but produce no visual entry.
+function _toetsCoverage(startSlot, allSlots, durationMin){
+  let remaining = durationMin, started = false;
+  const coverage = [];
+  for(const slot of allSlots){
+    if(!started){ if(slot.id !== startSlot.id) continue; started = true; }
+    if(remaining <= 0) break;
+    const dur = _slotDuration(slot);
+    if(slot.kind === 'pause' || slot.kind === 'extra'){
+      remaining -= dur;
+    } else {
+      if(remaining >= dur){
+        coverage.push({slot, fraction:1});
+        remaining -= dur;
+      } else {
+        coverage.push({slot, fraction: remaining/dur});
+        remaining = 0;
+      }
+    }
+  }
+  return coverage;
+}
+
 /* ══ TOETS POPUP ════════════════════════════════════ */
 let _toetsCtx = null;       // { key, di, slot, slots, dates }
-let _toetsExtSlots = [];    // next 0-2 lesson slots
 let _toetsSelected = null;  // { displayName, mail }
 let _toetsSearchTimer = null;
 
-/* ══ NOTE MODAL ═════════════════════════════════════ */
-let _noteCtx=null;
-function openNoteModal(key, di, slot){
-  _noteCtx={key,di,slot};
-  const c=getColor(key,di,slot.id);
-  const stu=S.students.find(s=>s.id===S.currentStudentId);
-  const dates=weekDates(S.wy.year,S.wy.week);
-  const date=dates[di];
-  const labels={rose:'Overig afwezig',purple:'Opmerking — Wedstrijd',orange:'Opmerking — Toernooi'};
-  const titles={rose:'📋 Overig afwezig',purple:'📋 Wedstrijd',orange:'📋 Toernooi'};
-  document.getElementById('note-modal-title').textContent=titles[c]||'📋 Opmerking';
-  document.getElementById('note-modal-lbl').textContent=labels[c]||'Opmerking';
-  document.getElementById('note-modal-sub').innerHTML=
-    (stu?`<strong>${stu.name}</strong> &nbsp;·&nbsp; `:'')+
-    `${DAYS_FULL[di]||''} ${fmt(date)} &nbsp;·&nbsp; ${slot.label} ${slot.time}`;
-  document.getElementById('note-textarea').value=getNote(key,di,slot.id);
-  document.getElementById('modal-note').classList.add('show');
-  setTimeout(()=>document.getElementById('note-textarea').focus(),80);
-}
-function closeNoteModal(){document.getElementById('modal-note').classList.remove('show');_noteCtx=null;}
-function saveNote(){
-  if(!_noteCtx) return;
-  const text=document.getElementById('note-textarea').value.trim();
-  setNote(_noteCtx.key,_noteCtx.di,_noteCtx.slot.id,text);
-  closeNoteModal();
-  renderSchedule();
-}
-
 function openToetsModal(key, di, slot, slots, dates){
-  // Find the next 2 lesson slots after current slot (skip pauses/extras)
-  const lessons = slots.filter(s => s.kind==='lesson'||s.kind==='weekend');
-  const idx = lessons.findIndex(s => s.id===slot.id);
-  _toetsExtSlots = idx >= 0 ? lessons.slice(idx+1, idx+3) : [];
   _toetsCtx = { key, di, slot, slots, dates };
   _toetsSelected = null;
 
@@ -3181,49 +3376,26 @@ function openToetsModal(key, di, slot, slots, dates){
     `<span>📅 <strong>${dayName}</strong> ${fmt(date)}</span>` +
     `<span>🕐 <strong>${slot.label}</strong> &nbsp;${slot.time}</span>`;
 
-  // Extension option labels
-  const e1 = _toetsExtSlots[0], e2 = _toetsExtSlots[1];
-  document.getElementById('toets-ext1').checked = false;
-  document.getElementById('toets-ext2').checked = false;
-  document.getElementById('toets-ext1-lbl').textContent = e1 ? `${e1.label} (${e1.time})` : 'volgend uur';
-  if(e2) document.getElementById('toets-ext2-lbl').textContent = `${e2.label} (${e2.time})`;
-  document.getElementById('toets-ext2-wrap').style.display = 'none';
-  document.getElementById('toets-time-preview').textContent = '';
+  // Load stored toets data
+  const stored = getToets(key, di, slot.id);
+  document.getElementById('toets-subject').value = stored.subject || '';
+  const dur = stored.duration || 45;
+  let found = false;
+  document.querySelectorAll('input[name="toets-dur"]').forEach(r => {
+    if(+r.value === dur){ r.checked = true; found = true; } else r.checked = false;
+  });
+  if(!found) document.querySelectorAll('input[name="toets-dur"]').forEach(r => { if(+r.value===45) r.checked=true; });
 
-  // Search field
+  // Reset mail / search fields
   document.getElementById('toets-search').value = '';
   document.getElementById('toets-results').style.display = 'none';
   document.getElementById('toets-selected').style.display = 'none';
   document.getElementById('toets-no-m365').style.display = _graphToken ? 'none' : '';
   document.getElementById('toets-send-btn').textContent = '✉️ Mail sturen & opslaan';
 
-  // Default message
   _refreshToetsMsg();
   document.getElementById('toets-err').style.display = 'none';
   document.getElementById('modal-toets').classList.add('show');
-}
-
-function _toetsTimeStr(){
-  if(!_toetsCtx) return '';
-  const ext1 = document.getElementById('toets-ext1')?.checked;
-  const ext2 = document.getElementById('toets-ext2')?.checked;
-  const used = [_toetsCtx.slot];
-  if(ext1 && _toetsExtSlots[0]) used.push(_toetsExtSlots[0]);
-  if(ext2 && _toetsExtSlots[1]) used.push(_toetsExtSlots[1]);
-  const start = used[0].time.split('–')[0].trim();
-  const end   = used[used.length-1].time.split('–')[1].trim();
-  return { labels: used.map(s=>s.label).join(' + '), start, end, count: used.length };
-}
-
-function onToetsExtChange(){
-  const ext1 = document.getElementById('toets-ext1').checked;
-  const ext2Wrap = document.getElementById('toets-ext2-wrap');
-  ext2Wrap.style.display = (ext1 && _toetsExtSlots[1]) ? '' : 'none';
-  if(!ext1) document.getElementById('toets-ext2').checked = false;
-  const t = _toetsTimeStr();
-  const prev = document.getElementById('toets-time-preview');
-  prev.textContent = t.count > 1 ? `📐 Totale tijdsduur: ${t.labels} — ${t.start} tot ${t.end}` : '';
-  _refreshToetsMsg();
 }
 
 function _refreshToetsMsg(){
@@ -3232,14 +3404,22 @@ function _refreshToetsMsg(){
   const stu = S.students.find(s=>s.id===S.currentStudentId);
   const date = ctx.dates[ctx.di];
   const dayName = DAYS_FULL[ctx.di]||DAYS_SHORT[ctx.di]||'';
-  const t = _toetsTimeStr();
   const toName = _toetsSelected ? _toetsSelected.displayName : '[Docent]';
   const stuName = stu ? stu.name : '[Leerling]';
+  const subject = document.getElementById('toets-subject')?.value.trim()||'';
+  const dur = +([...document.querySelectorAll('input[name="toets-dur"]')].find(r=>r.checked)?.value||45);
+  const startTime = ctx.slot.time.split('–')[0].trim();
+  const endMin = _parseTime(startTime) + dur;
+  const endTime = `${Math.floor(endMin/60)}:${String(endMin%60).padStart(2,'0')}`;
+  document.getElementById('toets-time-preview').textContent =
+    `📐 ${dur} minuten — ${startTime} t/m ${endTime}`;
   document.getElementById('toets-msg').value =
     `Beste ${toName},\n\n` +
     `Er is een toets ingepland voor ${stuName}.\n\n` +
+    (subject ? `📖 Onderwerp: ${subject}\n` : '') +
     `📅 ${dayName} ${fmt(date)}\n` +
-    `🕐 ${t.labels}  (${t.start} – ${t.end})\n\n` +
+    `🕐 ${ctx.slot.label}  (${startTime} – ${endTime})\n` +
+    `⏱ Duur: ${dur} minuten\n\n` +
     `Kun je hiermee rekening houden?\n\n` +
     `Met vriendelijke groet,\n${S.schoolName}`;
 }
@@ -3289,24 +3469,39 @@ function _clearToetsUser(){
   _refreshToetsMsg();
 }
 
-function _applyToetsExtensions(){
-  if(!_toetsCtx) return false;
-  const { key, di } = _toetsCtx;
-  const ext1 = document.getElementById('toets-ext1')?.checked;
-  const ext2 = document.getElementById('toets-ext2')?.checked;
-  let changed = false;
-  if(ext1 && _toetsExtSlots[0]){ setOvr(key,di,_toetsExtSlots[0].id,'yellow'); changed=true; }
-  if(ext2 && _toetsExtSlots[1]){ setOvr(key,di,_toetsExtSlots[1].id,'yellow'); changed=true; }
-  if(changed) renderSchedule();
-  return changed;
+function _applyToets(){
+  if(!_toetsCtx) return;
+  const { key, di, slot, slots } = _toetsCtx;
+  const sub = document.getElementById('toets-subject').value.trim();
+  const dur = +([...document.querySelectorAll('input[name="toets-dur"]')].find(r=>r.checked)?.value||45);
+
+  // All slots in schedule order (lesson + pause, no extras)
+  const allSlots = slots.filter(s => s.kind==='lesson'||s.kind==='pause');
+
+  // Clear previously extended/partial slots
+  const old = getToets(key, di, slot.id);
+  if(old.extended && old.extended.length) old.extended.forEach(sid => setOvr(key, di, sid, null));
+
+  // Compute new coverage
+  const coverage = _toetsCoverage(slot, allSlots, dur);
+  const extended = [];
+  let partial = null;
+  coverage.forEach(({slot:covSlot, fraction}, i) => {
+    if(i === 0) return; // origin slot already yellow via setOvr
+    if(fraction >= 1){
+      setOvr(key, di, covSlot.id, 'yellow');
+      extended.push(covSlot.id);
+    } else {
+      partial = { slotId: covSlot.id, fraction };
+    }
+  });
+
+  setToets(key, di, slot.id, { subject: sub, duration: dur, extended, partial });
 }
 
 async function confirmToetsMail(){
   const errEl=document.getElementById('toets-err');
   errEl.style.display='none';
-
-  // Apply extensions to the weekplanning
-  _applyToetsExtensions();
 
   // Send mail if connected and user selected
   if(_graphToken && _toetsSelected){
@@ -3336,25 +3531,21 @@ async function confirmToetsMail(){
     return;
   }
 
+  // Save subject + duration + coverage
+  _applyToets();
   document.getElementById('modal-toets').classList.remove('show');
   _toetsCtx=null;
+  renderSchedule();
 }
 
 function saveToetsNoMail(){
-  _applyToetsExtensions();
+  _applyToets();
   document.getElementById('modal-toets').classList.remove('show');
   _toetsCtx=null;
+  renderSchedule();
 }
 
 function cancelToets(){
-  if(!_toetsCtx) return;
-  const { key, di } = _toetsCtx;
-  // Revert any extension slots that were live-applied via checkbox
-  const ext1 = document.getElementById('toets-ext1')?.checked;
-  const ext2 = document.getElementById('toets-ext2')?.checked;
-  if(ext1 && _toetsExtSlots[0]){ setOvr(key,di,_toetsExtSlots[0].id,null); }
-  if(ext2 && _toetsExtSlots[1]){ setOvr(key,di,_toetsExtSlots[1].id,null); }
-  if(ext1||ext2) renderSchedule();
   document.getElementById('modal-toets').classList.remove('show');
   _toetsCtx=null;
 }
