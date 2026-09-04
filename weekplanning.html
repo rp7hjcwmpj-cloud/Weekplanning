@@ -310,10 +310,10 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="yellow"] .cell-lbl{color:var(--y-tx);}
 .dc[data-c="orange"] .cell-lbl{color:var(--o-tx);}
 .dc[data-c="rose"]   .cell-lbl{color:var(--ro-tx);}
-.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.5rem;color:inherit;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.2;}
-.cell-note-input{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.18);border-radius:3px;padding:1px 3px;font-size:.5rem;color:inherit;font-family:inherit;outline:none;z-index:2;min-width:0;}
-.cell-note-input:focus{background:rgba(0,0,0,.2);border-color:rgba(0,0,0,.3);}
-.dc[data-c="rose"]   .cell-lbl,.dc[data-c="purple"] .cell-lbl,.dc[data-c="orange"] .cell-lbl{padding-bottom:14px;}
+.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.52rem;color:inherit;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.2;}
+.note-icon-btn{position:absolute;top:2px;right:2px;width:16px;height:16px;border:none;background:none;padding:0;cursor:pointer;font-size:.72rem;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center;}
+.dc[data-c="rose"]   .note-icon-btn,.dc[data-c="purple"] .note-icon-btn,.dc[data-c="orange"] .note-icon-btn{opacity:.8;}
+.dc[data-c="rose"]   .cell-lbl,.dc[data-c="purple"] .cell-lbl,.dc[data-c="orange"] .cell-lbl{padding-right:16px;}
 .pause-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.59rem;color:var(--pause-tx);font-style:italic;letter-spacing:.04em;pointer-events:none;}
 
 /* ── STD SCHEDULE MODAL ──────────────────────────── */
@@ -701,20 +701,27 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   </div>
 </div>
 
+<!-- ══ NOTE POPUP ════════════════════════════════════ -->
+<div class="overlay" id="modal-note">
+  <div class="modal-card" style="max-width:420px;">
+    <h2 id="note-modal-title">📋 Opmerking</h2>
+    <p class="modal-sub" id="note-modal-sub"></p>
+    <label class="flabel" id="note-modal-lbl">Opmerking</label>
+    <textarea class="field-inp" id="note-textarea" rows="4"
+      placeholder="Typ hier een opmerking…"
+      style="resize:vertical;min-height:90px;font-family:inherit;"></textarea>
+    <div class="modal-actions">
+      <button class="btn-p sm" onclick="saveNote()">Opslaan</button>
+      <button class="btn-g sm" onclick="closeNoteModal()">Annuleren</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ TOETS POPUP ══════════════════════════════════ -->
 <div class="overlay" id="modal-toets">
   <div class="modal-card" style="max-width:500px;">
     <h2>📝 Toets ingepland</h2>
     <div class="toets-info-row" id="toets-info"></div>
-
-    <!-- Onderwerp -->
-    <div class="toets-section">
-      <div class="toets-section-lbl">Onderwerp toets</div>
-      <input class="field-inp" type="text" id="toets-subject"
-             placeholder="Bijv. Hoofdstuk 4 – fotosynthese…"
-             oninput="_refreshToetsMsg()"
-             style="margin-bottom:0;">
-    </div>
 
     <!-- Uitloop -->
     <div class="toets-section">
@@ -2833,21 +2840,19 @@ function setOvr(weekKey,di,sid,c){
   if(!ovr[weekKey][di]) ovr[weekKey][di]={};
   ovr[weekKey][di][sid]=c; persist();
 }
-function getNote(weekKey,di,sid,color){
+function getNote(weekKey,di,sid){
   const d=curData(); if(!d.notes) return '';
   const w=d.notes[weekKey]; if(!w) return '';
   const day=w[di]; if(!day) return '';
-  const cell=day[sid]; if(!cell) return '';
-  return (typeof cell==='object'?cell[color||'_']:cell)||'';
+  return day[sid]||'';
 }
-function setNote(weekKey,di,sid,color,text){
+function setNote(weekKey,di,sid,text){
   const d=curData();
   if(!d.notes) d.notes={};
   if(!d.notes[weekKey]) d.notes[weekKey]={};
   if(!d.notes[weekKey][di]) d.notes[weekKey][di]={};
-  if(!d.notes[weekKey][di][sid]||typeof d.notes[weekKey][di][sid]!=='object') d.notes[weekKey][di][sid]={};
-  if(text) d.notes[weekKey][di][sid][color||'_']=text;
-  else delete d.notes[weekKey][di][sid][color||'_'];
+  if(text) d.notes[weekKey][di][sid]=text;
+  else delete d.notes[weekKey][di][sid];
   persist();
 }
 
@@ -3012,16 +3017,17 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
       } else {
         const c=getColor(key,di,slot.id);
         applyCell(cell,c);
-        _refreshToetsBtn(cell,c,key,di,slot,slots,dates,editable);
-        _refreshNoteUI(cell,c,key,di,slot,editable);
+        _refreshNoteBtn(cell,c,key,di,slot,false);
         if(editable){
           cell.classList.add('editable');
+          _refreshToetsBtn(cell,c,key,di,slot,slots,dates);
+          _refreshNoteBtn(cell,c,key,di,slot,true);
           cell.addEventListener('click',()=>{
             const next=cycle(getColor(key,di,slot.id));
             setOvr(key,di,slot.id,next);
             applyCell(cell,next);
-            _refreshToetsBtn(cell,next,key,di,slot,slots,dates,true);
-            _refreshNoteUI(cell,next,key,di,slot,true);
+            _refreshToetsBtn(cell,next,key,di,slot,slots,dates);
+            _refreshNoteBtn(cell,next,key,di,slot,true);
           });
         }
       }
@@ -3033,7 +3039,7 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
 
 function applyCell(cell,c){
   if(c) cell.setAttribute('data-c',c); else cell.removeAttribute('data-c');
-  ['.cell-lbl','.toets-icon-btn','.cell-note','.cell-note-input'].forEach(sel=>{
+  ['.cell-lbl','.toets-icon-btn','.note-icon-btn','.cell-note'].forEach(sel=>{
     const old=cell.querySelector(sel); if(old) old.remove();
   });
   if(c){
@@ -3042,18 +3048,9 @@ function applyCell(cell,c){
   }
 }
 
-function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
+function _refreshToetsBtn(cell, c, key, di, slot, slots, dates){
   const old=cell.querySelector('.toets-icon-btn'); if(old) old.remove();
-  const oldNote=cell.querySelector('.cell-note'); if(oldNote) oldNote.remove();
   if(c!=='yellow') return;
-  // Show subject on cell (view + edit mode)
-  const subject=getNote(key,di,slot.id,'yellow');
-  if(subject){
-    const nt=document.createElement('div'); nt.className='cell-note';
-    nt.textContent=subject.length>20?subject.slice(0,18)+'…':subject;
-    cell.appendChild(nt);
-  }
-  if(!editable) return;
   const btn=document.createElement('button');
   btn.className='toets-icon-btn';
   btn.title='Toets beheren / mail sturen';
@@ -3065,33 +3062,26 @@ function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
   cell.appendChild(btn);
 }
 
-function _refreshNoteUI(cell, c, key, di, slot, editable){
-  const oldInp=cell.querySelector('.cell-note-input'); if(oldInp) oldInp.remove();
+function _refreshNoteBtn(cell, c, key, di, slot, editable){
+  const oldBtn=cell.querySelector('.note-icon-btn'); if(oldBtn) oldBtn.remove();
   const oldTxt=cell.querySelector('.cell-note'); if(oldTxt) oldTxt.remove();
   if(c!=='rose'&&c!=='purple'&&c!=='orange') return;
-  if(editable){
-    // Inline text input — saves automatically on blur/debounce
-    const inp=document.createElement('input');
-    inp.type='text';
-    inp.className='cell-note-input';
-    const placeholder={rose:'Overig afwezig…',purple:'Opmerking…',orange:'Opmerking…'};
-    inp.placeholder=placeholder[c]||'Opmerking…';
-    inp.value=getNote(key,di,slot.id,c);
-    inp.addEventListener('click',e=>e.stopPropagation());
-    inp.addEventListener('input',()=>{
-      clearTimeout(inp._t);
-      inp._t=setTimeout(()=>setNote(key,di,slot.id,c,inp.value.trim()),600);
-    });
-    inp.addEventListener('blur',()=>setNote(key,di,slot.id,c,inp.value.trim()));
-    cell.appendChild(inp);
-  } else {
-    // View mode: show note text if set
-    const note=getNote(key,di,slot.id,c);
-    if(!note) return;
+  const note=getNote(key,di,slot.id);
+  if(note){
     const nt=document.createElement('div'); nt.className='cell-note';
-    nt.textContent=note.length>22?note.slice(0,20)+'…':note;
+    nt.textContent=note.length>18?note.slice(0,16)+'…':note;
     cell.appendChild(nt);
   }
+  if(!editable) return;
+  const btn=document.createElement('button');
+  btn.className='note-icon-btn';
+  btn.title='Opmerking toevoegen / wijzigen';
+  btn.textContent='📋';
+  btn.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    openNoteModal(key,di,slot);
+  });
+  cell.appendChild(btn);
 }
 
 /* ══ STD SCHEDULE MODAL ═════════════════════════════ */
@@ -3146,6 +3136,34 @@ let _toetsExtSlots = [];    // next 0-2 lesson slots
 let _toetsSelected = null;  // { displayName, mail }
 let _toetsSearchTimer = null;
 
+/* ══ NOTE MODAL ═════════════════════════════════════ */
+let _noteCtx=null;
+function openNoteModal(key, di, slot){
+  _noteCtx={key,di,slot};
+  const c=getColor(key,di,slot.id);
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  const dates=weekDates(S.wy.year,S.wy.week);
+  const date=dates[di];
+  const labels={rose:'Overig afwezig',purple:'Opmerking — Wedstrijd',orange:'Opmerking — Toernooi'};
+  const titles={rose:'📋 Overig afwezig',purple:'📋 Wedstrijd',orange:'📋 Toernooi'};
+  document.getElementById('note-modal-title').textContent=titles[c]||'📋 Opmerking';
+  document.getElementById('note-modal-lbl').textContent=labels[c]||'Opmerking';
+  document.getElementById('note-modal-sub').innerHTML=
+    (stu?`<strong>${stu.name}</strong> &nbsp;·&nbsp; `:'')+
+    `${DAYS_FULL[di]||''} ${fmt(date)} &nbsp;·&nbsp; ${slot.label} ${slot.time}`;
+  document.getElementById('note-textarea').value=getNote(key,di,slot.id);
+  document.getElementById('modal-note').classList.add('show');
+  setTimeout(()=>document.getElementById('note-textarea').focus(),80);
+}
+function closeNoteModal(){document.getElementById('modal-note').classList.remove('show');_noteCtx=null;}
+function saveNote(){
+  if(!_noteCtx) return;
+  const text=document.getElementById('note-textarea').value.trim();
+  setNote(_noteCtx.key,_noteCtx.di,_noteCtx.slot.id,text);
+  closeNoteModal();
+  renderSchedule();
+}
+
 function openToetsModal(key, di, slot, slots, dates){
   // Find the next 2 lesson slots after current slot (skip pauses/extras)
   const lessons = slots.filter(s => s.kind==='lesson'||s.kind==='weekend');
@@ -3171,9 +3189,6 @@ function openToetsModal(key, di, slot, slots, dates){
   if(e2) document.getElementById('toets-ext2-lbl').textContent = `${e2.label} (${e2.time})`;
   document.getElementById('toets-ext2-wrap').style.display = 'none';
   document.getElementById('toets-time-preview').textContent = '';
-
-  // Subject field
-  document.getElementById('toets-subject').value = getNote(key,di,slot.id,'yellow');
 
   // Search field
   document.getElementById('toets-search').value = '';
@@ -3220,11 +3235,9 @@ function _refreshToetsMsg(){
   const t = _toetsTimeStr();
   const toName = _toetsSelected ? _toetsSelected.displayName : '[Docent]';
   const stuName = stu ? stu.name : '[Leerling]';
-  const subject = document.getElementById('toets-subject')?.value.trim()||'';
   document.getElementById('toets-msg').value =
     `Beste ${toName},\n\n` +
     `Er is een toets ingepland voor ${stuName}.\n\n` +
-    (subject?`📖 Onderwerp: ${subject}\n`:'')+
     `📅 ${dayName} ${fmt(date)}\n` +
     `🕐 ${t.labels}  (${t.start} – ${t.end})\n\n` +
     `Kun je hiermee rekening houden?\n\n` +
@@ -3323,25 +3336,14 @@ async function confirmToetsMail(){
     return;
   }
 
-  // Save subject
-  if(_toetsCtx){
-    const sub=document.getElementById('toets-subject').value.trim();
-    setNote(_toetsCtx.key,_toetsCtx.di,_toetsCtx.slot.id,'yellow',sub);
-  }
   document.getElementById('modal-toets').classList.remove('show');
   _toetsCtx=null;
-  renderSchedule();
 }
 
 function saveToetsNoMail(){
-  if(_toetsCtx){
-    const sub=document.getElementById('toets-subject').value.trim();
-    setNote(_toetsCtx.key,_toetsCtx.di,_toetsCtx.slot.id,'yellow',sub);
-  }
   _applyToetsExtensions();
   document.getElementById('modal-toets').classList.remove('show');
   _toetsCtx=null;
-  renderSchedule();
 }
 
 function cancelToets(){
