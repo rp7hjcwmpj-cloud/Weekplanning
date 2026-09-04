@@ -154,14 +154,10 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 /* Partial toets fill — yellow strip on the left of a lesson cell */
 .dc.toets-partial{overflow:hidden;}
 .dc.toets-partial::before{content:'';position:absolute;top:0;left:0;right:0;height:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
-/* Label alleen in het onderste (originele kleur) gedeelte tonen */
-.dc.toets-partial .cell-lbl{
-  position:absolute;top:var(--toets-fill,0%);left:0;right:0;bottom:0;
-  inset:auto;display:flex;align-items:center;justify-content:center;
-  padding-top:0!important;z-index:1;
-}
-/* Noten en inputs boven het ::before laagje */
-.dc.toets-partial .cell-note,.dc.toets-partial .cell-note-input{z-index:1;}
+/* Gesplitst uur: alleen kleuren zichtbaar, geen tekst */
+.dc.toets-partial .cell-lbl,
+.dc.toets-partial .cell-note,
+.dc.toets-partial .cell-note-input { display:none!important; }
 /* ── Beschikbaarheid circles ────────────────────── */
 .besch-circle{
   position:absolute;left:3px;
@@ -319,11 +315,11 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .cell-picker-dot.dot-empty{background:#fff;border:1.5px solid #bbb;}
 /* opmerkingsinput iets groter */
 .cell-note-input{position:absolute;bottom:0;left:0;right:0;
-  background:rgba(255,255,255,.22);border:none;border-top:1.5px solid rgba(26,58,107,.35);
+  background:rgba(255,255,255,.22);border:none;
   border-radius:0;padding:2px 4px 3px;font-size:.58rem;font-weight:600;
   color:inherit;font-family:inherit;outline:none;z-index:2;min-width:0;line-height:1.4;
   text-align:center;}
-.cell-note-input:focus{background:rgba(255,255,255,.38);border-top-color:rgba(26,58,107,.7);}
+.cell-note-input:focus{background:rgba(255,255,255,.38);}
 .print-stu-list{overflow-y:auto;flex:1;min-height:0;border:1px solid var(--border);border-radius:8px;}
 .print-stu-item{
   display:flex;align-items:center;gap:.65rem;
@@ -434,7 +430,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .cell-note{position:absolute;bottom:0;left:0;right:0;font-size:.58rem;font-weight:600;
   color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;
   text-align:center;line-height:1.4;padding:2px 3px 3px;
-  border-top:1.5px solid rgba(26,58,107,.35);background:rgba(255,255,255,.18);}
+  background:rgba(255,255,255,.18);}
 /* Cel-label wat hoger zodat nootbalk onderaan ruimte krijgt */
 .dc[data-c="rose"]   .cell-lbl,
 .dc[data-c="purple"] .cell-lbl,
