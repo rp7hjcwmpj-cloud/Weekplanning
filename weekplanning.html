@@ -154,7 +154,14 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 /* Partial toets fill — yellow strip on the left of a lesson cell */
 .dc.toets-partial{overflow:hidden;}
 .dc.toets-partial::before{content:'';position:absolute;top:0;left:0;right:0;height:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
-.dc.toets-partial .cell-lbl,.dc.toets-partial .cell-note,.dc.toets-partial .cell-note-input{position:relative;z-index:1;}
+/* Label alleen in het onderste (originele kleur) gedeelte tonen */
+.dc.toets-partial .cell-lbl{
+  position:absolute;top:var(--toets-fill,0%);left:0;right:0;bottom:0;
+  inset:auto;display:flex;align-items:center;justify-content:center;
+  padding-top:0!important;z-index:1;
+}
+/* Noten en inputs boven het ::before laagje */
+.dc.toets-partial .cell-note,.dc.toets-partial .cell-note-input{z-index:1;}
 /* ── Beschikbaarheid circles ────────────────────── */
 .besch-circle{
   position:absolute;left:3px;
@@ -311,10 +318,12 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .cell-picker-dot.active{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.4);}
 .cell-picker-dot.dot-empty{background:#fff;border:1.5px solid #bbb;}
 /* opmerkingsinput iets groter */
-.cell-note-input{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,.13);
-  border:1px solid rgba(0,0,0,.2);border-radius:3px;padding:2px 4px;font-size:.58rem;
-  color:inherit;font-family:inherit;outline:none;z-index:2;min-width:0;line-height:1.3;}
-.cell-note-input:focus{background:rgba(0,0,0,.22);border-color:rgba(0,0,0,.35);}
+.cell-note-input{position:absolute;bottom:0;left:0;right:0;
+  background:rgba(255,255,255,.22);border:none;border-top:1.5px solid rgba(26,58,107,.35);
+  border-radius:0;padding:2px 4px 3px;font-size:.58rem;font-weight:600;
+  color:inherit;font-family:inherit;outline:none;z-index:2;min-width:0;line-height:1.4;
+  text-align:center;}
+.cell-note-input:focus{background:rgba(255,255,255,.38);border-top-color:rgba(26,58,107,.7);}
 .print-stu-list{overflow-y:auto;flex:1;min-height:0;border:1px solid var(--border);border-radius:8px;}
 .print-stu-item{
   display:flex;align-items:center;gap:.65rem;
@@ -422,8 +431,18 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="yellow"] .cell-lbl{color:var(--y-tx);}
 .dc[data-c="orange"] .cell-lbl{color:var(--o-tx);}
 .dc[data-c="rose"]   .cell-lbl{color:var(--ro-tx);}
-.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.52rem;color:inherit;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.3;}
-.dc[data-c="rose"]   .cell-lbl,.dc[data-c="purple"] .cell-lbl,.dc[data-c="orange"] .cell-lbl{padding-bottom:14px;}
+.cell-note{position:absolute;bottom:0;left:0;right:0;font-size:.58rem;font-weight:600;
+  color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;
+  text-align:center;line-height:1.4;padding:2px 3px 3px;
+  border-top:1.5px solid rgba(26,58,107,.35);background:rgba(255,255,255,.18);}
+/* Cel-label wat hoger zodat nootbalk onderaan ruimte krijgt */
+.dc[data-c="rose"]   .cell-lbl,
+.dc[data-c="purple"] .cell-lbl,
+.dc[data-c="orange"] .cell-lbl,
+.dc[data-c="yellow"] .cell-lbl,
+.dc[data-c="green"]  .cell-lbl,
+.dc[data-c="red"]    .cell-lbl,
+.dc[data-c="blue"]   .cell-lbl { padding-bottom:16px; }
 .pause-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.59rem;color:var(--pause-tx);font-style:italic;letter-spacing:.04em;pointer-events:none;}
 
 /* ── STD SCHEDULE MODAL ──────────────────────────── */
@@ -3785,9 +3804,14 @@ function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
   if(c!=='yellow') return;
   // Show subject on the origin slot cell (view + edit mode)
   const toets = getToets(key, di, slot.id);
-  if(toets.subject){
+  // Toon onderwerp + duur onder de "Toets" label
+  const durTxt = toets.duration ? ` (${toets.duration} min)` : '';
+  const subTxt = toets.subject || '';
+  const noteTxt = subTxt ? subTxt + durTxt : (durTxt ? durTxt.trim() : '');
+  if(noteTxt){
     const nt=document.createElement('div'); nt.className='cell-note toets-subject-note';
-    nt.textContent=toets.subject.length>22?toets.subject.slice(0,20)+'…':toets.subject;
+    const maxLen=24;
+    nt.textContent=noteTxt.length>maxLen?noteTxt.slice(0,maxLen-1)+'…':noteTxt;
     cell.appendChild(nt);
   }
   if(!editable) return;
