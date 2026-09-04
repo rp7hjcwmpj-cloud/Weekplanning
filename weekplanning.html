@@ -28,6 +28,7 @@
   --p-bg:#E8D5F5; --p-tx:#4A1A72; --p-bd:#C8A8E8;
   --y-bg:#FFFDE7; --y-tx:#5D4000; --y-bd:#D4AC00;
   --o-bg:#FFD9A8; --o-tx:#6B2800; --o-bd:#C05A00;
+  --ro-bg:#FFE2DC; --ro-tx:#8B1A0A; --ro-bd:#FF9A88;
 
   --vak-bg:#F0F0F0; --vak-tx:#606060; --vak-hdr:rgba(140,140,140,.35);
   --std-bg:#F0F0F0; --std-tx:#606060; --std-hdr:rgba(140,140,140,.35);
@@ -44,6 +45,7 @@ body.dark {
   --p-bg:#2A1A40; --p-tx:#C090E8; --p-bd:#42285E;
   --y-bg:#2A2200; --y-tx:#E8C040; --y-bd:#6A5800;
   --o-bg:#3D1E00; --o-tx:#FF9A3C; --o-bd:#8A4200;
+  --ro-bg:#3D0E08; --ro-tx:#FF8878; --ro-bd:#6E1810;
   --vak-bg:#222222; --vak-tx:#909090; --vak-hdr:rgba(140,140,140,.18);
   --std-bg:#222222; --std-tx:#909090; --std-hdr:rgba(140,140,140,.18);
 }
@@ -297,6 +299,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="purple"]{background:var(--p-bg);}
 .dc[data-c="yellow"]{background:var(--y-bg);}
 .dc[data-c="orange"]{background:var(--o-bg);}
+.dc[data-c="rose"]  {background:var(--ro-bg);}
 .dc.day-vakantie,.dc.day-studiedag{background:var(--pause-bg)!important;cursor:default!important;}
 .cell-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;letter-spacing:.03em;pointer-events:none;}
 .dc[data-c="yellow"] .cell-lbl{padding-right:18px;}
@@ -306,6 +309,11 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="purple"] .cell-lbl{color:var(--p-tx);}
 .dc[data-c="yellow"] .cell-lbl{color:var(--y-tx);}
 .dc[data-c="orange"] .cell-lbl{color:var(--o-tx);}
+.dc[data-c="rose"]   .cell-lbl{color:var(--ro-tx);}
+.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.52rem;color:inherit;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.2;}
+.note-icon-btn{position:absolute;top:2px;right:2px;width:16px;height:16px;border:none;background:none;padding:0;cursor:pointer;font-size:.72rem;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center;}
+.dc[data-c="rose"]   .note-icon-btn,.dc[data-c="purple"] .note-icon-btn,.dc[data-c="orange"] .note-icon-btn{opacity:.8;}
+.dc[data-c="rose"]   .cell-lbl,.dc[data-c="purple"] .cell-lbl,.dc[data-c="orange"] .cell-lbl{padding-right:16px;}
 .pause-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.59rem;color:var(--pause-tx);font-style:italic;letter-spacing:.04em;pointer-events:none;}
 
 /* ── STD SCHEDULE MODAL ──────────────────────────── */
@@ -324,6 +332,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .sdc[data-c="purple"]{background:#7D3C98;color:#fff;}
 .sdc[data-c="yellow"]{background:#C8A000;color:#fff;}
 .sdc[data-c="orange"]{background:#C05818;color:#fff;}
+.sdc[data-c="rose"]  {background:#B01010;color:#fff;}
 .modal-actions{display:flex;gap:.55rem;margin-top:.9rem;}
 .btn-p.sm{width:auto;padding:.65rem 1.7rem;}
 .btn-g.sm{width:auto;padding:.62rem 1.3rem;}
@@ -571,6 +580,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <span style="font-size:.7rem;font-weight:700;color:var(--tx3);letter-spacing:.04em;text-transform:uppercase;">Status:</span>
     <div class="leg"><div class="leg-sw" style="background:#2D8B50"></div>Aanwezig</div>
     <div class="leg"><div class="leg-sw" style="background:#C0392B"></div>Training</div>
+    <div class="leg"><div class="leg-sw" style="background:#B01010"></div>Overig</div>
     <div class="leg"><div class="leg-sw" style="background:#2471A3"></div>Rust</div>
     <div class="leg"><div class="leg-sw" style="background:#7D3C98"></div>Wedstrijd</div>
     <div class="leg"><div class="leg-sw" style="background:#C8A000"></div>Toets</div>
@@ -590,6 +600,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div class="modal-legend">
       <div class="leg"><div class="leg-sw" style="background:#2D8B50"></div>Aanwezig</div>
       <div class="leg"><div class="leg-sw" style="background:#C0392B"></div>Training</div>
+      <div class="leg"><div class="leg-sw" style="background:#B01010"></div>Overig</div>
       <div class="leg"><div class="leg-sw" style="background:#2471A3"></div>Rust</div>
       <div class="leg"><div class="leg-sw" style="background:#7D3C98"></div>Wedstrijd</div>
       <div class="leg"><div class="leg-sw" style="background:#C8A000"></div>Toets</div>
@@ -687,6 +698,22 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div class="err-msg" id="estu-err"></div>
     <button class="btn-p" onclick="saveEditStu()">Opslaan</button>
     <button class="btn-g" onclick="closeEditStu()">Annuleren</button>
+  </div>
+</div>
+
+<!-- ══ NOTE POPUP ════════════════════════════════════ -->
+<div class="overlay" id="modal-note">
+  <div class="modal-card" style="max-width:420px;">
+    <h2 id="note-modal-title">📋 Opmerking</h2>
+    <p class="modal-sub" id="note-modal-sub"></p>
+    <label class="flabel" id="note-modal-lbl">Opmerking</label>
+    <textarea class="field-inp" id="note-textarea" rows="4"
+      placeholder="Typ hier een opmerking…"
+      style="resize:vertical;min-height:90px;font-family:inherit;"></textarea>
+    <div class="modal-actions">
+      <button class="btn-p sm" onclick="saveNote()">Opslaan</button>
+      <button class="btn-g sm" onclick="closeNoteModal()">Annuleren</button>
+    </div>
   </div>
 </div>
 
@@ -1065,9 +1092,9 @@ const DAYS_SHORT = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
 const WE_NAMES   = ['Zaterdag','Zondag'];
 const MONTHS     = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
 const MONTHS_FULL= ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
-const COLORS     = [null,'green','red','blue','purple','yellow','orange'];
-const COLOR_LBL  = {green:'Aanwezig',red:'Training',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
-const STD_LBL    = {null:'—',green:'Aanwezig',red:'Training',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
+const COLORS     = [null,'green','red','rose','blue','purple','yellow','orange'];
+const COLOR_LBL  = {green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
+const STD_LBL    = {null:'—',green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
 const ROLE_NAME  = {coordinator:'Coördinator',coach:'Coach',leerling:'Leerling',ouder:'Ouder',docent:'Docent',admin:'Admin'};
 const NEEDS_YEAR      = ['M4','H5','V6'];
 const EXAM_CLASSES    = ['M4','H5','V6'];
@@ -2813,6 +2840,21 @@ function setOvr(weekKey,di,sid,c){
   if(!ovr[weekKey][di]) ovr[weekKey][di]={};
   ovr[weekKey][di][sid]=c; persist();
 }
+function getNote(weekKey,di,sid){
+  const d=curData(); if(!d.notes) return '';
+  const w=d.notes[weekKey]; if(!w) return '';
+  const day=w[di]; if(!day) return '';
+  return day[sid]||'';
+}
+function setNote(weekKey,di,sid,text){
+  const d=curData();
+  if(!d.notes) d.notes={};
+  if(!d.notes[weekKey]) d.notes[weekKey]={};
+  if(!d.notes[weekKey][di]) d.notes[weekKey][di]={};
+  if(text) d.notes[weekKey][di][sid]=text;
+  else delete d.notes[weekKey][di][sid];
+  persist();
+}
 
 /* ══ RENDER SCHEDULE ════════════════════════════════ */
 function renderSchedule(){
@@ -2975,14 +3017,17 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
       } else {
         const c=getColor(key,di,slot.id);
         applyCell(cell,c);
+        _refreshNoteBtn(cell,c,key,di,slot,false);
         if(editable){
           cell.classList.add('editable');
           _refreshToetsBtn(cell,c,key,di,slot,slots,dates);
+          _refreshNoteBtn(cell,c,key,di,slot,true);
           cell.addEventListener('click',()=>{
             const next=cycle(getColor(key,di,slot.id));
             setOvr(key,di,slot.id,next);
             applyCell(cell,next);
             _refreshToetsBtn(cell,next,key,di,slot,slots,dates);
+            _refreshNoteBtn(cell,next,key,di,slot,true);
           });
         }
       }
@@ -2994,8 +3039,9 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
 
 function applyCell(cell,c){
   if(c) cell.setAttribute('data-c',c); else cell.removeAttribute('data-c');
-  const old=cell.querySelector('.cell-lbl'); if(old) old.remove();
-  const oldBtn=cell.querySelector('.toets-icon-btn'); if(oldBtn) oldBtn.remove();
+  ['.cell-lbl','.toets-icon-btn','.note-icon-btn','.cell-note'].forEach(sel=>{
+    const old=cell.querySelector(sel); if(old) old.remove();
+  });
   if(c){
     const lbl=document.createElement('div'); lbl.className='cell-lbl';
     lbl.textContent=COLOR_LBL[c]||''; cell.appendChild(lbl);
@@ -3012,6 +3058,28 @@ function _refreshToetsBtn(cell, c, key, di, slot, slots, dates){
   btn.addEventListener('click',(e)=>{
     e.stopPropagation();
     openToetsModal(key,di,slot,slots,dates);
+  });
+  cell.appendChild(btn);
+}
+
+function _refreshNoteBtn(cell, c, key, di, slot, editable){
+  const oldBtn=cell.querySelector('.note-icon-btn'); if(oldBtn) oldBtn.remove();
+  const oldTxt=cell.querySelector('.cell-note'); if(oldTxt) oldTxt.remove();
+  if(c!=='rose'&&c!=='purple'&&c!=='orange') return;
+  const note=getNote(key,di,slot.id);
+  if(note){
+    const nt=document.createElement('div'); nt.className='cell-note';
+    nt.textContent=note.length>18?note.slice(0,16)+'…':note;
+    cell.appendChild(nt);
+  }
+  if(!editable) return;
+  const btn=document.createElement('button');
+  btn.className='note-icon-btn';
+  btn.title='Opmerking toevoegen / wijzigen';
+  btn.textContent='📋';
+  btn.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    openNoteModal(key,di,slot);
   });
   cell.appendChild(btn);
 }
@@ -3067,6 +3135,34 @@ let _toetsCtx = null;       // { key, di, slot, slots, dates }
 let _toetsExtSlots = [];    // next 0-2 lesson slots
 let _toetsSelected = null;  // { displayName, mail }
 let _toetsSearchTimer = null;
+
+/* ══ NOTE MODAL ═════════════════════════════════════ */
+let _noteCtx=null;
+function openNoteModal(key, di, slot){
+  _noteCtx={key,di,slot};
+  const c=getColor(key,di,slot.id);
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  const dates=weekDates(S.wy.year,S.wy.week);
+  const date=dates[di];
+  const labels={rose:'Overig afwezig',purple:'Opmerking — Wedstrijd',orange:'Opmerking — Toernooi'};
+  const titles={rose:'📋 Overig afwezig',purple:'📋 Wedstrijd',orange:'📋 Toernooi'};
+  document.getElementById('note-modal-title').textContent=titles[c]||'📋 Opmerking';
+  document.getElementById('note-modal-lbl').textContent=labels[c]||'Opmerking';
+  document.getElementById('note-modal-sub').innerHTML=
+    (stu?`<strong>${stu.name}</strong> &nbsp;·&nbsp; `:'')+
+    `${DAYS_FULL[di]||''} ${fmt(date)} &nbsp;·&nbsp; ${slot.label} ${slot.time}`;
+  document.getElementById('note-textarea').value=getNote(key,di,slot.id);
+  document.getElementById('modal-note').classList.add('show');
+  setTimeout(()=>document.getElementById('note-textarea').focus(),80);
+}
+function closeNoteModal(){document.getElementById('modal-note').classList.remove('show');_noteCtx=null;}
+function saveNote(){
+  if(!_noteCtx) return;
+  const text=document.getElementById('note-textarea').value.trim();
+  setNote(_noteCtx.key,_noteCtx.di,_noteCtx.slot.id,text);
+  closeNoteModal();
+  renderSchedule();
+}
 
 function openToetsModal(key, di, slot, slots, dates){
   // Find the next 2 lesson slots after current slot (skip pauses/extras)
