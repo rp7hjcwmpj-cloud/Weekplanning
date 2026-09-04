@@ -153,7 +153,7 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .toets-time-preview{font-size:.82rem;font-weight:600;color:var(--brand);margin-top:.38rem;min-height:1.1em;transition:opacity .2s;}
 /* Partial toets fill — yellow strip on the left of a lesson cell */
 .dc.toets-partial{overflow:hidden;}
-.dc.toets-partial::before{content:'';position:absolute;top:0;left:0;bottom:0;width:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
+.dc.toets-partial::before{content:'';position:absolute;top:0;left:0;right:0;height:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
 .dc.toets-partial .cell-lbl,.dc.toets-partial .cell-note,.dc.toets-partial .cell-note-input{position:relative;z-index:1;}
 /* ── Beschikbaarheid circles ────────────────────── */
 .besch-circle{
@@ -433,16 +433,27 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .stc{background:var(--surf-2);padding:.36rem .48rem;font-size:.64rem;border:1px solid var(--border);text-align:right;display:flex;flex-direction:column;justify-content:center;}
 .stc .sn{font-family:'Outfit',sans-serif;font-weight:700;color:var(--tx2);}
 .stc .st{color:var(--tx3);font-size:.58rem;}
-.sdc{border:1px solid var(--border);min-height:33px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.69rem;font-weight:700;letter-spacing:.02em;transition:opacity .12s;}
-.sdc:hover{opacity:.8;}
-.sdc[data-c="null"]  {background:var(--surf-2);color:var(--tx3);}
-.sdc[data-c="green"] {background:#2D8B50;color:#fff;}
-.sdc[data-c="red"]   {background:#C0392B;color:#fff;}
-.sdc[data-c="blue"]  {background:#2471A3;color:#fff;}
-.sdc[data-c="purple"]{background:#7D3C98;color:#fff;}
-.sdc[data-c="yellow"]{background:#C8A000;color:#fff;}
-.sdc[data-c="orange"]{background:#C05818;color:#fff;}
-.sdc[data-c="rose"]  {background:#B01010;color:#fff;}
+.sdc{border:1px solid var(--border);min-height:50px;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:4px;transition:background .12s;}
+.sdc[data-c="null"]  {background:var(--surf-2);}
+.sdc[data-c="green"] {background:var(--g-bg);}
+.sdc[data-c="red"]   {background:var(--r-bg);}
+.sdc[data-c="blue"]  {background:var(--b-bg);}
+.sdc[data-c="purple"]{background:var(--p-bg);}
+.sdc[data-c="yellow"]{background:var(--y-bg);}
+.sdc[data-c="orange"]{background:var(--o-bg);}
+.sdc[data-c="rose"]  {background:var(--ro-bg);}
+.sdc-lbl{font-size:.58rem;font-weight:700;letter-spacing:.02em;line-height:1;margin-top:2px;}
+.sdc[data-c="null"]   .sdc-lbl{color:var(--tx3);}
+.sdc[data-c="green"]  .sdc-lbl{color:var(--g-tx);}
+.sdc[data-c="red"]    .sdc-lbl{color:var(--r-tx);}
+.sdc[data-c="blue"]   .sdc-lbl{color:var(--b-tx);}
+.sdc[data-c="purple"] .sdc-lbl{color:var(--p-tx);}
+.sdc[data-c="yellow"] .sdc-lbl{color:var(--y-tx);}
+.sdc[data-c="orange"] .sdc-lbl{color:var(--o-tx);}
+.sdc[data-c="rose"]   .sdc-lbl{color:var(--ro-tx);}
+.sdc-picker{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;padding:4px 3px 0;}
 .modal-actions{display:flex;gap:.55rem;margin-top:.9rem;}
 .btn-p.sm{width:auto;padding:.65rem 1.7rem;}
 .btn-g.sm{width:auto;padding:.62rem 1.3rem;}
@@ -3653,8 +3664,8 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
       } else {
         const c=getColor(key,di,slot.id);
         applyCell(cell,c);
-        _refreshToetsBtn(cell,c,key,di,slot,slots,dates,editable);
         _refreshNoteUI(cell,c,key,di,slot,editable);
+        _refreshToetsBtn(cell,c,key,di,slot,slots,dates,editable);
         // Beschikbaarheid circles (only for leerling/ouder/coach/coordinator view)
         if(S.beschikbaarheid && S.currentStudentId){
           const stu=S.students.find(s=>s.id===S.currentStudentId);
@@ -3744,8 +3755,8 @@ function _buildCellPicker(cell, currentColor, key, di, slot, slots, dates){
       setOvr(key,di,slot.id,clr);
       applyCell(cell,clr);
       _buildCellPicker(cell,clr,key,di,slot,slots,dates); // rebuild picker with new active dot
-      _refreshToetsBtn(cell,clr,key,di,slot,slots,dates,true);
       _refreshNoteUI(cell,clr,key,di,slot,true);
+      _refreshToetsBtn(cell,clr,key,di,slot,slots,dates,true);
     });
     picker.appendChild(dot);
   });
@@ -3769,13 +3780,14 @@ function applyCell(cell,c){
 
 function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
   const old=cell.querySelector('.toets-icon-btn'); if(old) old.remove();
-  const oldNote=cell.querySelector('.cell-note'); if(oldNote) oldNote.remove();
+  // Only remove toets-subject note, not notes placed by _refreshNoteUI
+  const oldNote=cell.querySelector('.cell-note.toets-subject-note'); if(oldNote) oldNote.remove();
   if(c!=='yellow') return;
   // Show subject on the origin slot cell (view + edit mode)
   const toets = getToets(key, di, slot.id);
   if(toets.subject){
-    const nt=document.createElement('div'); nt.className='cell-note';
-    nt.textContent=toets.subject.length>20?toets.subject.slice(0,18)+'…':toets.subject;
+    const nt=document.createElement('div'); nt.className='cell-note toets-subject-note';
+    nt.textContent=toets.subject.length>22?toets.subject.slice(0,20)+'…':toets.subject;
     cell.appendChild(nt);
   }
   if(!editable) return;
@@ -3836,6 +3848,35 @@ function saveStd(){
   curData().std=JSON.parse(JSON.stringify(S.tmpStd));
   persist(); closeStdModal(); renderSchedule();
 }
+function _buildStdPicker(cell, currentColor, di, slotId){
+  // Dots row
+  const picker=document.createElement('div');
+  picker.className='sdc-picker';
+  _PICKER_COLORS.forEach(clr=>{
+    const dot=document.createElement('div');
+    dot.className='cell-picker-dot'+(clr===currentColor?' active':'')+(clr===null?' dot-empty':'');
+    if(clr) dot.style.cssText=`background:${_PICKER_BG[clr]};border-color:${_PICKER_BD[clr]};`;
+    dot.title=clr?(COLOR_LBL[clr]||clr):'Leeg';
+    dot.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      if(!S.tmpStd[di]) S.tmpStd[di]={};
+      S.tmpStd[di][slotId]=clr;
+      applyStd(cell,clr);
+      _buildStdPicker(cell,clr,di,slotId);
+    });
+    picker.appendChild(dot);
+  });
+  // Label below dots
+  const lbl=document.createElement('div');
+  lbl.className='sdc-lbl';
+  lbl.textContent=STD_LBL[currentColor||'null']||'—';
+  // Remove old picker + label
+  cell.querySelector('.sdc-picker')?.remove();
+  cell.querySelector('.sdc-lbl')?.remove();
+  cell.appendChild(picker);
+  cell.appendChild(lbl);
+}
+
 function renderStdGrid(){
   const ct=document.getElementById('std-grid-ct'); ct.innerHTML='';
   const lessons=SCHOOL.filter(s=>s.kind==='lesson');
@@ -3851,19 +3892,13 @@ function renderStdGrid(){
       const cell=document.createElement('div'); cell.className='sdc';
       const c=(S.tmpStd[di]&&S.tmpStd[di][slot.id])||null;
       applyStd(cell,c);
-      cell.addEventListener('click',()=>{
-        const cur=(S.tmpStd[di]&&S.tmpStd[di][slot.id])||null;
-        const next=cycle(cur);
-        if(!S.tmpStd[di]) S.tmpStd[di]={};
-        S.tmpStd[di][slot.id]=next;
-        applyStd(cell,next);
-      });
+      _buildStdPicker(cell,c,di,slot.id);
       grid.appendChild(cell);
     }
   });
   ct.appendChild(grid);
 }
-function applyStd(cell,c){cell.setAttribute('data-c',c||'null');cell.textContent=STD_LBL[c||'null']||'—';}
+function applyStd(cell,c){cell.setAttribute('data-c',c||'null');}
 
 /* ── Toets data helpers ────────────────────────────── */
 function getToets(weekKey, di, sid){
