@@ -272,6 +272,21 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 /* ── Logout confirmation modal ────────────────── */
 .logout-modal{max-width:min(94vw,400px);width:400px;padding:1.6rem;}
 .logout-modal-btns{display:flex;gap:.6rem;margin-top:1.2rem;justify-content:flex-end;flex-wrap:wrap;}
+/* ── Coach change log modal ─────────────────────── */
+.clog-modal{max-width:min(94vw,580px);width:580px;max-height:82vh;display:flex;flex-direction:column;padding:1.4rem;}
+.clog-list{overflow-y:auto;flex:1;min-height:0;margin:.65rem 0;}
+.clog-entry{
+  display:grid;grid-template-columns:auto 1fr auto;gap:.4rem .75rem;align-items:start;
+  padding:.52rem .75rem;border-bottom:1px solid var(--border);font-size:.82rem;
+}
+.clog-entry:last-child{border-bottom:none;}
+.clog-ts{font-size:.72rem;color:var(--tx3);white-space:nowrap;padding-top:1px;}
+.clog-stu{font-weight:600;color:var(--tx);}
+.clog-detail{font-size:.78rem;color:var(--tx2);}
+.clog-chips{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.25rem;}
+.clog-chip{font-size:.68rem;font-weight:600;padding:.12rem .45rem;border-radius:4px;}
+.clog-arrow{font-size:.7rem;color:var(--tx3);}
+.clog-empty{padding:1.2rem;text-align:center;color:var(--tx3);font-size:.86rem;font-style:italic;}
 /* ── Print modal ────────────────────────────────── */
 .print-modal{max-width:min(94vw,480px);width:480px;max-height:82vh;display:flex;flex-direction:column;padding:1.4rem;}
 .print-modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-shrink:0;}
@@ -862,6 +877,18 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   </div>
 </div>
 
+<!-- ══ COACH CHANGE LOG MODAL ══════════════════════════ -->
+<div class="overlay" id="modal-clog">
+  <div class="modal-card clog-modal">
+    <h2 style="font-size:1.05rem;margin-bottom:.25rem;">📋 Wijzigingen door coördinator</h2>
+    <p style="font-size:.82rem;color:var(--tx3);margin-bottom:.1rem;" id="clog-since-label"></p>
+    <div class="clog-list" id="clog-list"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:.5rem;">
+      <button class="btn-primary" onclick="closeClogModal()">Begrepen</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ PRINT MODAL ════════════════════════════════════ -->
 <div class="overlay" id="modal-print">
   <div class="modal-card print-modal">
@@ -1254,6 +1281,8 @@ const S = {
   adminPassword:'',      // '' means use PW_DEFAULT
   roleMap:{},            // {email: {role, vak?, studentId?}} — Microsoft login mapping
   beschikbaarheid:{},    // {vak:{di:{slotId:status}}} — vast jaarpatroon
+  changeLog:[],          // [{ts,studentId,studentName,weekKey,di,slotId,from,to}] — coordinator changes
+  coachLastSeen:null,    // ISO timestamp of last coach login
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
     preexam:{'P1.1':{from:'',to:''},'P1.2':{from:'',to:''},'P1.3':{from:'',to:''},
@@ -1838,6 +1867,8 @@ function persist(){
     localStorage.setItem('wp_periods', JSON.stringify(S.schoolPeriods));
     localStorage.setItem('wp_roleMap', JSON.stringify(S.roleMap));
     localStorage.setItem('wp_adminPw', S.adminPassword||'');
+    localStorage.setItem('wp_changeLog', JSON.stringify(S.changeLog));
+    localStorage.setItem('wp_coachLastSeen', S.coachLastSeen||'');
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -1864,6 +1895,8 @@ function hydrate(){
     const spw=localStorage.getItem('wp_stuPw'); if(spw) S.studentPasswords=JSON.parse(spw);
     const bsc=localStorage.getItem('wp_besch'); if(bsc) S.beschikbaarheid=JSON.parse(bsc);
     const rm=localStorage.getItem('wp_roleMap'); if(rm) S.roleMap=JSON.parse(rm);
+    const cl=localStorage.getItem('wp_changeLog'); if(cl) S.changeLog=JSON.parse(cl);
+    const cls=localStorage.getItem('wp_coachLastSeen'); if(cls) S.coachLastSeen=cls||null;
     const ap=localStorage.getItem('wp_adminPw'); if(ap!==null) S.adminPassword=ap;
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
@@ -2859,6 +2892,10 @@ function showMain(){
   document.getElementById('hdr-leerling-zone').style.display=S.role==='leerling'?'flex':'none';
   // Ouder: read-only, geen knoppen
   updateEditUI(); updateStudentBar(); renderWeekNav(); renderSchedule();
+  // Coach: show change log popup after render
+  if(S.role==='coach'){
+    setTimeout(checkCoachChanges, 300);
+  }
 }
 
 /* ── Student navigation ── */
@@ -2995,6 +3032,77 @@ function syncThenLogout(){
   },400);
 }
 
+/* ══ COACH CHANGE LOG ════════════════════════════ */
+function checkCoachChanges(){
+  const since = S.coachLastSeen ? new Date(S.coachLastSeen) : null;
+  const newEntries = since
+    ? S.changeLog.filter(e => new Date(e.ts) > since)
+    : S.changeLog.slice(-50); // first login: show last 50 changes
+
+  // Update last seen timestamp now
+  S.coachLastSeen = new Date().toISOString();
+  persist();
+
+  if(!newEntries.length) return; // nothing to show
+
+  const DAYS_NL = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  const BG = {green:'#D4EDDA',red:'#F8D7DA',rose:'#FFE2DC',blue:'#D1E8FF',purple:'#E8D5F5',yellow:'#FFFDE7',orange:'#FFD9A8'};
+  const TX = {green:'#145A2E',red:'#7A1A22',rose:'#8B1A0A',blue:'#1A3A6B',purple:'#4A1A72',yellow:'#5D4000',orange:'#6B2800'};
+  const LBL = {null:'—',green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
+
+  function chipHtml(c){
+    if(c===null||c===undefined) return `<span class="clog-chip" style="background:var(--surf-2);color:var(--tx3);border:1px solid var(--border);">Leeg</span>`;
+    return `<span class="clog-chip" style="background:${BG[c]||'#eee'};color:${TX[c]||'#333'};">${LBL[c]||c}</span>`;
+  }
+
+  function fmtTs(iso){
+    const d=new Date(iso);
+    return d.toLocaleDateString('nl-NL',{day:'numeric',month:'short'}) + ' ' + d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  const sinceLabel = since
+    ? `Wijzigingen na jouw laatste login (${fmtTs(since.toISOString())})`
+    : 'Recente wijzigingen';
+
+  document.getElementById('clog-since-label').textContent = sinceLabel;
+
+  const list = document.getElementById('clog-list');
+  list.innerHTML = '';
+
+  if(!newEntries.length){
+    list.innerHTML = '<div class="clog-empty">Geen wijzigingen gevonden.</div>';
+  } else {
+    // Group by student + weekKey for readability, newest first
+    [...newEntries].reverse().forEach(e => {
+      const slot = SCHOOL.find(s=>s.id===e.slotId);
+      const slotLabel = slot ? slot.label + ' (' + slot.time + ')' : e.slotId;
+      const dayLabel = DAYS_NL[e.di] || e.di;
+      // Parse weekKey yyyy-w
+      const [wy, ww] = (e.weekKey||'').split('-');
+      const weekLabel = wy && ww ? `Week ${ww} ${wy}` : e.weekKey;
+
+      const row = document.createElement('div');
+      row.className = 'clog-entry';
+      row.innerHTML = `
+        <span class="clog-ts">${fmtTs(e.ts)}</span>
+        <div>
+          <div class="clog-stu">${e.studentName||e.studentId}</div>
+          <div class="clog-detail">${weekLabel} — ${dayLabel} — ${slotLabel}</div>
+          <div class="clog-chips">
+            ${chipHtml(e.from)} <span class="clog-arrow">→</span> ${chipHtml(e.to)}
+          </div>
+        </div>`;
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById('modal-clog').classList.add('show');
+}
+
+function closeClogModal(){
+  document.getElementById('modal-clog').classList.remove('show');
+}
+
 /* ══ PRINT / PDF ═════════════════════════════════ */
 function openPrintModal(){
   const list=document.getElementById('print-stu-list');
@@ -3018,28 +3126,36 @@ function executePrint(){
   if(!selected.length){ alert('Selecteer minimaal één leerling.'); return; }
   document.getElementById('modal-print').classList.remove('show');
 
-  // Build the week info
   const{year,week}=S.wy;
   const dates=weekDates(year,week);
   const key=wk(year,week);
-  const DAYS=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
-  const MONTHS_NL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const DAYS_FULL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
+  const DAYS_SHORT=['Ma','Di','Wo','Do','Vr'];
+  const MNL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  function fd(d){ return d.getDate()+' '+MNL[d.getMonth()]; }
 
-  function fmtDate(d){ return d.getDate()+' '+MONTHS_NL[d.getMonth()]; }
-
-  // Color map (light mode, print-friendly)
-  const BG={
-    green:'#D4EDDA', red:'#F8D7DA', rose:'#FFE2DC',
-    blue:'#D1E8FF', purple:'#E8D5F5', yellow:'#FFFDE7', orange:'#FFD9A8'
-  };
-  const TX={
-    green:'#145A2E', red:'#7A1A22', rose:'#8B1A0A',
-    blue:'#1A3A6B', purple:'#4A1A72', yellow:'#5D4000', orange:'#6B2800'
-  };
+  // Exact print colors
+  const BG={green:'#D4EDDA',red:'#F8D7DA',rose:'#FFE2DC',blue:'#D1E8FF',purple:'#E8D5F5',yellow:'#FFFDE7',orange:'#FFD9A8'};
+  const TX={green:'#145A2E',red:'#7A1A22',rose:'#8B1A0A',blue:'#1A3A6B',purple:'#4A1A72',yellow:'#5D4000',orange:'#6B2800'};
   const LBL={red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
-  // green → no text (empty for writing)
 
-  // Build one page of HTML per student
+  // A4 dimensions in mm: 210 × 297
+  // Margins: 10mm top, 10mm bottom, 12mm left, 12mm right → content 186mm × 277mm
+  // Title block: 14mm, legend: 8mm, table: 277-14-8 = 255mm
+  // Columns: time=19mm, 5 days=(186-19)/5=33.4mm each
+  // Rows: header=9mm, lesson=22mm, pause=7mm
+  //   Total: 9 + 10×22 + 2×7 = 9+220+14 = 243mm ≤ 255mm ✓
+
+  const COL_TIME='19mm';
+  const COL_DAY='33.4mm';
+  const ROW_HDR='9mm';
+  const ROW_LESSON='22mm';
+  const ROW_PAUSE='7mm';
+  const HDR_BG='#1a2744';
+  const HDR_BD='#2d3a5c';
+  const CELL_BD='#d0d8e8';
+  const PAUSE_BG='#f2f4f8';
+
   const pages=selected.map(id=>{
     const stu=S.students.find(s=>s.id===id);
     if(!stu) return '';
@@ -3047,121 +3163,129 @@ function executePrint(){
 
     function getCol(di,slotId){
       const o=sd.ovr?.[key];
-      if(o && o[di] && o[di][slotId]!==undefined) return o[di][slotId];
-      if(sd.std?.[di] && sd.std[di][slotId]!==undefined) return sd.std[di][slotId];
+      if(o&&o[di]&&o[di][slotId]!==undefined) return o[di][slotId];
+      if(sd.std?.[di]&&sd.std[di][slotId]!==undefined) return sd.std[di][slotId];
       return null;
     }
 
-    // Build header cells
-    const hdrs=DAYS.slice(0,5).map((d,i)=>`
-      <th style="background:#1a2744;color:#fff;padding:6px 4px;font-size:9pt;font-weight:700;text-align:center;border:1px solid #2d3a5c;">
-        ${d}<br><span style="font-weight:400;font-size:7.5pt;opacity:.8;">${fmtDate(dates[i])}</span>
+    // Header row
+    const hdrCells=DAYS_FULL.map((d,i)=>
+      `<th style="width:${COL_DAY};height:${ROW_HDR};background:${HDR_BG};color:#fff;
+        font-size:7.5pt;font-weight:700;text-align:center;vertical-align:middle;
+        border:1px solid ${HDR_BD};padding:0 2mm;box-sizing:border-box;">
+        ${DAYS_SHORT[i]}&nbsp;${fd(dates[i])}
       </th>`).join('');
 
-    // Build slot rows
+    // Data rows
     const rows=SCHOOL.map(slot=>{
-      const isPause=slot.kind==='pause';
-      if(isPause){
+      if(slot.kind==='pause'){
+        const pauseCells=[0,1,2,3,4].map(()=>
+          `<td style="height:${ROW_PAUSE};background:${PAUSE_BG};border:1px solid ${CELL_BD};
+            text-align:center;vertical-align:middle;font-size:6pt;color:#b0b8cc;">pauze</td>`
+        ).join('');
         return `<tr>
-          <td style="font-size:7pt;color:#888;padding:2px 5px;border:1px solid #e0e0e0;background:#f8f8f8;text-align:right;">
+          <td style="height:${ROW_PAUSE};background:${PAUSE_BG};border:1px solid ${CELL_BD};
+            text-align:center;vertical-align:middle;font-size:6pt;color:#b0b8cc;padding:0 1mm;">
             ${slot.time}
-          </td>
-          ${[0,1,2,3,4].map(()=>`<td style="background:#f5f5f5;border:1px solid #e0e0e0;text-align:center;font-size:7.5pt;color:#aaa;">pauze</td>`).join('')}
-        </tr>`;
+          </td>${pauseCells}</tr>`;
       }
-      const cells=[0,1,2,3,4].map(di=>{
+
+      const dataCells=[0,1,2,3,4].map(di=>{
         const c=getCol(di,slot.id);
-        const bg=c?BG[c]:'#ffffff';
-        const tx=c?TX[c]:'#333';
-        const lbl=c&&c!=='green'?(LBL[c]||''):''; // aanwezig = leeg
-        // Check for toets note
-        const toetsNote=c==='yellow'
-          ? (sd.toets?.[key]?.[di]?.[slot.id]?.subject || '') : '';
-        return `<td style="background:${bg};border:1px solid #e0e0e0;text-align:center;vertical-align:middle;padding:3px 2px;min-height:28px;">
-          <span style="font-size:7.5pt;font-weight:600;color:${tx};">${lbl}</span>
-          ${toetsNote?`<div style="font-size:6.5pt;color:${tx};margin-top:1px;">${toetsNote}</div>`:''}
+        const bg=c?BG[c]:'#fff';
+        const tx=c?TX[c]:'#222';
+        const lbl=c&&c!=='green'?(LBL[c]||''):''; // green = empty (for writing)
+        const toetsNote=c==='yellow'?(sd.toets?.[key]?.[di]?.[slot.id]?.subject||''):'';
+        return `<td style="height:${ROW_LESSON};background:${bg};border:1px solid ${CELL_BD};
+          text-align:center;vertical-align:middle;padding:1mm 1mm;box-sizing:border-box;
+          -webkit-print-color-adjust:exact;print-color-adjust:exact;">
+          ${lbl?`<div style="font-size:7pt;font-weight:700;color:${tx};line-height:1.2;">${lbl}</div>`:''}
+          ${toetsNote?`<div style="font-size:6pt;color:${tx};margin-top:1px;">${toetsNote}</div>`:''}
         </td>`;
       }).join('');
+
       return `<tr>
-        <td style="font-size:7.5pt;color:#555;padding:3px 5px;border:1px solid #e0e0e0;background:#fafafa;white-space:nowrap;text-align:right;">
-          <span style="font-weight:600;color:#333;">${slot.label}</span><br>
-          <span style="font-size:6.5pt;color:#888;">${slot.time}</span>
-        </td>
-        ${cells}
-      </tr>`;
+        <td style="height:${ROW_LESSON};background:#fafbfd;border:1px solid ${CELL_BD};
+          vertical-align:middle;padding:0 2mm 0 1mm;box-sizing:border-box;white-space:nowrap;">
+          <div style="font-size:7pt;font-weight:700;color:#1a2744;">${slot.label}</div>
+          <div style="font-size:5.5pt;color:#8890aa;">${slot.time}</div>
+        </td>${dataCells}</tr>`;
     }).join('');
 
     // Legend
     const legItems=[
-      {c:'#F8D7DA',t:'#7A1A22',l:'Training'},
-      {c:'#FFE2DC',t:'#8B1A0A',l:'Overig'},
-      {c:'#D1E8FF',t:'#1A3A6B',l:'Rust'},
-      {c:'#E8D5F5',t:'#4A1A72',l:'Wedstrijd'},
-      {c:'#FFFDE7',t:'#5D4000',l:'Toets'},
-      {c:'#FFD9A8',t:'#6B2800',l:'Toernooi'},
-    ].map(x=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;">
-      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${x.c};border:1px solid #ccc;"></span>
-      <span style="font-size:6.5pt;color:#555;">${x.l}</span>
+      {c:BG.red,t:TX.red,l:'Training'},{c:BG.rose,t:TX.rose,l:'Overig'},
+      {c:BG.blue,t:TX.blue,l:'Rust'},{c:BG.purple,t:TX.purple,l:'Wedstrijd'},
+      {c:BG.yellow,t:TX.yellow,l:'Toets'},{c:BG.orange,t:TX.orange,l:'Toernooi'},
+    ].map(x=>`<span style="display:inline-flex;align-items:center;gap:2px;margin-right:7px;">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:1px;background:${x.c};border:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></span>
+      <span style="font-size:5.5pt;color:#555;">${x.l}</span>
     </span>`).join('');
 
-    return `<div class="pp" style="page-break-after:always;padding:1.2cm 1.2cm .8cm;box-sizing:border-box;height:29.7cm;display:flex;flex-direction:column;">
-      <!-- Header -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:.5cm;border-bottom:2px solid #1a2744;padding-bottom:.2cm;">
+    return `
+    <div style="width:186mm;height:277mm;margin:10mm 12mm;box-sizing:border-box;display:flex;flex-direction:column;page-break-after:always;">
+      <!-- Title bar -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;
+        border-bottom:2.5pt solid ${HDR_BG};padding-bottom:2mm;margin-bottom:3mm;flex-shrink:0;">
         <div>
-          <div style="font-size:14pt;font-weight:700;color:#1a2744;">${stu.name}</div>
-          <div style="font-size:9pt;color:#555;margin-top:2px;">${stuLabel(stu)}</div>
+          <div style="font-size:13pt;font-weight:800;color:${HDR_BG};line-height:1;">${stu.name}</div>
+          <div style="font-size:7.5pt;color:#555;margin-top:1.5mm;">${stuLabel(stu)}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:9pt;font-weight:700;color:#1a2744;">Week ${week} — ${year}</div>
-          <div style="font-size:8pt;color:#777;margin-top:1px;">${fmtDate(dates[0])} t/m ${fmtDate(dates[4])}</div>
+          <div style="font-size:8.5pt;font-weight:700;color:${HDR_BG};">Week ${week} — ${year}</div>
+          <div style="font-size:7pt;color:#777;margin-top:1mm;">${fd(dates[0])} t/m ${fd(dates[4])}</div>
         </div>
       </div>
       <!-- Grid -->
-      <table style="border-collapse:collapse;width:100%;flex:1;table-layout:fixed;">
+      <table style="border-collapse:collapse;table-layout:fixed;width:186mm;flex-shrink:0;">
         <colgroup>
-          <col style="width:80px">
-          <col><col><col><col><col>
+          <col style="width:${COL_TIME}">
+          <col style="width:${COL_DAY}"><col style="width:${COL_DAY}">
+          <col style="width:${COL_DAY}"><col style="width:${COL_DAY}"><col style="width:${COL_DAY}">
         </colgroup>
-        <thead>
-          <tr>
-            <th style="background:#1a2744;color:#fff;padding:6px 4px;font-size:9pt;border:1px solid #2d3a5c;text-align:center;">Tijd</th>
-            ${hdrs}
-          </tr>
-        </thead>
+        <thead><tr>
+          <th style="height:${ROW_HDR};background:${HDR_BG};color:#fff;font-size:7pt;
+            border:1px solid ${HDR_BD};text-align:center;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Tijd</th>
+          ${hdrCells}
+        </tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <!-- Legend -->
-      <div style="margin-top:.35cm;display:flex;align-items:center;flex-wrap:wrap;">
-        <span style="font-size:6.5pt;color:#888;margin-right:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Status:</span>
-        <span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;">
-          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D4EDDA;border:1px solid #ccc;"></span>
-          <span style="font-size:6.5pt;color:#555;">Aanwezig (vrij voor notities)</span>
+      <div style="margin-top:3mm;display:flex;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+        <span style="font-size:5.5pt;color:#888;margin-right:6px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Status:</span>
+        <span style="display:inline-flex;align-items:center;gap:2px;margin-right:7px;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:1px;background:#D4EDDA;border:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></span>
+          <span style="font-size:5.5pt;color:#555;">Aanwezig (voor huiswerkaantekeningen)</span>
         </span>
         ${legItems}
       </div>
     </div>`;
   });
 
-  const html=`<!DOCTYPE html><html><head><meta charset="utf-8">
-  <title>Weekplanning Week ${week}</title>
-  <style>
+  const css=`
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#222;}
     @page{size:A4 portrait;margin:0;}
-    @media print{
-      .pp{page-break-after:always;}
-      .pp:last-child{page-break-after:avoid;}
-    }
     table{border-collapse:collapse;}
     td,th{vertical-align:middle;}
-  </style>
-  </head><body>${pages.join('')}</body></html>`;
+    -webkit-print-color-adjust:exact;
+    @media print{
+      html,body{width:210mm;height:297mm;}
+      div[style*="page-break-after"]{page-break-after:always;}
+      div[style*="page-break-after"]:last-child{page-break-after:avoid;}
+    }`;
 
-  const w=window.open('','_blank','width=900,height=700');
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>Weekplanning — Week ${week} ${year}</title>
+    <style>${css}</style>
+  </head><body style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</body></html>`;
+
+  const w=window.open('','_blank','width=900,height=750,menubar=yes,toolbar=yes');
   w.document.write(html);
   w.document.close();
   w.focus();
-  setTimeout(()=>w.print(),600);
+  // Small delay so browser renders before print dialog
+  setTimeout(()=>{ try{w.print();}catch(e){} },800);
 }
 
 /* ── Week / month navigation ── */
@@ -3275,10 +3399,21 @@ function getColor(weekKey,di,sid){
 }
 function cycle(c){return COLORS[(COLORS.indexOf(c)+1)%COLORS.length];}
 function setOvr(weekKey,di,sid,c){
-  const {ovr}=curData();
+  const d=curData();
+  const {ovr}=d;
   if(!ovr[weekKey]) ovr[weekKey]={};
   if(!ovr[weekKey][di]) ovr[weekKey][di]={};
-  ovr[weekKey][di][sid]=c; persist();
+  const prev=ovr[weekKey][di][sid]??null;
+  ovr[weekKey][di][sid]=c;
+  // Log coordinator changes for coach notification
+  if(S.role==='coordinator' && prev!==c){
+    const stu=S.students.find(s=>s.id===S.currentStudentId);
+    if(stu){
+      S.changeLog.push({ts:new Date().toISOString(),studentId:stu.id,studentName:stu.name,weekKey,di,slotId:sid,from:prev,to:c});
+      if(S.changeLog.length>500) S.changeLog.splice(0, S.changeLog.length-500); // keep last 500
+    }
+  }
+  persist();
 }
 function getNote(weekKey,di,sid,color){
   const d=curData(); if(!d.notes) return '';
