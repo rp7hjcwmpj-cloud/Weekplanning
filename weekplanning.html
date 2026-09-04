@@ -291,7 +291,30 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .print-modal{max-width:min(94vw,480px);width:480px;max-height:82vh;display:flex;flex-direction:column;padding:1.4rem;}
 .print-modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-shrink:0;}
 .print-modal-hdr h2{margin:0;font-size:1.05rem;}
+.print-week-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  background:var(--surf-2);border:1px solid var(--border);border-radius:8px;
+  padding:.45rem .8rem;margin-bottom:.65rem;flex-shrink:0;}
+.print-week-nav button{background:none;border:1px solid var(--border);border-radius:6px;
+  padding:.18rem .62rem;font-size:.85rem;font-weight:700;color:var(--brand);cursor:pointer;
+  transition:background .13s;}
+.print-week-nav button:hover{background:var(--brand-light);}
+.print-week-center{text-align:center;flex:1;}
+.print-week-num{font-family:'Outfit',sans-serif;font-size:.92rem;font-weight:700;color:var(--brand);}
+.print-week-range{font-size:.68rem;color:var(--tx3);margin-top:.06rem;}
 .print-sel-bar{display:flex;gap:.5rem;align-items:center;margin-bottom:.65rem;flex-shrink:0;}
+/* ── Cel kleurkiezer (bewerkmodus) ──────────────── */
+.cell-picker{position:absolute;top:3px;left:0;right:0;display:flex;justify-content:center;
+  gap:3px;z-index:3;flex-wrap:wrap;padding:0 3px;}
+.cell-picker-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);
+  cursor:pointer;flex-shrink:0;transition:transform .1s,box-shadow .1s;box-sizing:border-box;}
+.cell-picker-dot:hover{transform:scale(1.25);box-shadow:0 0 0 2px rgba(0,0,0,.25);}
+.cell-picker-dot.active{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.4);}
+.cell-picker-dot.dot-empty{background:#fff;border:1.5px solid #bbb;}
+/* opmerkingsinput iets groter */
+.cell-note-input{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,.13);
+  border:1px solid rgba(0,0,0,.2);border-radius:3px;padding:2px 4px;font-size:.58rem;
+  color:inherit;font-family:inherit;outline:none;z-index:2;min-width:0;line-height:1.3;}
+.cell-note-input:focus{background:rgba(0,0,0,.22);border-color:rgba(0,0,0,.35);}
 .print-stu-list{overflow-y:auto;flex:1;min-height:0;border:1px solid var(--border);border-radius:8px;}
 .print-stu-item{
   display:flex;align-items:center;gap:.65rem;
@@ -378,8 +401,8 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 
 .dc{border-bottom:1px solid var(--border);border-right:1px solid var(--border);min-height:37px;position:relative;transition:background .12s,filter .12s;}
 .dc.pause-dc{background:var(--pause-bg);min-height:22px;}
-.dc.editable{cursor:pointer;}
-.dc.editable:hover:not(.pause-dc){filter:brightness(.9);}
+.dc.editable{cursor:default;}
+.dc.editable:hover:not(.pause-dc){filter:none;}
 .dc[data-c="green"] {background:var(--g-bg);}
 .dc[data-c="red"]   {background:var(--r-bg);}
 .dc[data-c="blue"]  {background:var(--b-bg);}
@@ -389,6 +412,8 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="rose"]  {background:var(--ro-bg);}
 .dc.day-vakantie,.dc.day-studiedag{background:var(--pause-bg)!important;cursor:default!important;}
 .cell-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;letter-spacing:.03em;pointer-events:none;}
+/* In bewerkmodus: label iets lager zodat picker ruimte heeft */
+.dc.editable .cell-lbl{padding-top:20px;}
 .dc[data-c="yellow"] .cell-lbl{padding-right:18px;}
 .dc[data-c="green"]  .cell-lbl{color:var(--g-tx);}
 .dc[data-c="red"]    .cell-lbl{color:var(--r-tx);}
@@ -397,9 +422,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="yellow"] .cell-lbl{color:var(--y-tx);}
 .dc[data-c="orange"] .cell-lbl{color:var(--o-tx);}
 .dc[data-c="rose"]   .cell-lbl{color:var(--ro-tx);}
-.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.5rem;color:inherit;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.2;}
-.cell-note-input{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.18);border-radius:3px;padding:1px 3px;font-size:.5rem;color:inherit;font-family:inherit;outline:none;z-index:2;min-width:0;}
-.cell-note-input:focus{background:rgba(0,0,0,.2);border-color:rgba(0,0,0,.3);}
+.cell-note{position:absolute;bottom:2px;left:2px;right:2px;font-size:.52rem;color:inherit;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-align:center;line-height:1.3;}
 .dc[data-c="rose"]   .cell-lbl,.dc[data-c="purple"] .cell-lbl,.dc[data-c="orange"] .cell-lbl{padding-bottom:14px;}
 .pause-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.59rem;color:var(--pause-tx);font-style:italic;letter-spacing:.04em;pointer-events:none;}
 
@@ -895,6 +918,15 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   <div class="modal-card print-modal">
     <div class="print-modal-hdr">
       <h2>🖨️ Weekplanning printen</h2>
+    </div>
+    <!-- Week selector -->
+    <div class="print-week-nav">
+      <button onclick="printNavWeek(-1)">‹</button>
+      <div class="print-week-center">
+        <div class="print-week-num" id="print-week-num">Week —</div>
+        <div class="print-week-range" id="print-week-range"></div>
+      </div>
+      <button onclick="printNavWeek(1)">›</button>
     </div>
     <div class="print-sel-bar">
       <button class="btn-ghost" style="font-size:.8rem;padding:.28rem .7rem;" onclick="printSelectAll(true)">☑ Alles selecteren</button>
@@ -3105,7 +3137,31 @@ function closeClogModal(){
 }
 
 /* ══ PRINT / PDF ═════════════════════════════════ */
+let _printWY = null; // {year, week} — selected week in print modal
+
+function _updatePrintWeekLabel(){
+  if(!_printWY) return;
+  const {year,week}=_printWY;
+  const dates=weekDates(year,week);
+  const MNL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const fd=d=>d.getDate()+' '+MNL[d.getMonth()];
+  document.getElementById('print-week-num').textContent=`Week ${week} — ${year}`;
+  document.getElementById('print-week-range').textContent=`${fd(dates[0])} t/m ${fd(dates[4])}`;
+}
+
+function printNavWeek(dir){
+  if(!_printWY) return;
+  const {year,week}=_printWY;
+  const d=monday(year,week);
+  d.setDate(d.getDate()+dir*7);
+  _printWY=weekYear(d);
+  _updatePrintWeekLabel();
+}
+
 function openPrintModal(){
+  // Default to currently viewed week
+  _printWY={year:S.wy.year, week:S.wy.week};
+  _updatePrintWeekLabel();
   const list=document.getElementById('print-stu-list');
   list.innerHTML='';
   S.students.forEach(stu=>{
@@ -3127,7 +3183,7 @@ function executePrint(){
   if(!selected.length){ alert('Selecteer minimaal één leerling.'); return; }
   document.getElementById('modal-print').classList.remove('show');
 
-  const{year,week}=S.wy;
+  const{year,week}=_printWY||S.wy;
   const dates=weekDates(year,week);
   const key=wk(year,week);
   const DAYS_FULL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
@@ -3649,29 +3705,53 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
         }
         if(editable){
           cell.classList.add('editable');
-          cell.addEventListener('click',()=>{
-            const prev=getColor(key,di,slot.id);
-            const next=cycle(prev);
-            // If cycling away from yellow: clean up toets extensions
-            if(prev==='yellow'){
-              const old=getToets(key,di,slot.id);
-              if(old.extended && old.extended.length) old.extended.forEach(sid=>setOvr(key,di,sid,null));
-              _clearToetsData(key,di,slot.id);
-              setOvr(key,di,slot.id,next);
-              renderSchedule();
-              return;
-            }
-            setOvr(key,di,slot.id,next);
-            applyCell(cell,next);
-            _refreshToetsBtn(cell,next,key,di,slot,slots,dates,true);
-            _refreshNoteUI(cell,next,key,di,slot,true);
-          });
+          _buildCellPicker(cell, c, key, di, slot, slots, dates);
         }
       }
       grid.appendChild(cell);
     });
   });
   return wrap;
+}
+
+// Kleurkiezer: 7 gekleurde rondjes bovenin de cel in bewerkmodus
+const _PICKER_COLORS = [null,'green','red','rose','blue','purple','yellow','orange'];
+const _PICKER_BG = {
+  green:'#D4EDDA', red:'#F8D7DA', rose:'#FFE2DC',
+  blue:'#D1E8FF', purple:'#E8D5F5', yellow:'#FFFDE7', orange:'#FFD9A8'
+};
+const _PICKER_BD = {
+  green:'#A5D2B0', red:'#F1AAB2', rose:'#FF9A88',
+  blue:'#A3C4F0', purple:'#C8A8E8', yellow:'#D4AC00', orange:'#C05A00'
+};
+
+function _buildCellPicker(cell, currentColor, key, di, slot, slots, dates){
+  const picker=document.createElement('div');
+  picker.className='cell-picker';
+  _PICKER_COLORS.forEach(clr=>{
+    const dot=document.createElement('div');
+    dot.className='cell-picker-dot'+(clr===currentColor?' active':'')+(clr===null?' dot-empty':'');
+    if(clr) dot.style.cssText=`background:${_PICKER_BG[clr]};border-color:${_PICKER_BD[clr]};`;
+    dot.title=clr?(COLOR_LBL[clr]||clr):'Leeg';
+    dot.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const prev=getColor(key,di,slot.id);
+      if(prev==='yellow' && clr!=='yellow'){
+        const old=getToets(key,di,slot.id);
+        if(old.extended && old.extended.length) old.extended.forEach(sid=>setOvr(key,di,sid,null));
+        _clearToetsData(key,di,slot.id);
+      }
+      setOvr(key,di,slot.id,clr);
+      applyCell(cell,clr);
+      _buildCellPicker(cell,clr,key,di,slot,slots,dates); // rebuild picker with new active dot
+      _refreshToetsBtn(cell,clr,key,di,slot,slots,dates,true);
+      _refreshNoteUI(cell,clr,key,di,slot,true);
+    });
+    picker.appendChild(dot);
+  });
+  // Remove old picker if present
+  const old=cell.querySelector('.cell-picker'); if(old) old.remove();
+  cell.insertBefore(picker, cell.firstChild);
 }
 
 function applyCell(cell,c){
