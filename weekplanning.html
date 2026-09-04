@@ -155,6 +155,18 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .dc.toets-partial{overflow:hidden;}
 .dc.toets-partial::before{content:'';position:absolute;top:0;left:0;bottom:0;width:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
 .dc.toets-partial .cell-lbl,.dc.toets-partial .cell-note,.dc.toets-partial .cell-note-input{position:relative;z-index:1;}
+/* ── Beschikbaarheid circles ────────────────────── */
+.besch-circle{
+  position:absolute;top:3px;left:3px;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--brand);color:#fff;
+  font-size:.6rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  z-index:2;pointer-events:none;line-height:1;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+  text-align:center;white-space:nowrap;
+}
+.besch-circle.besch-les{background:#2471A3;}
 .toets-search-wrap{position:relative;}
 .toets-results{position:absolute;left:0;right:0;top:calc(100% + 2px);background:var(--surface);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:300;box-shadow:0 6px 20px rgba(0,0,0,.14);}
 .toets-result-item{padding:.52rem .85rem;cursor:pointer;font-size:.86rem;display:flex;flex-direction:column;gap:.08rem;border-bottom:1px solid var(--border);}
@@ -224,33 +236,39 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 }
 .stu-hb:hover{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.45);}
 .stu-hb-edit.on{background:rgba(255,220,120,.28);border-color:rgba(255,220,120,.55);color:#FFE97A;}
+/* ── Student search popup button ─────────────────── */
 .stu-search-wrap{position:relative;flex-shrink:0;}
-.stu-search-inp{
+.stu-search-btn{
   background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
-  border-radius:7px;color:#fff;padding:.3rem .7rem;
-  font-size:.78rem;width:155px;outline:none;font-family:inherit;
-  transition:background .15s,border-color .15s;
+  border-radius:7px;color:#fff;padding:.3rem .8rem;
+  font-size:.78rem;outline:none;font-family:inherit;cursor:pointer;
+  transition:background .15s,border-color .15s;white-space:nowrap;
 }
-.stu-search-inp::placeholder{color:rgba(255,255,255,.5);}
-.stu-search-inp:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5);}
-.stu-search-drop{
-  display:none;position:absolute;top:calc(100% + 5px);right:0;
-  min-width:230px;background:var(--surface);border:1px solid var(--border);
-  border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);
-  z-index:300;max-height:260px;overflow-y:auto;
+.stu-search-btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5);}
+/* ── Student picker modal ─────────────────────── */
+.stu-pick-modal{max-width:min(94vw,460px);width:460px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;padding:1.4rem;}
+.stu-pick-search{
+  background:var(--surf-2);border:1px solid var(--border);border-radius:8px;
+  color:var(--tx);padding:.42rem .8rem;font-size:.85rem;width:100%;box-sizing:border-box;
+  outline:none;font-family:inherit;margin-bottom:.75rem;
 }
-.stu-search-drop.open{display:block;}
-.stu-search-item{
+.stu-pick-search::placeholder{color:var(--tx3);}
+.stu-pick-list{overflow-y:auto;flex:1;min-height:0;border:1px solid var(--border);border-radius:8px;}
+.stu-pick-item{
   padding:.48rem .9rem;cursor:pointer;
   border-bottom:1px solid var(--border);
   display:flex;flex-direction:column;gap:.06rem;
 }
-.stu-search-item:last-child{border-bottom:none;}
-.stu-search-item:hover,.stu-search-item.hi{background:var(--surf-2);}
-.stu-search-item-name{font-size:.86rem;font-weight:600;color:var(--tx);}
-.stu-search-item-name em{font-style:normal;background:var(--brand-light);color:var(--brand);border-radius:3px;padding:0 1px;}
-.stu-search-item-meta{font-size:.72rem;color:var(--tx3);}
-.stu-search-none{padding:.6rem .9rem;font-size:.82rem;color:var(--tx3);font-style:italic;}
+.stu-pick-item:last-child{border-bottom:none;}
+.stu-pick-item:hover,.stu-pick-item.selected{background:var(--brand-light);}
+.stu-pick-item.selected .stu-pick-name{color:var(--brand);}
+.stu-pick-name{font-size:.86rem;font-weight:600;color:var(--tx);}
+.stu-pick-name em{font-style:normal;background:var(--brand-light);color:var(--brand);border-radius:3px;padding:0 1px;}
+.stu-pick-meta{font-size:.72rem;color:var(--tx3);}
+.stu-pick-none{padding:.8rem 1rem;font-size:.82rem;color:var(--tx3);font-style:italic;}
+/* ── Logout confirmation modal ────────────────── */
+.logout-modal{max-width:min(94vw,400px);width:400px;padding:1.6rem;}
+.logout-modal-btns{display:flex;gap:.6rem;margin-top:1.2rem;justify-content:flex-end;flex-wrap:wrap;}
 
 /* ── WEEK NAV ────────────────────────────────────── */
 .week-nav{background:var(--surface);padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:.5rem;}
@@ -578,12 +596,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <div class="stu-vakken" id="stu-vakken"></div>
     </div>
     <div class="stu-search-wrap" id="stu-search-wrap">
-      <input type="text" class="stu-search-inp" id="stu-search-inp"
-             placeholder="🔍 Zoek leerling…"
-             oninput="onStuSearch(this.value)"
-             onblur="closeStuSearch()"
-             autocomplete="off">
-      <div class="stu-search-drop" id="stu-search-drop"></div>
+      <button class="stu-search-btn" onclick="openStuPickModal()">🔍 Zoek leerling</button>
     </div>
     <div class="stu-counter" id="stu-counter">—</div>
     <button class="stu-nav" id="stu-next" onclick="nextStudent()">›</button>
@@ -800,6 +813,32 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div id="la-day-tabs" class="la-day-tabs"></div>
     <div id="la-content" class="la-scroll"></div>
     <button class="btn-ghost" style="margin-top:.85rem;flex-shrink:0;" onclick="document.getElementById('modal-la').classList.remove('show')">✕ Sluiten</button>
+  </div>
+</div>
+
+<!-- ══ STUDENT PICKER MODAL ═════════════════════════ -->
+<div class="overlay" id="modal-stu-pick">
+  <div class="modal-card stu-pick-modal">
+    <h2 style="margin-bottom:.9rem;font-size:1.05rem;">🔍 Kies leerling</h2>
+    <input type="text" class="stu-pick-search" id="stu-pick-search"
+           placeholder="Zoek op naam…"
+           oninput="renderStuPickList(this.value)"
+           autocomplete="off">
+    <div class="stu-pick-list" id="stu-pick-list"></div>
+    <button class="btn-ghost" style="margin-top:.85rem;" onclick="document.getElementById('modal-stu-pick').classList.remove('show')">✕ Sluiten</button>
+  </div>
+</div>
+
+<!-- ══ LOGOUT CONFIRM MODAL ══════════════════════════ -->
+<div class="overlay" id="modal-logout-confirm">
+  <div class="modal-card logout-modal">
+    <h2 style="font-size:1.05rem;margin-bottom:.6rem;">💾 Uitloggen</h2>
+    <p style="font-size:.88rem;color:var(--tx2);margin:0 0 .4rem;">Wil je de laatste data synchroniseren met de server voordat je uitlogt?</p>
+    <p id="logout-sync-status" style="font-size:.8rem;color:var(--tx3);min-height:1.2rem;"></p>
+    <div class="logout-modal-btns">
+      <button class="btn-ghost" onclick="doLogout()">Uitloggen zonder sync</button>
+      <button class="btn-primary" id="btn-logout-sync" onclick="syncThenLogout()">☁️ Sync &amp; uitloggen</button>
+    </div>
   </div>
 </div>
 
@@ -1780,6 +1819,7 @@ function hydrate(){
     S.schoolYearTo   = localStorage.getItem('wp_yearTo')||'';
     const sd=localStorage.getItem('wp_specDays'); if(sd) S.specDays=JSON.parse(sd);
     const st=localStorage.getItem('wp_students'); if(st) S.students=JSON.parse(st);
+    S.students.sort((a,b)=>a.name.localeCompare(b.name,'nl'));
     S.currentStudentId=localStorage.getItem('wp_curStu')||null;
     const sdd=localStorage.getItem('wp_stuData'); if(sdd) S.studentData=JSON.parse(sdd);
     const tpw=localStorage.getItem('wp_teacherPw'); if(tpw) S.teacherPasswords=JSON.parse(tpw);
@@ -1955,10 +1995,7 @@ function doLogin(){
   S.role==='admin' ? showAdmin() : showMain();
 }
 function logout(){
-  S.role=null; S.editMode=false; S.docentVak=null; S.leerlingStudentId=null;
-  document.getElementById('screen-roles').style.display='';
-  document.getElementById('screen-main').classList.remove('show');
-  document.getElementById('screen-admin').classList.remove('show');
+  confirmLogout();
 }
 
 /* ══ ADMIN ══════════════════════════════════════════ */
@@ -2266,6 +2303,7 @@ function addStudent(){
   const year=needsYear ? parseInt(document.querySelector('input[name="stu-year"]:checked').value) : null;
   const id=uid();
   S.students.push({id,name,klass,year});
+  S.students.sort((a,b)=>a.name.localeCompare(b.name,'nl'));
   if(!S.currentStudentId) S.currentStudentId=id;
   persist();
   document.getElementById('stu-name-inp').value='';
@@ -2643,33 +2681,47 @@ function renderLeerlingBeschGrid(){
 /* ══ LEERLING AANWEZIGHEID (DOCENT) ════════════════ */
 let _laDi = 0; // geselecteerde dagindex in de la-modal
 
+let _laDays = []; // flat list of {date, di, weekKey}
+
 function openLaModal(){
   const vak = S.docentVak || '';
   document.getElementById('la-vak-title').textContent = vak || '—';
-  // Bepaal huidige dag in de zichtbare week
   const todayStr = toDS(new Date());
-  const dates = weekDates(S.wy.year, S.wy.week);
+  // Build current week + next week weekday list
+  const now = new Date();
+  const curWY = weekYear(now);
+  // Next week: add 7 days to monday of current week
+  const nextMonday = monday(curWY.year, curWY.week);
+  nextMonday.setDate(nextMonday.getDate() + 7);
+  const nextWY = weekYear(nextMonday);
+  const curDates = weekDates(curWY.year, curWY.week);
+  const nextDates = weekDates(nextWY.year, nextWY.week);
+  const DNAMES = ['Ma','Di','Wo','Do','Vr'];
+  _laDays = [];
+  for(let i=0;i<5;i++) _laDays.push({date:curDates[i], di:i, weekKey:wk(curWY.year,curWY.week)});
+  for(let i=0;i<5;i++) _laDays.push({date:nextDates[i], di:i, weekKey:wk(nextWY.year,nextWY.week)});
+  // Default to today or first day
   _laDi = 0;
-  for(let i = 0; i < 5; i++){
-    if(toDS(dates[i]) === todayStr){ _laDi = i; break; }
+  for(let j=0;j<_laDays.length;j++){
+    if(toDS(_laDays[j].date)===todayStr){ _laDi=j; break; }
   }
-  _renderLaDayTabs(dates, todayStr);
+  _renderLaDayTabs(todayStr);
   _renderLaContent();
   document.getElementById('modal-la').classList.add('show');
 }
 
-function _renderLaDayTabs(dates, todayStr){
+function _renderLaDayTabs(todayStr){
   const wrap = document.getElementById('la-day-tabs');
   wrap.innerHTML = '';
   const DNAMES = ['Ma','Di','Wo','Do','Vr'];
-  dates.slice(0,5).forEach((d, i) => {
+  _laDays.forEach((day, j) => {
     const btn = document.createElement('button');
-    const ds = toDS(d);
-    btn.className = 'la-day-tab' + (i===_laDi?' on':'') + (ds===todayStr?' is-today':'');
-    btn.textContent = DNAMES[i] + ' ' + fmt(d);
+    const ds = toDS(day.date);
+    btn.className = 'la-day-tab' + (j===_laDi?' on':'') + (ds===todayStr?' is-today':'');
+    btn.textContent = DNAMES[day.di] + ' ' + fmt(day.date);
     btn.addEventListener('click', () => {
-      _laDi = i;
-      _renderLaDayTabs(weekDates(S.wy.year,S.wy.week), toDS(new Date()));
+      _laDi = j;
+      _renderLaDayTabs(toDS(new Date()));
       _renderLaContent();
     });
     wrap.appendChild(btn);
@@ -2680,8 +2732,9 @@ function _renderLaContent(){
   const ct = document.getElementById('la-content');
   ct.innerHTML = '';
   const vak = S.docentVak;
-  const key = S.wy.year + '-' + S.wy.week;
-  const di = _laDi;
+  const dayInfo = _laDays[_laDi] || {weekKey: wk(S.wy.year,S.wy.week), di:0};
+  const key = dayInfo.weekKey;
+  const di = dayInfo.di;
   // Alleen les-slots (geen pauze, geen extra)
   const slots = SCHOOL.filter(s => s.kind === 'lesson');
   // Leerlingen die dit vak volgen, alfabetisch
@@ -2784,12 +2837,17 @@ function updateStudentBar(){
   ct.style.display=isLocked?'none':'';
   const sw=document.getElementById('stu-search-wrap');
   if(sw) sw.style.display=isLocked?'none':'';
-  if(!S.students.length){
-    nd.textContent='Geen leerlingen'; md.textContent='Voeg leerlingen toe via Admin';
+  const vis=visibleStudents();
+  // Ensure currentStudentId is in visible list; if not, pick first visible
+  if(!isLocked && vis.length && !vis.find(s=>s.id===S.currentStudentId)){
+    S.currentStudentId=vis[0].id;
+  }
+  if(!vis.length){
+    nd.textContent='Geen leerlingen'; md.textContent='Geen leerlingen voor dit vak';
     ct.textContent=''; prev.disabled=true; next.disabled=true; return;
   }
-  const idx=S.students.findIndex(s=>s.id===S.currentStudentId);
-  const stu=S.students[idx];
+  const idx=vis.findIndex(s=>s.id===S.currentStudentId);
+  const stu=vis[idx];
   nd.textContent=stu?stu.name:'—';
   md.textContent=stu?stuLabel(stu):'—';
   const vd=document.getElementById('stu-vakken');
@@ -2801,61 +2859,102 @@ function updateStudentBar(){
   vd.innerHTML=(pid?`<span class="stu-vchip" style="background:rgba(255,255,255,.38);color:#fff;">${pidLabel}</span>`:'')
     +vakken.map(v=>`<span class="stu-vchip">${v}</span>`).join('');
   if(!isLocked){
-    ct.textContent=(idx+1)+' / '+S.students.length;
+    ct.textContent=(idx+1)+' / '+vis.length;
     prev.disabled=idx<=0;
-    next.disabled=idx>=S.students.length-1;
+    next.disabled=idx>=vis.length-1;
   }
 }
 
 function prevStudent(){
-  const idx=S.students.findIndex(s=>s.id===S.currentStudentId);
-  if(idx>0){ S.currentStudentId=S.students[idx-1].id; persist(); updateStudentBar(); renderSchedule(); }
+  const vis=visibleStudents();
+  const idx=vis.findIndex(s=>s.id===S.currentStudentId);
+  if(idx>0){ S.currentStudentId=vis[idx-1].id; persist(); updateStudentBar(); renderSchedule(); }
 }
 function nextStudent(){
-  const idx=S.students.findIndex(s=>s.id===S.currentStudentId);
-  if(idx<S.students.length-1){ S.currentStudentId=S.students[idx+1].id; persist(); updateStudentBar(); renderSchedule(); }
+  const vis=visibleStudents();
+  const idx=vis.findIndex(s=>s.id===S.currentStudentId);
+  if(idx<vis.length-1){ S.currentStudentId=vis[idx+1].id; persist(); updateStudentBar(); renderSchedule(); }
 }
 
-function onStuSearch(q){
-  const drop=document.getElementById('stu-search-drop');
-  const raw=q.trim();
-  if(!raw||!S.students.length){ drop.classList.remove('open'); return; }
-  const lq=raw.toLowerCase();
-  const matches=S.students.filter(s=>s.name.toLowerCase().includes(lq));
-  if(!matches.length){
-    drop.innerHTML='<div class="stu-search-none">Geen leerlingen gevonden</div>';
-    drop.classList.add('open'); return;
+/* ── Visible students (respects docent filter) ── */
+function visibleStudents(){
+  if(S.role==='docent' && S.docentVak){
+    return S.students.filter(stu=>getActiveVakken(stu).includes(S.docentVak));
   }
-  // Highlight matching part in name
+  return S.students;
+}
+
+/* ── Student picker modal ── */
+function openStuPickModal(){
+  const inp=document.getElementById('stu-pick-search');
+  inp.value='';
+  renderStuPickList('');
+  document.getElementById('modal-stu-pick').classList.add('show');
+  setTimeout(()=>inp.focus(),80);
+}
+
+function renderStuPickList(q){
+  const list=document.getElementById('stu-pick-list');
+  const raw=q.trim(); const lq=raw.toLowerCase();
+  const pool=visibleStudents();
+  const matches=raw ? pool.filter(s=>s.name.toLowerCase().includes(lq)) : pool;
+  if(!matches.length){
+    list.innerHTML='<div class="stu-pick-none">Geen leerlingen gevonden</div>'; return;
+  }
   function hl(name){
+    if(!raw) return name;
     const i=name.toLowerCase().indexOf(lq);
     if(i<0) return name;
     return name.slice(0,i)+'<em>'+name.slice(i,i+raw.length)+'</em>'+name.slice(i+raw.length);
   }
-  drop.innerHTML=matches.map(s=>
-    `<div class="stu-search-item" onmousedown="selectStuSearch('${s.id}')">
-      <span class="stu-search-item-name">${hl(s.name)}</span>
-      <span class="stu-search-item-meta">${stuLabel(s)}</span>
+  list.innerHTML=matches.map(s=>
+    `<div class="stu-pick-item${s.id===S.currentStudentId?' selected':''}" onclick="selectStuPick('${s.id}')">
+      <span class="stu-pick-name">${hl(s.name)}</span>
+      <span class="stu-pick-meta">${stuLabel(s)}</span>
     </div>`
   ).join('');
-  drop.classList.add('open');
 }
 
-function selectStuSearch(id){
+function selectStuPick(id){
   S.currentStudentId=id;
   persist(); updateStudentBar(); renderSchedule();
-  const inp=document.getElementById('stu-search-inp');
-  const drop=document.getElementById('stu-search-drop');
-  inp.value=''; drop.classList.remove('open'); inp.blur();
+  document.getElementById('modal-stu-pick').classList.remove('show');
 }
 
-function closeStuSearch(){
+/* ── Logout with optional sync confirmation ── */
+function confirmLogout(){
+  // Only show confirmation for roles that can make changes
+  if(S.role==='coordinator'||S.role==='coach'||S.role==='docent'){
+    document.getElementById('logout-sync-status').textContent='';
+    document.getElementById('btn-logout-sync').disabled=false;
+    document.getElementById('modal-logout-confirm').classList.add('show');
+  } else {
+    doLogout();
+  }
+}
+
+function doLogout(){
+  document.getElementById('modal-logout-confirm').classList.remove('show');
+  S.role=null; S.editMode=false; S.docentVak=null; S.leerlingStudentId=null;
+  document.getElementById('screen-roles').style.display='';
+  document.getElementById('screen-main').classList.remove('show');
+  document.getElementById('screen-admin').classList.remove('show');
+}
+
+function syncThenLogout(){
+  const btn=document.getElementById('btn-logout-sync');
+  const status=document.getElementById('logout-sync-status');
+  btn.disabled=true;
+  status.textContent='☁️ Synchroniseren…';
+  // Trigger sync and wait a moment for it to finish
+  persist();
   setTimeout(()=>{
-    const inp=document.getElementById('stu-search-inp');
-    const drop=document.getElementById('stu-search-drop');
-    if(inp) inp.value='';
-    if(drop) drop.classList.remove('open');
-  },160);
+    if(_graphToken){
+      spSyncAll().then(()=>{ doLogout(); }).catch(()=>{ doLogout(); });
+    } else {
+      doLogout();
+    }
+  },400);
 }
 
 /* ── Week / month navigation ── */
@@ -3155,6 +3254,41 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
         applyCell(cell,c);
         _refreshToetsBtn(cell,c,key,di,slot,slots,dates,editable);
         _refreshNoteUI(cell,c,key,di,slot,editable);
+        // Beschikbaarheid circles (only for leerling/ouder/coach/coordinator view)
+        if(S.beschikbaarheid && S.currentStudentId){
+          const stu=S.students.find(s=>s.id===S.currentStudentId);
+          if(stu){
+            const stuVakken=getActiveVakken(stu);
+            const stuKlass=stu.klass||'';
+            Object.keys(S.beschikbaarheid).forEach(vak=>{
+              const bdi=S.beschikbaarheid[vak]?.[di];
+              if(!bdi) return;
+              const bval=bdi[slot.id];
+              if(!bval) return;
+              if(bval==='lokaal107' && stuVakken.includes(vak)){
+                // Docent aanwezig in lokaal 107 voor dit vak
+                const circ=document.createElement('div');
+                circ.className='besch-circle';
+                circ.title=vak+' — Lokaal 107';
+                circ.textContent=vak;
+                cell.appendChild(circ);
+              } else if(bval.startsWith('les-')){
+                // Check if student's klass matches the les-klass
+                const lesKlass=bval.slice(4); // e.g. 'V4'
+                if(stuKlass===lesKlass && stuVakken.includes(vak)){
+                  const circ=document.createElement('div');
+                  circ.className='besch-circle besch-les';
+                  circ.title='les '+vak+' ('+lesKlass+')';
+                  circ.textContent='les '+vak;
+                  circ.style.fontSize='.48rem';
+                  circ.style.width='28px';
+                  circ.style.borderRadius='10px';
+                  cell.appendChild(circ);
+                }
+              }
+            });
+          }
+        }
         // Apply partial toets fill if this slot is the overflow slot of a toets
         const _dayToets = curData().toets?.[key]?.[di];
         if(_dayToets){
