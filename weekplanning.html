@@ -361,7 +361,8 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 
 .gh{background:var(--brand);color:rgba(255,255,255,.95);padding:.52rem .45rem;text-align:center;font-family:'Outfit',sans-serif;font-weight:600;font-size:.78rem;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.08);}
 .gh.time-gh{background:#162E58;font-family:'DM Sans',sans-serif;font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;}
-.gh.today-gh{background:var(--brand-mid);}
+.gh.today-gh{background:var(--brand-mid);box-shadow:inset 0 0 0 2.5px #e05050,inset 0 0 0 1px rgba(255,255,255,.12);}
+.gh.today-gh .dn,.gh.today-gh .dd{color:#fff;}
 .gh.vak-gh{background:#707070 !important;}
 .gh.std-gh{background:#707070 !important;}
 .gh .dn{font-size:.82rem;font-weight:700;}
@@ -3139,18 +3140,18 @@ function executePrint(){
   const TX={green:'#145A2E',red:'#7A1A22',rose:'#8B1A0A',blue:'#1A3A6B',purple:'#4A1A72',yellow:'#5D4000',orange:'#6B2800'};
   const LBL={red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
 
-  // A4 dimensions in mm: 210 × 297
-  // Margins: 10mm top, 10mm bottom, 12mm left, 12mm right → content 186mm × 277mm
-  // Title block: 14mm, legend: 8mm, table: 277-14-8 = 255mm
-  // Columns: time=19mm, 5 days=(186-19)/5=33.4mm each
-  // Rows: header=9mm, lesson=22mm, pause=7mm
-  //   Total: 9 + 10×22 + 2×7 = 9+220+14 = 243mm ≤ 255mm ✓
+  // A4 LIGGEND: 297 × 210mm
+  // Margins: 10mm top/bottom, 12mm left/right → content 273mm × 190mm
+  // Title block: ~13mm, legend: ~7mm, table: 190-13-7 = 170mm
+  // Columns: time=22mm, 5 days=(273-22)/5=50.2mm each
+  // Rows: header=9mm, lesson=15mm, pause=5mm
+  //   Total: 9 + 10×15 + 2×5 = 9+150+10 = 169mm ≤ 170mm ✓
 
-  const COL_TIME='19mm';
-  const COL_DAY='33.4mm';
+  const COL_TIME='22mm';
+  const COL_DAY='50.2mm';
   const ROW_HDR='9mm';
-  const ROW_LESSON='22mm';
-  const ROW_PAUSE='7mm';
+  const ROW_LESSON='15mm';
+  const ROW_PAUSE='5mm';
   const HDR_BG='#1a2744';
   const HDR_BD='#2d3a5c';
   const CELL_BD='#d0d8e8';
@@ -3171,9 +3172,10 @@ function executePrint(){
     // Header row
     const hdrCells=DAYS_FULL.map((d,i)=>
       `<th style="width:${COL_DAY};height:${ROW_HDR};background:${HDR_BG};color:#fff;
-        font-size:7.5pt;font-weight:700;text-align:center;vertical-align:middle;
-        border:1px solid ${HDR_BD};padding:0 2mm;box-sizing:border-box;">
-        ${DAYS_SHORT[i]}&nbsp;${fd(dates[i])}
+        font-size:8pt;font-weight:700;text-align:center;vertical-align:middle;
+        border:1px solid ${HDR_BD};padding:0 2mm;box-sizing:border-box;
+        -webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        ${DAYS_FULL[i]}&nbsp;${fd(dates[i])}
       </th>`).join('');
 
     // Data rows
@@ -3197,18 +3199,18 @@ function executePrint(){
         const lbl=c&&c!=='green'?(LBL[c]||''):''; // green = empty (for writing)
         const toetsNote=c==='yellow'?(sd.toets?.[key]?.[di]?.[slot.id]?.subject||''):'';
         return `<td style="height:${ROW_LESSON};background:${bg};border:1px solid ${CELL_BD};
-          text-align:center;vertical-align:middle;padding:1mm 1mm;box-sizing:border-box;
+          text-align:center;vertical-align:middle;padding:.5mm 1mm;box-sizing:border-box;
           -webkit-print-color-adjust:exact;print-color-adjust:exact;">
-          ${lbl?`<div style="font-size:7pt;font-weight:700;color:${tx};line-height:1.2;">${lbl}</div>`:''}
-          ${toetsNote?`<div style="font-size:6pt;color:${tx};margin-top:1px;">${toetsNote}</div>`:''}
+          ${lbl?`<div style="font-size:6.5pt;font-weight:700;color:${tx};line-height:1.1;">${lbl}</div>`:''}
+          ${toetsNote?`<div style="font-size:5.5pt;color:${tx};margin-top:1px;">${toetsNote}</div>`:''}
         </td>`;
       }).join('');
 
       return `<tr>
         <td style="height:${ROW_LESSON};background:#fafbfd;border:1px solid ${CELL_BD};
-          vertical-align:middle;padding:0 2mm 0 1mm;box-sizing:border-box;white-space:nowrap;">
-          <div style="font-size:7pt;font-weight:700;color:#1a2744;">${slot.label}</div>
-          <div style="font-size:5.5pt;color:#8890aa;">${slot.time}</div>
+          vertical-align:middle;padding:0 1.5mm 0 1mm;box-sizing:border-box;white-space:nowrap;">
+          <div style="font-size:6.5pt;font-weight:700;color:#1a2744;">${slot.label}</div>
+          <div style="font-size:5pt;color:#8890aa;">${slot.time}</div>
         </td>${dataCells}</tr>`;
     }).join('');
 
@@ -3223,39 +3225,40 @@ function executePrint(){
     </span>`).join('');
 
     return `
-    <div style="width:186mm;height:277mm;margin:10mm 12mm;box-sizing:border-box;display:flex;flex-direction:column;page-break-after:always;">
+    <div style="width:273mm;height:190mm;margin:10mm 12mm;box-sizing:border-box;display:flex;flex-direction:column;page-break-after:always;">
       <!-- Title bar -->
       <div style="display:flex;justify-content:space-between;align-items:flex-end;
-        border-bottom:2.5pt solid ${HDR_BG};padding-bottom:2mm;margin-bottom:3mm;flex-shrink:0;">
+        border-bottom:2pt solid ${HDR_BG};padding-bottom:1.5mm;margin-bottom:2mm;flex-shrink:0;">
         <div>
-          <div style="font-size:13pt;font-weight:800;color:${HDR_BG};line-height:1;">${stu.name}</div>
-          <div style="font-size:7.5pt;color:#555;margin-top:1.5mm;">${stuLabel(stu)}</div>
+          <div style="font-size:12pt;font-weight:800;color:${HDR_BG};line-height:1;">${stu.name}</div>
+          <div style="font-size:7pt;color:#555;margin-top:1mm;">${stuLabel(stu)}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:8.5pt;font-weight:700;color:${HDR_BG};">Week ${week} — ${year}</div>
-          <div style="font-size:7pt;color:#777;margin-top:1mm;">${fd(dates[0])} t/m ${fd(dates[4])}</div>
+          <div style="font-size:8pt;font-weight:700;color:${HDR_BG};">Week ${week} — ${year}</div>
+          <div style="font-size:6.5pt;color:#777;margin-top:.8mm;">${fd(dates[0])} t/m ${fd(dates[4])}</div>
         </div>
       </div>
       <!-- Grid -->
-      <table style="border-collapse:collapse;table-layout:fixed;width:186mm;flex-shrink:0;">
+      <table style="border-collapse:collapse;table-layout:fixed;width:273mm;flex-shrink:0;">
         <colgroup>
           <col style="width:${COL_TIME}">
           <col style="width:${COL_DAY}"><col style="width:${COL_DAY}">
           <col style="width:${COL_DAY}"><col style="width:${COL_DAY}"><col style="width:${COL_DAY}">
         </colgroup>
         <thead><tr>
-          <th style="height:${ROW_HDR};background:${HDR_BG};color:#fff;font-size:7pt;
-            border:1px solid ${HDR_BD};text-align:center;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Tijd</th>
+          <th style="height:${ROW_HDR};background:${HDR_BG};color:#fff;font-size:6.5pt;
+            border:1px solid ${HDR_BD};text-align:center;vertical-align:middle;
+            -webkit-print-color-adjust:exact;print-color-adjust:exact;">Tijd</th>
           ${hdrCells}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <!-- Legend -->
-      <div style="margin-top:3mm;display:flex;align-items:center;flex-wrap:wrap;flex-shrink:0;">
-        <span style="font-size:5.5pt;color:#888;margin-right:6px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Status:</span>
+      <div style="margin-top:2mm;display:flex;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+        <span style="font-size:5pt;color:#888;margin-right:6px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Status:</span>
         <span style="display:inline-flex;align-items:center;gap:2px;margin-right:7px;">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:1px;background:#D4EDDA;border:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></span>
-          <span style="font-size:5.5pt;color:#555;">Aanwezig (voor huiswerkaantekeningen)</span>
+          <span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:#D4EDDA;border:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></span>
+          <span style="font-size:5pt;color:#555;">Aanwezig (voor huiswerkaantekeningen)</span>
         </span>
         ${legItems}
       </div>
@@ -3265,12 +3268,12 @@ function executePrint(){
   const css=`
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#222;}
-    @page{size:A4 portrait;margin:0;}
+    @page{size:A4 landscape;margin:0;}
     table{border-collapse:collapse;}
     td,th{vertical-align:middle;}
     -webkit-print-color-adjust:exact;
     @media print{
-      html,body{width:210mm;height:297mm;}
+      html,body{width:297mm;height:210mm;}
       div[style*="page-break-after"]{page-break-after:always;}
       div[style*="page-break-after"]:last-child{page-break-after:avoid;}
     }`;
@@ -3603,7 +3606,11 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
             const stuVakken=getActiveVakken(stu);
             const stuKlass=stu.klass||'';
             let circIdx=0; // for stacking circles vertically
-            Object.keys(S.beschikbaarheid).forEach(vak=>{
+            // Coach role: only show circles for own vak (docentVak)
+            const beschVakken = (S.role==='coach' && S.docentVak)
+              ? Object.keys(S.beschikbaarheid).filter(v=>v===S.docentVak)
+              : Object.keys(S.beschikbaarheid);
+            beschVakken.forEach(vak=>{
               const bdi=S.beschikbaarheid[vak]?.[di];
               if(!bdi) return;
               const bval=bdi[slot.id];
@@ -3894,8 +3901,8 @@ function _refreshToetsMsg(){
     `📅 ${dayName} ${fmt(date)}\n` +
     `🕐 ${ctx.slot.label}  (${startTime} – ${endTime})\n` +
     `⏱ Duur: ${dur} minuten\n\n` +
-    `Kun je hiermee rekening houden?\n\n` +
-    `Met vriendelijke groet,\n${S.schoolName}`;
+    `Wil je de toets bij me aanleveren alsjeblieft.\n\n` +
+    `Groet Coach 2.0`;
 }
 
 async function onToetsSearch(query){
