@@ -211,6 +211,51 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .la-cell.c-orange{background:var(--o-bg);color:var(--o-tx);}
 .la-cell.c-null  {color:var(--tx3);background:transparent;}
 .la-empty{text-align:center;padding:1.5rem 0;color:var(--tx3);font-size:.87rem;}
+
+/* ── AANWEZIGHEIDSLIJST ─────────────────────────── */
+.aanw-modal{max-width:min(94vw,680px);width:680px;max-height:91vh;overflow:hidden;
+  display:flex;flex-direction:column;padding:1.5rem;}
+.aanw-week-nav{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;flex-shrink:0;}
+.aanw-nav-btn{background:var(--surf-2);border:1.5px solid var(--border);border-radius:8px;
+  width:2.1rem;height:2.1rem;font-size:1.05rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--tx2);
+  transition:all .13s;flex-shrink:0;}
+.aanw-nav-btn:hover{border-color:var(--brand);color:var(--brand);}
+.aanw-week-center{flex:1;text-align:center;}
+.aanw-week-num{font-size:.98rem;font-weight:700;color:var(--tx);}
+.aanw-week-range{font-size:.7rem;color:var(--tx3);margin-top:.1rem;}
+.aanw-day-tabs{display:flex;gap:.3rem;margin-bottom:.75rem;flex-shrink:0;}
+.aanw-day-tab{padding:.32rem .5rem;border-radius:7px;border:1.5px solid var(--border);
+  background:var(--surf-2);font-size:.75rem;font-weight:600;cursor:pointer;
+  transition:all .13s;color:var(--tx);flex:1;text-align:center;line-height:1.3;}
+.aanw-day-tab:hover{border-color:var(--brand);background:var(--brand-light);}
+.aanw-day-tab.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+.aanw-day-tab.is-today:not(.on){border-color:var(--accent);color:var(--accent);}
+.aanw-scroll{overflow-y:auto;flex:1;min-height:0;}
+.aanw-empty{text-align:center;padding:2rem;color:var(--tx3);font-size:.87rem;}
+.aanw-row{padding:.5rem .35rem;border-bottom:1px solid var(--border);}
+.aanw-row:last-child{border-bottom:none;}
+.aanw-row-main{display:flex;align-items:center;gap:.55rem;}
+.aanw-name{flex:1;min-width:0;}
+.aanw-name-txt{font-weight:600;font-size:.84rem;color:var(--tx);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.aanw-time{font-size:.67rem;color:var(--tx3);margin-top:.08rem;}
+.aanw-btns{display:flex;gap:.28rem;align-items:center;flex-shrink:0;}
+.aanw-btn{width:2rem;height:2rem;border-radius:50%;border:2px solid var(--border);
+  font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  background:var(--surf-2);color:var(--tx3);transition:all .13s;font-weight:700;}
+.aanw-btn:hover{transform:scale(1.12);}
+.aanw-btn-ok.active {background:#28a745;border-color:#1e7e34;color:#fff;}
+.aanw-btn-nok.active{background:#dc3545;border-color:#bd2130;color:#fff;}
+.aanw-btn-mod.active{background:#fd7e14;border-color:#c96b0e;color:#fff;}
+.aanw-note-wrap{max-height:0;overflow:hidden;transition:max-height .18s ease;}
+.aanw-note-wrap.open{max-height:50px;}
+.aanw-note-inp{width:100%;border:1px solid var(--border);border-radius:6px;
+  padding:.26rem .5rem;font-size:.73rem;color:var(--tx);background:var(--surface);
+  font-family:inherit;margin-top:.32rem;box-sizing:border-box;}
+.aanw-note-inp:focus{outline:none;border-color:var(--brand);}
+.aanw-export-bar{padding-top:.75rem;text-align:right;flex-shrink:0;border-top:1px solid var(--border);margin-top:.5rem;}
+
 .edit-banner{background:var(--accent);color:#fff;text-align:center;padding:.42rem 1rem;font-size:.79rem;font-weight:600;letter-spacing:.01em;display:none;}
 .edit-banner.show{display:block;}
 
@@ -652,6 +697,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div class="hdr-right">
       <div id="hdr-edit-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openLeerlingBeschModal()">👨‍🏫 Docenten</button>
+        <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
         <button class="hb" id="btn-print-week" onclick="openPrintModal()">🖨️ Printen</button>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
@@ -891,6 +937,29 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   </div>
 </div>
 
+<!-- ══ AANWEZIGHEID (COORDINATOR / COACH) ════════════ -->
+<div class="overlay" id="modal-aanw">
+  <div class="modal-card aanw-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-shrink:0;">
+      <h2 style="margin:0;">📋 Aanwezigheid</h2>
+      <button class="btn-g sm" onclick="document.getElementById('modal-aanw').classList.remove('show')" style="width:auto;padding:.38rem .85rem;font-size:.82rem;">✕ Sluiten</button>
+    </div>
+    <div class="aanw-week-nav">
+      <button class="aanw-nav-btn" onclick="_aanwNavWeek(-1)">‹</button>
+      <div class="aanw-week-center">
+        <div class="aanw-week-num" id="aanw-week-num">Week —</div>
+        <div class="aanw-week-range" id="aanw-week-range"></div>
+      </div>
+      <button class="aanw-nav-btn" onclick="_aanwNavWeek(1)">›</button>
+    </div>
+    <div class="aanw-day-tabs" id="aanw-day-tabs"></div>
+    <div class="aanw-scroll" id="aanw-list"></div>
+    <div class="aanw-export-bar" id="aanw-export-bar" style="display:none;">
+      <button class="btn-primary" style="font-size:.82rem;" onclick="exportAanwExcel()">📥 Exporteer Excel (volledig schooljaar)</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ LEERLING AANWEZIGHEID (DOCENT) ════════════════ -->
 <div class="overlay" id="modal-la">
   <div class="modal-card la-modal">
@@ -979,6 +1048,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="adm-tab" onclick="switchAdmTab(2)">🗓️ Vakanties</button>
     <button class="adm-tab" onclick="switchAdmTab(3)">👥 Leerlingen</button>
     <button class="adm-tab" onclick="switchAdmTab(4)">☁️ Microsoft 365</button>
+    <button class="adm-tab" onclick="switchAdmTab(5)">📋 Aanwezigheid</button>
   </div>
 
   <div class="adm-body">
@@ -1239,6 +1309,27 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       </div>
     </div>
 
+    <!-- Tabblad 7: Aanwezigheid export -->
+    <div class="adm-panel">
+      <div class="adm-card">
+        <h3>📋 Aanwezigheid — Exporteren</h3>
+        <p class="card-note" style="margin-bottom:1rem;">
+          Exporteer een overzicht van de aanwezigheidsregistratie over het hele schooljaar naar Excel.
+          Het bestand bevat vier tabbladen: Verwacht, Aanwezig, Afwezig en Gewijzigd — met leerlingen in rijen en weeknummers in kolommen.
+        </p>
+        <div class="adm-card" style="background:var(--surf-2);border:1px solid var(--border);margin-bottom:1rem;">
+          <p class="card-note" style="margin:0;font-size:.8rem;line-height:1.6;">
+            <strong>Legenda:</strong><br>
+            ✓ Aanwezig = aangevinkt met groen vinkje<br>
+            ✕ Afwezig = aangevinkt met rood kruis<br>
+            ● Gewijzigd = aangevinkt met oranje rondje (bijv. te laat of eerder weg)<br>
+            Getallen = aantal lessen (lesuren) op de betreffende dag(en) in die week
+          </p>
+        </div>
+        <button class="btn-primary" style="font-size:.85rem;" onclick="exportAanwExcel()">📥 Exporteer aanwezigheid als Excel</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1342,6 +1433,7 @@ const S = {
   beschikbaarheid:{},    // {vak:{di:{slotId:status}}} — vast jaarpatroon
   changeLog:[],          // [{ts,studentId,studentName,weekKey,di,slotId,from,to}] — coordinator changes
   coachLastSeen:null,    // ISO timestamp of last coach login
+  aanw:{},               // {weekKey:{di:{stuId:{status:'ok'|'nok'|'mod',note:''}}}} — aanwezigheidsregistratie
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
     preexam:{'P1.1':{from:'',to:''},'P1.2':{from:'',to:''},'P1.3':{from:'',to:''},
@@ -1394,7 +1486,8 @@ function applySchoolName(){
 const SP_KEYS = [
   'wp_schoolName','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
-  'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw'
+  'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
+  'wp_aanw'
 ];
 
 let _graphToken = null;
@@ -1928,6 +2021,7 @@ function persist(){
     localStorage.setItem('wp_adminPw', S.adminPassword||'');
     localStorage.setItem('wp_changeLog', JSON.stringify(S.changeLog));
     localStorage.setItem('wp_coachLastSeen', S.coachLastSeen||'');
+    localStorage.setItem('wp_aanw', JSON.stringify(S.aanw));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -1957,6 +2051,7 @@ function hydrate(){
     const cl=localStorage.getItem('wp_changeLog'); if(cl) S.changeLog=JSON.parse(cl);
     const cls=localStorage.getItem('wp_coachLastSeen'); if(cls) S.coachLastSeen=cls||null;
     const ap=localStorage.getItem('wp_adminPw'); if(ap!==null) S.adminPassword=ap;
+    const aan=localStorage.getItem('wp_aanw'); if(aan) S.aanw=JSON.parse(aan);
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -2133,7 +2228,7 @@ function switchAdmTab(idx){
   document.querySelectorAll('.adm-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
   document.querySelectorAll('.adm-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
   if(idx===2) renderRollenList();
-  if(idx===5) loadM365Cfg();
+  if(idx===4) loadM365Cfg();
 }
 
 function showAdmin(){
@@ -2919,6 +3014,274 @@ function _renderLaContent(){
   });
   table.appendChild(tbody);
   ct.appendChild(table);
+}
+
+/* ══ AANWEZIGHEIDSLIJST (COORDINATOR / COACH) ════════ */
+let _aanwWY  = null;  // {year, week} van de getoonde week
+let _aanwDi  = 0;     // geselecteerde dagindex 0=Ma … 4=Vr
+
+const _AANW_AWAY = new Set(['red','purple','orange']); // Training, Wedstrijd, Toernooi = afwezig van school
+
+function _aanwSlotColor(stuId, weekKey, di, slotId){
+  const sd = S.studentData[stuId] || {std:{}, ovr:{}};
+  const o = sd.ovr?.[weekKey];
+  if(o && o[di] !== undefined && o[di][slotId] !== undefined) return o[di][slotId];
+  if(sd.std?.[di] && sd.std[di][slotId] !== undefined) return sd.std[di][slotId];
+  return null;
+}
+
+// Geeft true als leerling minstens één lesuur op school heeft die dag
+function _stuExpectedOnDay(stuId, weekKey, di){
+  const lessons = SCHOOL.filter(s => s.kind === 'lesson');
+  for(const slot of lessons){
+    if(!_AANW_AWAY.has(_aanwSlotColor(stuId, weekKey, di, slot.id))) return true;
+  }
+  return false;
+}
+
+// Lesuren die de leerling op school is (niet weg)
+function _stuSchoolSlotsOnDay(stuId, weekKey, di){
+  return SCHOOL.filter(s => s.kind === 'lesson' && !_AANW_AWAY.has(_aanwSlotColor(stuId, weekKey, di, s.id)));
+}
+
+// Van–tot tijd gebaseerd op eerste en laatste schoollesuur
+function _stuExpectedTimeOnDay(stuId, weekKey, di){
+  const slots = _stuSchoolSlotsOnDay(stuId, weekKey, di);
+  if(!slots.length) return null;
+  const van = slots[0].time.split('–')[0].trim();
+  const tot = slots[slots.length-1].time.split('–')[1].trim();
+  return van + ' – ' + tot;
+}
+
+function openAanwModal(){
+  _aanwWY = {year: S.wy.year, week: S.wy.week};
+  // Zet dagindex op vandaag indien mogelijk
+  const todayStr = toDS(new Date());
+  const dates = weekDates(_aanwWY.year, _aanwWY.week);
+  _aanwDi = 0;
+  for(let i = 0; i < 5; i++){
+    if(toDS(dates[i]) === todayStr){ _aanwDi = i; break; }
+  }
+  // Export-balk tonen voor admin en coördinator
+  const showExport = S.role === 'admin' || S.role === 'coordinator';
+  document.getElementById('aanw-export-bar').style.display = showExport ? '' : 'none';
+  _renderAanwWeekNav();
+  _renderAanwDayTabs();
+  _renderAanwList();
+  document.getElementById('modal-aanw').classList.add('show');
+}
+
+function _aanwNavWeek(dir){
+  const d = monday(_aanwWY.year, _aanwWY.week);
+  d.setDate(d.getDate() + dir * 7);
+  _aanwWY = weekYear(d);
+  _renderAanwWeekNav();
+  _renderAanwDayTabs();
+  _renderAanwList();
+}
+
+function _renderAanwWeekNav(){
+  const dates = weekDates(_aanwWY.year, _aanwWY.week);
+  document.getElementById('aanw-week-num').textContent  = 'Week ' + _aanwWY.week;
+  document.getElementById('aanw-week-range').textContent = fmt(dates[0]) + ' – ' + fmt(dates[4]);
+}
+
+function _renderAanwDayTabs(){
+  const wrap = document.getElementById('aanw-day-tabs');
+  wrap.innerHTML = '';
+  const todayStr = toDS(new Date());
+  const dates = weekDates(_aanwWY.year, _aanwWY.week);
+  ['Ma','Di','Wo','Do','Vr'].forEach((name, i) => {
+    const btn = document.createElement('button');
+    const ds = toDS(dates[i]);
+    btn.className = 'aanw-day-tab' + (i === _aanwDi ? ' on' : '') + (ds === todayStr ? ' is-today' : '');
+    btn.innerHTML = name + '<br><span style="font-size:.62rem;font-weight:400;opacity:.62">' + fmt(dates[i]) + '</span>';
+    btn.addEventListener('click', () => { _aanwDi = i; _renderAanwDayTabs(); _renderAanwList(); });
+    wrap.appendChild(btn);
+  });
+}
+
+function _renderAanwList(){
+  const ct = document.getElementById('aanw-list');
+  ct.innerHTML = '';
+  const weekKey = wk(_aanwWY.year, _aanwWY.week);
+  const di = _aanwDi;
+
+  const stus = S.students
+    .filter(stu => _stuExpectedOnDay(stu.id, weekKey, di))
+    .sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+
+  if(!stus.length){
+    const em = document.createElement('div');
+    em.className = 'aanw-empty';
+    em.innerHTML = '<span style="font-size:1.5rem;">🏃</span><br>Geen leerlingen verwacht op deze dag.<br><span style="font-size:.75rem;opacity:.6">Leerlingen met hele dag training/wedstrijd/toernooi worden niet getoond.</span>';
+    ct.appendChild(em);
+    return;
+  }
+
+  stus.forEach(stu => {
+    const dayRec = ((S.aanw[weekKey] || {})[di] || {});
+    const rec    = dayRec[stu.id] || {};
+    const status = rec.status || null;
+    const note   = rec.note   || '';
+    const timeStr = _stuExpectedTimeOnDay(stu.id, weekKey, di) || '';
+
+    const row = document.createElement('div');
+    row.className = 'aanw-row';
+
+    // Naamregel + knoppen
+    const main = document.createElement('div');
+    main.className = 'aanw-row-main';
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'aanw-name';
+    nameDiv.innerHTML = `<div class="aanw-name-txt">${stu.name}</div>`
+      + (timeStr ? `<div class="aanw-time">⏱ ${timeStr}</div>` : '');
+
+    const btns = document.createElement('div');
+    btns.className = 'aanw-btns';
+
+    // Groen vinkje
+    const btnOk = document.createElement('button');
+    btnOk.className = 'aanw-btn aanw-btn-ok' + (status === 'ok' ? ' active' : '');
+    btnOk.title = 'Aanwezig';
+    btnOk.textContent = '✓';
+    btnOk.addEventListener('click', () => _setAanw(weekKey, di, stu.id, status === 'ok' ? null : 'ok', note));
+
+    // Rood kruis
+    const btnNok = document.createElement('button');
+    btnNok.className = 'aanw-btn aanw-btn-nok' + (status === 'nok' ? ' active' : '');
+    btnNok.title = 'Afwezig';
+    btnNok.textContent = '✕';
+    btnNok.addEventListener('click', () => _setAanw(weekKey, di, stu.id, status === 'nok' ? null : 'nok', note));
+
+    // Oranje rondje
+    const btnMod = document.createElement('button');
+    btnMod.className = 'aanw-btn aanw-btn-mod' + (status === 'mod' ? ' active' : '');
+    btnMod.title = 'Wijziging (bijv. te laat, eerder weg)';
+    btnMod.textContent = '●';
+    btnMod.addEventListener('click', () => _setAanw(weekKey, di, stu.id, status === 'mod' ? null : 'mod', note));
+
+    btns.appendChild(btnOk);
+    btns.appendChild(btnNok);
+    btns.appendChild(btnMod);
+    main.appendChild(nameDiv);
+    main.appendChild(btns);
+    row.appendChild(main);
+
+    // Opmerkingenregel (alleen bij 'mod')
+    const noteWrap = document.createElement('div');
+    noteWrap.className = 'aanw-note-wrap' + (status === 'mod' ? ' open' : '');
+    const noteInp = document.createElement('input');
+    noteInp.type = 'text';
+    noteInp.className = 'aanw-note-inp';
+    noteInp.placeholder = 'Opmerking over wijziging…';
+    noteInp.value = note;
+    noteInp.addEventListener('change', () => {
+      _saveAanwData(weekKey, di, stu.id, status || 'mod', noteInp.value);
+    });
+    noteWrap.appendChild(noteInp);
+    row.appendChild(noteWrap);
+
+    ct.appendChild(row);
+  });
+}
+
+function _setAanw(weekKey, di, stuId, newStatus, curNote){
+  _saveAanwData(weekKey, di, stuId, newStatus, curNote);
+  _renderAanwList();
+}
+
+function _saveAanwData(weekKey, di, stuId, status, note){
+  if(!S.aanw[weekKey])       S.aanw[weekKey] = {};
+  if(!S.aanw[weekKey][di])   S.aanw[weekKey][di] = {};
+  if(status === null){
+    delete S.aanw[weekKey][di][stuId];
+  } else {
+    S.aanw[weekKey][di][stuId] = {status, note: note || ''};
+  }
+  persist();
+}
+
+/* Excel export — laad SheetJS dynamisch */
+function exportAanwExcel(){
+  if(window.XLSX){ _doAanwExport(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload  = () => _doAanwExport();
+  s.onerror = () => alert('Kon Excel-bibliotheek niet laden. Controleer je internetverbinding.');
+  document.head.appendChild(s);
+}
+
+function _doAanwExport(){
+  // Schooljaar grenzen
+  const syFrom = S.schoolYearFrom ? new Date(S.schoolYearFrom)
+    : new Date(new Date().getFullYear(), 8, 1);
+  const syTo   = S.schoolYearTo   ? new Date(S.schoolYearTo)
+    : new Date(new Date().getFullYear() + 1, 6, 31);
+
+  // Bouw lijst van alle weken in het schooljaar
+  const weeks = [];
+  let wd = monday(weekYear(syFrom).year, weekYear(syFrom).week);
+  while(wd <= syTo){
+    const wy = weekYear(wd);
+    weeks.push({year: wy.year, week: wy.week, key: wk(wy.year, wy.week)});
+    const nd = new Date(wd); nd.setDate(nd.getDate() + 7); wd = nd;
+  }
+
+  const stus = [...S.students].sort((a,b) => a.name.localeCompare(b.name,'nl'));
+  const DAYS = [0,1,2,3,4]; // Ma t/m Vr
+
+  const colHeaders = ['Leerling', ...weeks.map(w => 'W' + w.week + "'" + String(w.year).slice(2))];
+
+  function buildSheet(valFn){
+    const rows = [colHeaders];
+    stus.forEach(stu => {
+      const row = [stu.name];
+      weeks.forEach(w => {
+        let total = 0;
+        DAYS.forEach(di => { total += valFn(stu.id, w.key, di); });
+        row.push(total || '');
+      });
+      rows.push(row);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    // Breedte kolommen
+    ws['!cols'] = [{wch:22}, ...weeks.map(()=>({wch:8}))];
+    return ws;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Verwacht (aantal lessen op school per dag per week)
+  XLSX.utils.book_append_sheet(wb, buildSheet((stuId, weekKey, di) => {
+    if(!_stuExpectedOnDay(stuId, weekKey, di)) return 0;
+    return _stuSchoolSlotsOnDay(stuId, weekKey, di).length;
+  }), 'Verwacht');
+
+  // Sheet 2: Aanwezig (✓)
+  XLSX.utils.book_append_sheet(wb, buildSheet((stuId, weekKey, di) => {
+    const rec = ((S.aanw[weekKey]||{})[di]||{})[stuId] || {};
+    if(rec.status !== 'ok') return 0;
+    return _stuSchoolSlotsOnDay(stuId, weekKey, di).length;
+  }), 'Aanwezig');
+
+  // Sheet 3: Afwezig (✕)
+  XLSX.utils.book_append_sheet(wb, buildSheet((stuId, weekKey, di) => {
+    const rec = ((S.aanw[weekKey]||{})[di]||{})[stuId] || {};
+    if(rec.status !== 'nok') return 0;
+    return _stuSchoolSlotsOnDay(stuId, weekKey, di).length;
+  }), 'Afwezig');
+
+  // Sheet 4: Gewijzigd (●)
+  XLSX.utils.book_append_sheet(wb, buildSheet((stuId, weekKey, di) => {
+    const rec = ((S.aanw[weekKey]||{})[di]||{})[stuId] || {};
+    if(rec.status !== 'mod') return 0;
+    return _stuSchoolSlotsOnDay(stuId, weekKey, di).length;
+  }), 'Gewijzigd');
+
+  const yr = (S.schoolYear||'').replace('/','_') || new Date().getFullYear();
+  XLSX.writeFile(wb, 'Aanwezigheid_' + yr + '.xlsx');
 }
 
 /* ══ MAIN SCREEN ════════════════════════════════════ */
