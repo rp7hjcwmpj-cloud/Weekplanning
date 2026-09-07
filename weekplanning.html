@@ -542,7 +542,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .pause-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.59rem;color:var(--pause-tx);font-style:italic;letter-spacing:.04em;pointer-events:none;}
 
 /* ── STD SCHEDULE MODAL ──────────────────────────── */
-.modal-wide{max-width:680px;max-height:88vh;overflow-y:auto;}
+.modal-wide{max-width:860px;max-height:88vh;overflow-y:auto;}
 .std-grid{display:grid;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:.7rem 0 1.1rem;}
 .sgh{background:var(--brand);color:rgba(255,255,255,.9);padding:.48rem .4rem;text-align:center;font-family:'Outfit',sans-serif;font-weight:600;font-size:.77rem;}
 .stc{background:var(--surf-2);padding:.36rem .48rem;font-size:.64rem;border:1px solid var(--border);text-align:right;display:flex;flex-direction:column;justify-content:center;}
@@ -550,7 +550,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .stc .st{color:var(--tx3);font-size:.58rem;}
 .sdc{border:1px solid var(--border);min-height:50px;position:relative;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  padding-bottom:4px;transition:background .12s;}
+  padding-bottom:5px;padding-top:3px;transition:background .12s;}
 .sdc[data-c="null"]  {background:var(--surf-2);}
 .sdc[data-c="green"] {background:var(--g-bg);}
 .sdc[data-c="red"]   {background:var(--r-bg);}
@@ -569,12 +569,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .sdc[data-c="orange"] .sdc-lbl{color:var(--o-tx);}
 .sdc[data-c="rose"]   .sdc-lbl{color:var(--ro-tx);}
 .sdc-picker{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;padding:4px 3px 0;}
-.std-times-section{margin:.3rem 0 .9rem;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-.std-times-hd{background:var(--surf-2);padding:.38rem .75rem;font-size:.72rem;font-weight:700;color:var(--tx2);border-bottom:1px solid var(--border);}
-.std-times-grid{display:grid;grid-template-columns:90px repeat(5,1fr);font-size:.72rem;}
-.std-times-lbl{background:var(--surf-2);padding:.35rem .48rem;color:var(--tx3);font-size:.65rem;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;}
-.std-time-inp{border:1px solid var(--border);padding:.28rem .3rem;font-size:.72rem;width:100%;text-align:center;background:var(--surface);color:var(--tx);font-family:inherit;outline:none;transition:border-color .13s;}
-.std-time-inp:focus{border-color:var(--brand);}
+.sdc-time-inp{border:1px solid var(--border-s);border-radius:4px;padding:.18rem .22rem;font-size:.62rem;width:68px;text-align:center;background:var(--surface);color:var(--tx);font-family:inherit;outline:none;transition:border-color .13s;margin-top:.25rem;}
+.sdc-time-inp:focus{border-color:var(--brand);}
+.sdc-time-inp::placeholder{color:var(--tx3);}
 .la-cell-time{font-size:.58rem;font-weight:400;opacity:.75;margin-left:.18rem;}
 .modal-actions{display:flex;gap:.55rem;margin-top:.9rem;}
 .btn-p.sm{width:auto;padding:.65rem 1.7rem;}
@@ -1523,7 +1520,7 @@ const S = {
   currentStudentId:null,
   studentData:{},        // {studentId:{std:{},ovr:{}}}
   tmpStd:{},
-  tmpStdTimes:{},        // {0:{van:'',tot:''}, ...} — aankomst/vertrek per dag (tijdelijk tijdens edit)
+  tmpStdTimes:{},        // {di:{slotId:'HH:MM'}, ...} — aankomsttijd per cel (tijdelijk tijdens edit)
   teacherPasswords:{},   // {NE:'pw', EN:'pw', ...}
   docentVak:null,
   studentPasswords:{},   // {studentId:'pw'}
@@ -3130,8 +3127,6 @@ function _renderLaContent(){
     th.innerHTML = slot.label + '<br><span style="opacity:.55;font-weight:400">' + slot.time.split('–')[0] + '</span>';
     hr.appendChild(th);
   });
-  // Extra kolom voor aankomst/vertrek
-  const thTijd = document.createElement('th'); thTijd.textContent='Aankomst–Vertrek'; hr.appendChild(thTijd);
   thead.appendChild(hr);
   table.appendChild(thead);
 
@@ -3141,7 +3136,7 @@ function _renderLaContent(){
     const tr = document.createElement('tr');
     const tdName = document.createElement('td'); tdName.className='la-name'; tdName.textContent=stu.name+(stu.sport?' · '+stu.sport:''); tr.appendChild(tdName);
     const sd = S.studentData[stu.id] || {std:{},ovr:{}};
-    const dayTimes = sd.std?.times?.[di] || null;
+    const slotTimes = sd.std?.times?.[di] || {};
     slots.forEach(slot => {
       // Kleur ophalen (zelfde logica als getColor maar voor willekeurige student)
       const o = sd.ovr?.[key];
@@ -3152,23 +3147,11 @@ function _renderLaContent(){
       const cell = document.createElement('div');
       cell.className = 'la-cell' + (c ? ' c-'+c : ' c-null');
       let cellTxt = c ? (SHORT[c]||c) : '—';
-      // Toon aankomsttijd in de eerste cel en vertrektijd in de laatste cel
-      if(dayTimes && c){
-        if(slot.id===slots[0].id && dayTimes.van) cellTxt+=` (${dayTimes.van})`;
-        if(slot.id===slots[slots.length-1].id && dayTimes.tot) cellTxt+=` (${dayTimes.tot})`;
-      }
+      const slotTime = slotTimes[slot.id];
+      if(slotTime && c) cellTxt += ` (${slotTime})`;
       cell.textContent = cellTxt;
       td.appendChild(cell); tr.appendChild(td);
     });
-    // Tijd kolom
-    const tdTijd = document.createElement('td');
-    if(dayTimes && (dayTimes.van||dayTimes.tot)){
-      const chip=document.createElement('div');
-      chip.className='la-cell'; chip.style.cssText='background:var(--surf-2);color:var(--tx2);white-space:nowrap;';
-      chip.textContent=(dayTimes.van||'?')+' – '+(dayTimes.tot||'?');
-      tdTijd.appendChild(chip);
-    }
-    tr.appendChild(tdTijd);
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
@@ -4530,12 +4513,28 @@ function _buildStdPicker(cell, currentColor, di, slotId){
   // Label below dots
   const lbl=document.createElement('div');
   lbl.className='sdc-lbl';
-  lbl.textContent=STD_LBL[currentColor||'null']||'—';
-  // Remove old picker + label
+  const curTime=(S.tmpStdTimes[di]&&S.tmpStdTimes[di][slotId])||'';
+  lbl.textContent=(STD_LBL[currentColor||'null']||'—')+(curTime?' ('+curTime+')':'');
+  // Time input below label
+  const timeInp=document.createElement('input');
+  timeInp.type='time'; timeInp.className='sdc-time-inp';
+  timeInp.value=curTime;
+  timeInp.title='Tijdstip voor dit lesblok';
+  timeInp.addEventListener('change',(e)=>{
+    e.stopPropagation();
+    if(!S.tmpStdTimes[di]) S.tmpStdTimes[di]={};
+    if(timeInp.value) S.tmpStdTimes[di][slotId]=timeInp.value;
+    else delete S.tmpStdTimes[di][slotId];
+    // Update label live
+    lbl.textContent=(STD_LBL[currentColor||'null']||'—')+(timeInp.value?' ('+timeInp.value+')':'');
+  });
+  // Remove old picker + label + time input
   cell.querySelector('.sdc-picker')?.remove();
   cell.querySelector('.sdc-lbl')?.remove();
+  cell.querySelector('.sdc-time-inp')?.remove();
   cell.appendChild(picker);
   cell.appendChild(lbl);
+  cell.appendChild(timeInp);
 }
 
 function renderStdGrid(){
@@ -4558,36 +4557,6 @@ function renderStdGrid(){
     }
   });
   ct.appendChild(grid);
-
-  // ── Aankomst & vertrek per dag ──
-  const timeSec=document.createElement('div'); timeSec.className='std-times-section';
-  const timesHd=document.createElement('div'); timesHd.className='std-times-hd';
-  timesHd.textContent='🕐 Aankomst & vertrek per dag'; timeSec.appendChild(timesHd);
-  const tGrid=document.createElement('div'); tGrid.className='std-times-grid';
-  // Header row: empty corner + day names
-  const corner=document.createElement('div'); corner.className='std-times-lbl'; tGrid.appendChild(corner);
-  DAYS_SHORT.slice(0,5).forEach(d=>{
-    const h=document.createElement('div'); h.className='std-times-lbl';
-    h.style.cssText='background:var(--brand);color:rgba(255,255,255,.9);justify-content:center;font-weight:600;';
-    h.textContent=d; tGrid.appendChild(h);
-  });
-  // Aankomst row
-  ['Aankomst','Vertrek'].forEach((type,ti)=>{
-    const lbl=document.createElement('div'); lbl.className='std-times-lbl'; lbl.textContent=type; tGrid.appendChild(lbl);
-    for(let di=0;di<5;di++){
-      const inp=document.createElement('input');
-      inp.type='time'; inp.className='std-time-inp';
-      inp.value=(S.tmpStdTimes[di]?.(ti===0?'van':'tot'))||'';
-      inp.dataset.di=di; inp.dataset.type=ti===0?'van':'tot';
-      inp.addEventListener('change',()=>{
-        if(!S.tmpStdTimes[di]) S.tmpStdTimes[di]={van:'',tot:''};
-        S.tmpStdTimes[di][inp.dataset.type]=inp.value;
-      });
-      tGrid.appendChild(inp);
-    }
-  });
-  timeSec.appendChild(tGrid);
-  ct.appendChild(timeSec);
 }
 function applyStd(cell,c){cell.setAttribute('data-c',c||'null');}
 
