@@ -212,6 +212,26 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .la-cell.c-null  {color:var(--tx3);background:transparent;}
 .la-empty{text-align:center;padding:1.5rem 0;color:var(--tx3);font-size:.87rem;}
 
+/* ── PWS DOTS ───────────────────────────────────── */
+.pws-bar{display:flex;align-items:center;gap:.35rem;margin-top:.3rem;flex-wrap:wrap;}
+.pws-lbl{font-size:.6rem;font-weight:700;padding:.1rem .32rem;border-radius:4px;background:rgba(255,255,255,.22);color:rgba(255,255,255,.9);letter-spacing:.03em;text-transform:uppercase;}
+.pws-dot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.45);cursor:default;transition:transform .1s,border-color .1s;flex-shrink:0;}
+.pws-dot.d-red   {background:#dc3545;border-color:#bd2130;}
+.pws-dot.d-orange{background:#fd7e14;border-color:#c96b0e;}
+.pws-dot.d-green {background:#28a745;border-color:#1e7e34;}
+.pws-dot.editable{cursor:pointer;}
+.pws-dot.editable:hover{transform:scale(1.25);border-color:rgba(255,255,255,.85);}
+.pws-pencil{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:.75rem;padding:.05rem .2rem;border-radius:4px;margin-left:.1rem;transition:all .13s;}
+.pws-pencil:hover{color:#fff;background:rgba(255,255,255,.18);}
+.pws-pencil.active{color:#fff;background:rgba(255,255,255,.28);}
+/* PWS dots in admin modal */
+.pws-admin-dots{display:flex;gap:.4rem;margin-top:.4rem;}
+.pws-admin-dot{width:16px;height:16px;border-radius:50%;border:2.5px solid #ccc;cursor:pointer;transition:transform .1s;}
+.pws-admin-dot.d-red   {background:#dc3545;border-color:#bd2130;}
+.pws-admin-dot.d-orange{background:#fd7e14;border-color:#c96b0e;}
+.pws-admin-dot.d-green {background:#28a745;border-color:#1e7e34;}
+.pws-admin-dot:hover{transform:scale(1.2);}
+
 /* ── AANWEZIGHEIDSLIJST ─────────────────────────── */
 .aanw-modal{max-width:min(94vw,680px);width:680px;max-height:91vh;overflow:hidden;
   display:flex;flex-direction:column;padding:1.5rem;}
@@ -873,6 +893,21 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
         </div>
       </div>
     </div>
+    <label class="flabel">Sport</label>
+    <input class="field-inp" type="text" id="estu-sport" placeholder="Bijv. Atletiek, Zwemmen, Voetbal…">
+    <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.55rem;">
+      <label class="flabel" style="margin-bottom:0;flex-shrink:0;">PWS dit jaar?</label>
+      <label style="display:flex;align-items:center;gap:.25rem;font-size:.83rem;cursor:pointer;">
+        <input type="radio" name="estu-pws" value="nee" checked onchange="onEstuPwsChange()"> Nee
+      </label>
+      <label style="display:flex;align-items:center;gap:.25rem;font-size:.83rem;cursor:pointer;">
+        <input type="radio" name="estu-pws" value="ja" onchange="onEstuPwsChange()"> Ja
+      </label>
+    </div>
+    <div id="estu-pws-dots-wrap" style="display:none;margin-bottom:.75rem;">
+      <label class="flabel">PWS voortgang (klik om status te wijzigen)</label>
+      <div class="pws-admin-dots" id="estu-pws-dots"></div>
+    </div>
     <div id="estu-period-ct"></div>
     <div class="err-msg" id="estu-err"></div>
     <button class="btn-p" onclick="saveEditStu()">Opslaan</button>
@@ -1433,6 +1468,7 @@ const S = {
   beschikbaarheid:{},    // {vak:{di:{slotId:status}}} — vast jaarpatroon
   changeLog:[],          // [{ts,studentId,studentName,weekKey,di,slotId,from,to}] — coordinator changes
   coachLastSeen:null,    // ISO timestamp of last coach login
+  pwsEditMode:false,     // true when pencil is active for PWS dot editing
   aanw:{},               // {weekKey:{di:{stuId:{status:'ok'|'nok'|'mod',note:''}}}} — aanwezigheidsregistratie
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
@@ -2325,7 +2361,7 @@ const ROL_LABELS = {admin:'🔧 Admin',coordinator:'Coördinator',coach:'Coach',
 function renderRollenList(){
   const list = document.getElementById('rol-list');
   if(!list) return;
-  const entries = Object.entries(S.roleMap);
+  const entries = Object.entries(S.roleMap).sort(([a],[b])=>a.localeCompare(b,'nl',{sensitivity:'base'}));
   if(!entries.length){
     list.innerHTML='<p style="font-size:.83rem;color:var(--tx3);padding:.5rem 0;">Nog geen accounts gekoppeld.</p>';
     return;
@@ -2554,8 +2590,8 @@ function renderStudentsList(){
     const allVakken=stu.vakken&&!Array.isArray(stu.vakken)?Object.values(stu.vakken).flat():stu.vakken||[];
     const vkCount=[...new Set(allVakken)].length;
     d.innerHTML=`<div class="list-item-info">
-      <span class="li-name">${stu.name}</span>
-      <span class="li-meta">${stuLabel(stu)}${vkCount?' · '+vkCount+' vak'+(vkCount===1?'':'ken'):''}</span>
+      <span class="li-name">${stu.name}${stu.sport?' <span style="font-size:.75rem;color:var(--tx3);">· '+stu.sport+'</span>':''}</span>
+      <span class="li-meta">${stuLabel(stu)}${vkCount?' · '+vkCount+' vak'+(vkCount===1?'':'ken'):''}${stu.pws?' · PWS ✓':''}</span>
     </div>
     <div class="li-actions">
       <button class="li-edit" onclick="openEditStu('${stu.id}')" title="Aanpassen">✏️</button>
@@ -2750,6 +2786,27 @@ function onEstuClassChange(){
   const klass=document.getElementById('estu-class').value;
   document.getElementById('estu-year-wrap').style.display=NEEDS_YEAR.includes(klass)?'block':'none';
 }
+function onEstuPwsChange(){
+  const hasPws=document.querySelector('input[name="estu-pws"]:checked').value==='ja';
+  document.getElementById('estu-pws-dots-wrap').style.display=hasPws?'':'none';
+}
+const _DOT_CLS=['d-red','d-orange','d-green'];
+function _renderEstuPwsDots(dots){
+  const container=document.getElementById('estu-pws-dots');
+  if(!container) return;
+  container.innerHTML='';
+  dots.forEach((val,i)=>{
+    const d=document.createElement('div');
+    d.className='pws-admin-dot '+_DOT_CLS[val];
+    d.dataset.val=val;
+    d.onclick=()=>{
+      const nv=(parseInt(d.dataset.val)+1)%3;
+      d.dataset.val=nv;
+      d.className='pws-admin-dot '+_DOT_CLS[nv];
+    };
+    container.appendChild(d);
+  });
+}
 function buildPeriodVakGrid(klass, savedVakken){
   // savedVakken: {} (period→array) or [] (legacy)
   const periods=getPeriodList(klass);
@@ -2778,12 +2835,18 @@ function openEditStu(id){
   if(!stu) return;
   document.getElementById('estu-id').value=id;
   document.getElementById('estu-name').value=stu.name;
+  document.getElementById('estu-sport').value=stu.sport||'';
   document.getElementById('estu-class').value=stu.klass;
   onEstuClassChange();
   if(NEEDS_YEAR.includes(stu.klass)&&stu.year){
     const r=document.querySelector(`input[name="estu-year"][value="${stu.year}"]`);
     if(r) r.checked=true;
   }
+  // PWS
+  const hasPws=!!stu.pws;
+  document.querySelector(`input[name="estu-pws"][value="${hasPws?'ja':'nee'}"]`).checked=true;
+  document.getElementById('estu-pws-dots-wrap').style.display=hasPws?'':'none';
+  _renderEstuPwsDots(stu.pwsDots||[0,0,0,0,0]);
   const ct=document.getElementById('estu-period-ct'); ct.innerHTML='';
   const lbl=document.createElement('label');
   lbl.className='flabel'; lbl.style.cssText='margin-bottom:.45rem;display:block;';
@@ -2809,8 +2872,15 @@ function saveEditStu(){
     const pid=row.dataset.pid;
     vakken[pid]=[...row.querySelectorAll('.pvg-chip.on')].map(b=>b.textContent);
   });
+  const sport=document.getElementById('estu-sport').value.trim();
+  const hasPws=document.querySelector('input[name="estu-pws"]:checked').value==='ja';
+  // Read current dot states from admin dots
+  const pwsDots=[0,0,0,0,0];
+  document.querySelectorAll('#estu-pws-dots .pws-admin-dot').forEach((el,i)=>{
+    pwsDots[i]=parseInt(el.dataset.val||'0');
+  });
   const stu=S.students.find(s=>s.id===id);
-  if(stu){ stu.name=name; stu.klass=klass; stu.year=year; stu.vakken=vakken; }
+  if(stu){ stu.name=name; stu.klass=klass; stu.year=year; stu.vakken=vakken; stu.sport=sport; stu.pws=hasPws; stu.pwsDots=hasPws?pwsDots:[0,0,0,0,0]; }
   persist(); closeEditStu(); renderStudentsList();
   if(S.currentStudentId===id) updateStudentBar();
 }
@@ -3016,6 +3086,22 @@ function _renderLaContent(){
   ct.appendChild(table);
 }
 
+/* ══ PWS DOTS ════════════════════════════════════════ */
+function _togglePwsEdit(){
+  S.pwsEditMode=!S.pwsEditMode;
+  updateStudentBar(); // re-render so pencil button reflects state
+}
+function _clickPwsDot(el){
+  if(!S.pwsEditMode) return;
+  const stuId=el.dataset.stuid;
+  const idx=parseInt(el.dataset.idx);
+  const stu=S.students.find(s=>s.id===stuId);
+  if(!stu) return;
+  if(!stu.pwsDots) stu.pwsDots=[0,0,0,0,0];
+  stu.pwsDots[idx]=(stu.pwsDots[idx]+1)%3;
+  persist(); updateStudentBar();
+}
+
 /* ══ AANWEZIGHEIDSLIJST (COORDINATOR / COACH) ════════ */
 let _aanwWY  = null;  // {year, week} van de getoonde week
 let _aanwDi  = 0;     // geselecteerde dagindex 0=Ma … 4=Vr
@@ -3135,7 +3221,7 @@ function _renderAanwList(){
 
     const nameDiv = document.createElement('div');
     nameDiv.className = 'aanw-name';
-    nameDiv.innerHTML = `<div class="aanw-name-txt">${stu.name}</div>`
+    nameDiv.innerHTML = `<div class="aanw-name-txt">${stu.name}${stu.sport?' <span style="font-size:.72rem;font-weight:400;color:var(--tx3);">· '+stu.sport+'</span>':''}</div>`
       + (timeStr ? `<div class="aanw-time">⏱ ${timeStr}</div>` : '');
 
     const btns = document.createElement('div');
@@ -3345,7 +3431,7 @@ function updateStudentBar(){
   }
   const idx=vis.findIndex(s=>s.id===S.currentStudentId);
   const stu=vis[idx];
-  nd.textContent=stu?stu.name:'—';
+  nd.textContent=stu ? stu.name + (stu.sport ? ' · ' + stu.sport : '') : '—';
   md.textContent=stu?stuLabel(stu):'—';
   const vd=document.getElementById('stu-vakken');
   const vakken=getActiveVakken(stu);
@@ -3353,8 +3439,19 @@ function updateStudentBar(){
   const pidLabel=pid ? (() => {
     const all=[...EXAM_PERIODS,...PREEXAM_PERIODS]; const p=all.find(x=>x.id===pid); return p?p.label:'';
   })() : '';
-  vd.innerHTML=(pid?`<span class="stu-vchip" style="background:rgba(255,255,255,.38);color:#fff;">${pidLabel}</span>`:'')
+  let vdHtml=(pid?`<span class="stu-vchip" style="background:rgba(255,255,255,.38);color:#fff;">${pidLabel}</span>`:'')
     +vakken.map(v=>`<span class="stu-vchip">${v}</span>`).join('');
+  // PWS section
+  if(stu && stu.pws){
+    const canEditPws=(S.role==='coach'||S.role==='coordinator');
+    const dots=(stu.pwsDots||[0,0,0,0,0]).map((val,i)=>{
+      const cls='pws-dot '+_DOT_CLS[val]+(canEditPws?' editable':'');
+      return `<span class="${cls}" data-idx="${i}" data-stuid="${stu.id}" onclick="_clickPwsDot(this)"></span>`;
+    }).join('');
+    const pencil=canEditPws?`<button class="pws-pencil${S.pwsEditMode?' active':''}" id="pws-pencil-btn" onclick="_togglePwsEdit()" title="PWS bewerken">✏️</button>`:'';
+    vdHtml+=`<span style="display:inline-flex;align-items:center;gap:.3rem;margin-left:.5rem;"><span class="stu-vchip" style="background:rgba(255,255,255,.38);color:#fff;">PWS</span>${dots}${pencil}</span>`;
+  }
+  vd.innerHTML=vdHtml;
   if(!isLocked){
     ct.textContent=(idx+1)+' / '+vis.length;
     prev.disabled=idx<=0;
@@ -3675,7 +3772,7 @@ function executePrint(){
       <div style="display:flex;justify-content:space-between;align-items:flex-end;
         border-bottom:2pt solid ${HDR_BG};padding-bottom:1.5mm;margin-bottom:2mm;flex-shrink:0;">
         <div>
-          <div style="font-size:12pt;font-weight:800;color:${HDR_BG};line-height:1;">${stu.name}</div>
+          <div style="font-size:12pt;font-weight:800;color:${HDR_BG};line-height:1;">${stu.name}${stu.sport?' · '+stu.sport:''}</div>
           <div style="font-size:7pt;color:#555;margin-top:1mm;">${stuLabel(stu)}</div>
         </div>
         <div style="text-align:right;">
