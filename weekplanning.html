@@ -232,6 +232,41 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .pws-admin-dot.d-green {background:#28a745;border-color:#1e7e34;}
 .pws-admin-dot:hover{transform:scale(1.2);}
 
+/* ── LOGBOEK ─────────────────────────────────────── */
+.logb-modal{max-width:min(94vw,680px);width:680px;max-height:91vh;overflow:hidden;
+  display:flex;flex-direction:column;padding:1.5rem;}
+.logb-filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;flex-shrink:0;}
+.logb-filter-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;
+  padding:.22rem .7rem;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--tx2);transition:all .13s;}
+.logb-filter-btn.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+.logb-scroll{overflow-y:auto;flex:1;min-height:0;}
+.logb-row{padding:.55rem .4rem;border-bottom:1px solid var(--border);cursor:pointer;
+  display:flex;align-items:center;gap:.6rem;border-radius:6px;transition:background .12s;}
+.logb-row:last-child{border-bottom:none;}
+.logb-row:hover{background:var(--brand-light);}
+.logb-who{font-size:.7rem;font-weight:700;color:var(--brand);min-width:90px;flex-shrink:0;}
+.logb-stu{font-weight:600;font-size:.84rem;color:var(--tx);flex:1;}
+.logb-day{font-size:.72rem;color:var(--tx3);flex-shrink:0;}
+.logb-cnt{background:var(--brand-light);color:var(--brand);border-radius:10px;
+  padding:.12rem .45rem;font-size:.68rem;font-weight:700;flex-shrink:0;}
+.logb-empty{text-align:center;padding:2.5rem;color:var(--tx3);font-size:.87rem;}
+/* detail popup */
+.logb-detail-row{padding:.45rem .3rem;border-bottom:1px solid var(--border);font-size:.82rem;}
+.logb-detail-row:last-child{border-bottom:none;}
+.logb-detail-slot{font-weight:600;color:var(--tx);min-width:40px;display:inline-block;}
+.logb-chip{display:inline-flex;align-items:center;padding:.1rem .35rem;border-radius:4px;
+  font-size:.68rem;font-weight:700;margin:0 .2rem;}
+.logb-chip.c-null{background:var(--surface);border:1px solid var(--border);color:var(--tx3);}
+.logb-chip.c-green{background:var(--g-bg);color:var(--g-tx);}
+.logb-chip.c-red{background:var(--r-bg);color:var(--r-tx);}
+.logb-chip.c-rose{background:var(--ro-bg);color:var(--ro-tx);}
+.logb-chip.c-blue{background:var(--b-bg);color:var(--b-tx);}
+.logb-chip.c-purple{background:var(--p-bg);color:var(--p-tx);}
+.logb-chip.c-yellow{background:var(--y-bg);color:var(--y-tx);}
+.logb-chip.c-orange{background:var(--o-bg);color:var(--o-tx);}
+.logb-arrow{color:var(--tx3);margin:0 .1rem;}
+.logb-ts{font-size:.65rem;color:var(--tx3);margin-left:.4rem;}
+
 /* ── AANWEZIGHEIDSLIJST ─────────────────────────── */
 .aanw-modal{max-width:min(94vw,680px);width:680px;max-height:91vh;overflow:hidden;
   display:flex;flex-direction:column;padding:1.5rem;}
@@ -534,6 +569,13 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .sdc[data-c="orange"] .sdc-lbl{color:var(--o-tx);}
 .sdc[data-c="rose"]   .sdc-lbl{color:var(--ro-tx);}
 .sdc-picker{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;padding:4px 3px 0;}
+.std-times-section{margin:.3rem 0 .9rem;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.std-times-hd{background:var(--surf-2);padding:.38rem .75rem;font-size:.72rem;font-weight:700;color:var(--tx2);border-bottom:1px solid var(--border);}
+.std-times-grid{display:grid;grid-template-columns:90px repeat(5,1fr);font-size:.72rem;}
+.std-times-lbl{background:var(--surf-2);padding:.35rem .48rem;color:var(--tx3);font-size:.65rem;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;}
+.std-time-inp{border:1px solid var(--border);padding:.28rem .3rem;font-size:.72rem;width:100%;text-align:center;background:var(--surface);color:var(--tx);font-family:inherit;outline:none;transition:border-color .13s;}
+.std-time-inp:focus{border-color:var(--brand);}
+.la-cell-time{font-size:.58rem;font-weight:400;opacity:.75;margin-left:.18rem;}
 .modal-actions{display:flex;gap:.55rem;margin-top:.9rem;}
 .btn-p.sm{width:auto;padding:.65rem 1.7rem;}
 .btn-g.sm{width:auto;padding:.62rem 1.3rem;}
@@ -718,6 +760,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <div id="hdr-edit-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openLeerlingBeschModal()">👨‍🏫 Docenten</button>
         <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
+        <button class="hb" onclick="openLogboek()">📔 Logboek</button>
         <button class="hb" id="btn-print-week" onclick="openPrintModal()">🖨️ Printen</button>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
@@ -969,6 +1012,27 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="btn-p" id="toets-send-btn" onclick="confirmToetsMail()">✉️ Mail sturen &amp; opslaan</button>
     <button class="btn-g" onclick="saveToetsNoMail()">Opslaan zonder mail</button>
     <button class="btn-ghost" onclick="cancelToets()">✕ Annuleren</button>
+  </div>
+</div>
+
+<!-- ══ LOGBOEK (COORDINATOR / COACH) ════════════════ -->
+<div class="overlay" id="modal-logboek">
+  <div class="modal-card logb-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-shrink:0;">
+      <h2 style="margin:0;">📔 Logboek wijzigingen</h2>
+      <button class="btn-g sm" onclick="document.getElementById('modal-logboek').classList.remove('show')" style="width:auto;padding:.38rem .85rem;font-size:.82rem;">✕ Sluiten</button>
+    </div>
+    <div class="logb-filters" id="logb-filters"></div>
+    <div class="logb-scroll" id="logb-list"></div>
+  </div>
+</div>
+
+<!-- ══ LOGBOEK DETAIL ════════════════════════════════ -->
+<div class="overlay" id="modal-logboek-detail">
+  <div class="modal-card" style="max-width:500px;">
+    <h2 id="logb-detail-title" style="margin-bottom:.8rem;">📔 Wijzigingen</h2>
+    <div id="logb-detail-list" style="max-height:60vh;overflow-y:auto;"></div>
+    <button class="btn-g" style="margin-top:1rem;" onclick="document.getElementById('modal-logboek-detail').classList.remove('show')">Sluiten</button>
   </div>
 </div>
 
@@ -1459,6 +1523,7 @@ const S = {
   currentStudentId:null,
   studentData:{},        // {studentId:{std:{},ovr:{}}}
   tmpStd:{},
+  tmpStdTimes:{},        // {0:{van:'',tot:''}, ...} — aankomst/vertrek per dag (tijdelijk tijdens edit)
   teacherPasswords:{},   // {NE:'pw', EN:'pw', ...}
   docentVak:null,
   studentPasswords:{},   // {studentId:'pw'}
@@ -1468,6 +1533,7 @@ const S = {
   beschikbaarheid:{},    // {vak:{di:{slotId:status}}} — vast jaarpatroon
   changeLog:[],          // [{ts,studentId,studentName,weekKey,di,slotId,from,to}] — coordinator changes
   coachLastSeen:null,    // ISO timestamp of last coach login
+  loggedInEmail:null,    // email of currently logged-in user (from MS login)
   pwsEditMode:false,     // true when pencil is active for PWS dot editing
   aanw:{},               // {weekKey:{di:{stuId:{status:'ok'|'nok'|'mod',note:''}}}} — aanwezigheidsregistratie
   schoolPeriods:{        // datums per periode
@@ -2006,6 +2072,7 @@ async function _tryMsAutoLogin(){
 
 function _applyRoleMapping(mapping, email){
   S.role = mapping.role;
+  S.loggedInEmail = email || null;
   S.docentVak = mapping.vak || null;
   if(mapping.studentId){ S.leerlingStudentId=mapping.studentId; S.currentStudentId=mapping.studentId; }
   if(mapping.role==='admin') showAdmin();
@@ -2361,7 +2428,11 @@ const ROL_LABELS = {admin:'🔧 Admin',coordinator:'Coördinator',coach:'Coach',
 function renderRollenList(){
   const list = document.getElementById('rol-list');
   if(!list) return;
-  const entries = Object.entries(S.roleMap).sort(([a],[b])=>a.localeCompare(b,'nl',{sensitivity:'base'}));
+  const ROL_ORDER={admin:0,coordinator:1,coach:2,docent:3,leerling:4};
+  const entries = Object.entries(S.roleMap).sort(([a,ma],[b,mb])=>{
+    const ro=(ROL_ORDER[ma.role]??9)-(ROL_ORDER[mb.role]??9);
+    return ro!==0?ro:a.localeCompare(b,'nl',{sensitivity:'base'});
+  });
   if(!entries.length){
     list.innerHTML='<p style="font-size:.83rem;color:var(--tx3);padding:.5rem 0;">Nog geen accounts gekoppeld.</p>';
     return;
@@ -3059,6 +3130,8 @@ function _renderLaContent(){
     th.innerHTML = slot.label + '<br><span style="opacity:.55;font-weight:400">' + slot.time.split('–')[0] + '</span>';
     hr.appendChild(th);
   });
+  // Extra kolom voor aankomst/vertrek
+  const thTijd = document.createElement('th'); thTijd.textContent='Aankomst–Vertrek'; hr.appendChild(thTijd);
   thead.appendChild(hr);
   table.appendChild(thead);
 
@@ -3066,8 +3139,9 @@ function _renderLaContent(){
   const tbody = document.createElement('tbody');
   stus.forEach(stu => {
     const tr = document.createElement('tr');
-    const tdName = document.createElement('td'); tdName.className='la-name'; tdName.textContent=stu.name; tr.appendChild(tdName);
+    const tdName = document.createElement('td'); tdName.className='la-name'; tdName.textContent=stu.name+(stu.sport?' · '+stu.sport:''); tr.appendChild(tdName);
     const sd = S.studentData[stu.id] || {std:{},ovr:{}};
+    const dayTimes = sd.std?.times?.[di] || null;
     slots.forEach(slot => {
       // Kleur ophalen (zelfde logica als getColor maar voor willekeurige student)
       const o = sd.ovr?.[key];
@@ -3077,13 +3151,115 @@ function _renderLaContent(){
       const td = document.createElement('td');
       const cell = document.createElement('div');
       cell.className = 'la-cell' + (c ? ' c-'+c : ' c-null');
-      cell.textContent = c ? (SHORT[c]||c) : '—';
+      let cellTxt = c ? (SHORT[c]||c) : '—';
+      // Toon aankomsttijd in de eerste cel en vertrektijd in de laatste cel
+      if(dayTimes && c){
+        if(slot.id===slots[0].id && dayTimes.van) cellTxt+=` (${dayTimes.van})`;
+        if(slot.id===slots[slots.length-1].id && dayTimes.tot) cellTxt+=` (${dayTimes.tot})`;
+      }
+      cell.textContent = cellTxt;
       td.appendChild(cell); tr.appendChild(td);
     });
+    // Tijd kolom
+    const tdTijd = document.createElement('td');
+    if(dayTimes && (dayTimes.van||dayTimes.tot)){
+      const chip=document.createElement('div');
+      chip.className='la-cell'; chip.style.cssText='background:var(--surf-2);color:var(--tx2);white-space:nowrap;';
+      chip.textContent=(dayTimes.van||'?')+' – '+(dayTimes.tot||'?');
+      tdTijd.appendChild(chip);
+    }
+    tr.appendChild(tdTijd);
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
   ct.appendChild(table);
+}
+
+/* ══ LOGBOEK ═════════════════════════════════════════ */
+const _LOGB_CLR_LBL={null:'Leeg',green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
+let _logbFilter = 'all'; // 'all' | 'coordinator' | 'coach'
+
+function openLogboek(){
+  _logbFilter='all';
+  _renderLogboekFilters();
+  _renderLogboekList();
+  document.getElementById('modal-logboek').classList.add('show');
+}
+
+function _renderLogboekFilters(){
+  const wrap = document.getElementById('logb-filters');
+  wrap.innerHTML = '';
+  const opts=[['all','Alle'],['coordinator','Coördinator'],['coach','Coach']];
+  opts.forEach(([val,lbl])=>{
+    const btn=document.createElement('button');
+    btn.className='logb-filter-btn'+(val===_logbFilter?' on':'');
+    btn.textContent=lbl;
+    btn.onclick=()=>{ _logbFilter=val; _renderLogboekFilters(); _renderLogboekList(); };
+    wrap.appendChild(btn);
+  });
+}
+
+function _renderLogboekList(){
+  const ct = document.getElementById('logb-list');
+  ct.innerHTML = '';
+  // Filter by role if needed
+  const entries = (S.changeLog||[]).filter(e=> _logbFilter==='all'||e.role===_logbFilter||((!e.role)&&_logbFilter==='coordinator'));
+  if(!entries.length){
+    ct.innerHTML='<div class="logb-empty">Nog geen wijzigingen vastgelegd.</div>'; return;
+  }
+  // Group by (studentId, weekKey, di)
+  const groups = {};
+  entries.forEach(e=>{
+    const gk = e.studentId+'|'+e.weekKey+'|'+e.di;
+    if(!groups[gk]) groups[gk]={studentId:e.studentId,studentName:e.studentName,weekKey:e.weekKey,di:e.di,entries:[],latestTs:e.ts,makers:new Set()};
+    groups[gk].entries.push(e);
+    if(e.ts>groups[gk].latestTs) groups[gk].latestTs=e.ts;
+    groups[gk].makers.add(e.madeBy||(e.role==='coach'?'Coach':'Coördinator'));
+  });
+  const sorted = Object.values(groups).sort((a,b)=>b.latestTs.localeCompare(a.latestTs));
+  sorted.forEach(g=>{
+    const row=document.createElement('div');
+    row.className='logb-row';
+    // Parse weekKey → date of that day
+    const [yr,wk2]=g.weekKey.split('-').map(Number);
+    const mon=monday(yr,wk2);
+    const d=new Date(mon); d.setDate(mon.getDate()+g.di);
+    const MNL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+    const dayLabel=(['Ma','Di','Wo','Do','Vr'][g.di]||'?')+' '+d.getDate()+' '+MNL[d.getMonth()]+' '+yr;
+    const whoTxt=[...g.makers].join(', ');
+    row.innerHTML=`<span class="logb-who">${whoTxt}</span><span class="logb-stu">${g.studentName}</span><span class="logb-day">${dayLabel}</span><span class="logb-cnt">${g.entries.length}</span>`;
+    row.onclick=()=>openLogboekDetail(g.studentId,g.studentName,g.weekKey,g.di,g.entries);
+    ct.appendChild(row);
+  });
+}
+
+function openLogboekDetail(stuId,stuName,weekKey,di,entries){
+  const [yr,wk2]=weekKey.split('-').map(Number);
+  const mon=monday(yr,wk2);
+  const d=new Date(mon); d.setDate(mon.getDate()+di);
+  const MNL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const dayLabel=(['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'][di]||'?')+' '+d.getDate()+' '+MNL[d.getMonth()]+' '+yr;
+  document.getElementById('logb-detail-title').textContent='📔 '+stuName+' — '+dayLabel;
+  const ct=document.getElementById('logb-detail-list');
+  ct.innerHTML='';
+  // Sort entries by timestamp, newest first
+  const sorted=[...entries].sort((a,b)=>b.ts.localeCompare(a.ts));
+  sorted.forEach(e=>{
+    const slot=SCHOOL.find(s=>s.id===e.slotId);
+    const slotLbl=slot?slot.label:e.slotId;
+    const fromCls='c-'+(e.from||'null');
+    const toCls='c-'+(e.to||'null');
+    const fromLbl=_LOGB_CLR_LBL[e.from||null]||e.from||'Leeg';
+    const toLbl=_LOGB_CLR_LBL[e.to||null]||e.to||'Leeg';
+    const who=e.madeBy||(e.role==='coach'?'Coach':'Coördinator');
+    const ts=new Date(e.ts);
+    const tsFmt=ts.toLocaleDateString('nl-NL',{day:'2-digit',month:'short'})+' '+ts.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+    const row=document.createElement('div');
+    row.className='logb-detail-row';
+    row.innerHTML=`<span class="logb-detail-slot">${slotLbl}</span> <span class="logb-chip ${fromCls}">${fromLbl}</span><span class="logb-arrow">→</span><span class="logb-chip ${toCls}">${toLbl}</span> <span style="font-size:.72rem;color:var(--tx3);">door ${who}</span><span class="logb-ts">${tsFmt}</span>`;
+    ct.appendChild(row);
+  });
+  document.getElementById('modal-logboek-detail').classList.add('show');
 }
 
 /* ══ PWS DOTS ════════════════════════════════════════ */
@@ -3950,12 +4126,13 @@ function setOvr(weekKey,di,sid,c){
   if(!ovr[weekKey][di]) ovr[weekKey][di]={};
   const prev=ovr[weekKey][di][sid]??null;
   ovr[weekKey][di][sid]=c;
-  // Log coordinator changes for coach notification
-  if(S.role==='coordinator' && prev!==c){
+  // Log coordinator & coach changes
+  if((S.role==='coordinator'||S.role==='coach') && prev!==c){
     const stu=S.students.find(s=>s.id===S.currentStudentId);
     if(stu){
-      S.changeLog.push({ts:new Date().toISOString(),studentId:stu.id,studentName:stu.name,weekKey,di,slotId:sid,from:prev,to:c});
-      if(S.changeLog.length>500) S.changeLog.splice(0, S.changeLog.length-500); // keep last 500
+      const madeBy=S.loggedInEmail||(S.role==='coordinator'?'Coördinator':'Coach');
+      S.changeLog.push({ts:new Date().toISOString(),studentId:stu.id,studentName:stu.name,weekKey,di,slotId:sid,from:prev,to:c,madeBy,role:S.role});
+      if(S.changeLog.length>1000) S.changeLog.splice(0, S.changeLog.length-1000);
     }
   }
   persist();
@@ -4314,7 +4491,9 @@ function _refreshNoteUI(cell, c, key, di, slot, editable){
 /* ══ STD SCHEDULE MODAL ═════════════════════════════ */
 function openStdModal(){
   if(!S.currentStudentId){alert('Selecteer eerst een leerling.');return;}
-  S.tmpStd=JSON.parse(JSON.stringify(curData().std));
+  const sd=curData();
+  S.tmpStd=JSON.parse(JSON.stringify(sd.std||{}));
+  S.tmpStdTimes=JSON.parse(JSON.stringify(sd.std?.times||{}));
   const stu=S.students.find(s=>s.id===S.currentStudentId);
   document.getElementById('std-modal-sub').innerHTML=
     'Standaardrooster voor <strong>'+(stu?stu.name:'leerling')+'</strong>.<br>'
@@ -4325,7 +4504,9 @@ function openStdModal(){
 function closeStdModal(){document.getElementById('modal-std').classList.remove('show');}
 function saveStd(){
   if(!S.currentStudentId) return;
-  curData().std=JSON.parse(JSON.stringify(S.tmpStd));
+  const d=curData();
+  d.std=JSON.parse(JSON.stringify(S.tmpStd));
+  d.std.times=JSON.parse(JSON.stringify(S.tmpStdTimes));
   persist(); closeStdModal(); renderSchedule();
 }
 function _buildStdPicker(cell, currentColor, di, slotId){
@@ -4377,6 +4558,36 @@ function renderStdGrid(){
     }
   });
   ct.appendChild(grid);
+
+  // ── Aankomst & vertrek per dag ──
+  const timeSec=document.createElement('div'); timeSec.className='std-times-section';
+  const timesHd=document.createElement('div'); timesHd.className='std-times-hd';
+  timesHd.textContent='🕐 Aankomst & vertrek per dag'; timeSec.appendChild(timesHd);
+  const tGrid=document.createElement('div'); tGrid.className='std-times-grid';
+  // Header row: empty corner + day names
+  const corner=document.createElement('div'); corner.className='std-times-lbl'; tGrid.appendChild(corner);
+  DAYS_SHORT.slice(0,5).forEach(d=>{
+    const h=document.createElement('div'); h.className='std-times-lbl';
+    h.style.cssText='background:var(--brand);color:rgba(255,255,255,.9);justify-content:center;font-weight:600;';
+    h.textContent=d; tGrid.appendChild(h);
+  });
+  // Aankomst row
+  ['Aankomst','Vertrek'].forEach((type,ti)=>{
+    const lbl=document.createElement('div'); lbl.className='std-times-lbl'; lbl.textContent=type; tGrid.appendChild(lbl);
+    for(let di=0;di<5;di++){
+      const inp=document.createElement('input');
+      inp.type='time'; inp.className='std-time-inp';
+      inp.value=(S.tmpStdTimes[di]?.(ti===0?'van':'tot'))||'';
+      inp.dataset.di=di; inp.dataset.type=ti===0?'van':'tot';
+      inp.addEventListener('change',()=>{
+        if(!S.tmpStdTimes[di]) S.tmpStdTimes[di]={van:'',tot:''};
+        S.tmpStdTimes[di][inp.dataset.type]=inp.value;
+      });
+      tGrid.appendChild(inp);
+    }
+  });
+  timeSec.appendChild(tGrid);
+  ct.appendChild(timeSec);
 }
 function applyStd(cell,c){cell.setAttribute('data-c',c||'null');}
 
