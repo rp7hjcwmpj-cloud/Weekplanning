@@ -188,10 +188,10 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .toets-result-item:hover{background:var(--surf-2);}
 .toets-result-name{font-weight:600;color:var(--tx);}
 .toets-result-mail{font-size:.74rem;color:var(--muted,#8893A4);}
-.toets-selected{background:var(--brand-light,#E4EBF8);border-radius:8px;padding:.4rem .85rem;font-size:.86rem;display:flex;justify-content:space-between;align-items:center;margin-top:.3rem;}
-.toets-selected-name{font-weight:600;color:var(--brand);}
-.toets-selected-clear{cursor:pointer;color:var(--muted,#8893A4);font-size:.9rem;padding:.1rem .3rem;border-radius:4px;}
-.toets-selected-clear:hover{color:var(--tx);background:rgba(0,0,0,.07);}
+.toets-selected{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem;}
+.toets-chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--brand-light,#E4EBF8);border-radius:20px;padding:.22rem .6rem .22rem .75rem;font-size:.82rem;font-weight:600;color:var(--brand);}
+.toets-chip-clear{cursor:pointer;color:var(--brand);opacity:.6;font-size:.82rem;line-height:1;padding:.05rem;}
+.toets-chip-clear:hover{opacity:1;}
 .toets-no-m365{font-size:.8rem;color:var(--muted,#8893A4);font-style:italic;margin-top:.3rem;}
 
 /* ── Leerling aanwezigheid (docent) ── */
@@ -1003,43 +1003,27 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <div class="toets-time-preview" id="toets-time-preview"></div>
     </div>
 
-    <!-- Docent mail -->
+    <!-- Mail ontvangers -->
     <div class="toets-section">
-      <div class="toets-section-lbl">✉️ Mail sturen aan docent</div>
+      <div class="toets-section-lbl">✉️ Mail sturen aan</div>
       <div class="toets-search-wrap">
         <input class="field-inp" type="text" id="toets-search"
-               placeholder="Zoek docent op naam in de organisatie…"
+               placeholder="Zoek op naam in de organisatie…"
                oninput="onToetsSearch(this.value)"
                autocomplete="off" style="margin-bottom:0;">
         <div id="toets-results" class="toets-results" style="display:none;"></div>
       </div>
-      <div id="toets-selected" class="toets-selected" style="display:none;"></div>
+      <div id="toets-selected" class="toets-selected"></div>
       <div id="toets-no-m365" class="toets-no-m365" style="display:none;">
         ℹ️ Koppel de app aan Microsoft 365 (Admin → ☁️ Microsoft 365) om mails te sturen.
       </div>
-      <div class="toets-section" id="toets-msg-wrap" style="margin-top:.6rem;padding:0;">
-        <div class="toets-section-lbl" style="font-size:.78rem;font-weight:500;color:var(--muted);">Bericht aan docent</div>
-        <textarea class="field-inp" id="toets-msg" rows="5"
-                  style="resize:vertical;font-size:.84rem;font-family:inherit;"></textarea>
-      </div>
     </div>
 
-    <!-- Leerling mail -->
-    <div class="toets-section">
-      <div class="toets-section-lbl">✉️ Mail sturen aan leerling</div>
-      <div class="toets-search-wrap">
-        <input class="field-inp" type="text" id="toets-stu-search"
-               placeholder="Zoek leerling op naam in de organisatie…"
-               oninput="onToetsStuSearch(this.value)"
-               autocomplete="off" style="margin-bottom:0;">
-        <div id="toets-stu-results" class="toets-results" style="display:none;"></div>
-      </div>
-      <div id="toets-stu-selected" class="toets-selected" style="display:none;"></div>
-      <div class="toets-section" id="toets-stu-msg-wrap" style="margin-top:.6rem;padding:0;">
-        <div class="toets-section-lbl" style="font-size:.78rem;font-weight:500;color:var(--muted);">Bericht aan leerling</div>
-        <textarea class="field-inp" id="toets-stu-msg" rows="5"
-                  style="resize:vertical;font-size:.84rem;font-family:inherit;"></textarea>
-      </div>
+    <!-- Bericht -->
+    <div class="toets-section" id="toets-msg-wrap">
+      <div class="toets-section-lbl">Bericht</div>
+      <textarea class="field-inp" id="toets-msg" rows="5"
+                style="resize:vertical;font-size:.84rem;font-family:inherit;"></textarea>
     </div>
 
     <div class="err-msg" id="toets-err" style="display:none;margin-bottom:.5rem;"></div>
@@ -4708,17 +4692,14 @@ function _toetsCoverage(startSlot, allSlots, durationMin, startTimeStr){
 
 /* ══ TOETS POPUP ════════════════════════════════════ */
 let _toetsCtx = null;           // { key, di, slot, slots, dates, origColor }
-let _toetsSelected = null;      // { displayName, mail } – docent
+let _toetsRecipients = [];      // [{ displayName, mail }, …] – selected mail recipients
 let _toetsSearchTimer = null;
-let _toetsStuSelected = null;   // { displayName, mail } – leerling
-let _toetsStuSearchTimer = null;
 
 function openToetsModal(key, di, slot, slots, dates){
   // Record original (pre-yellow) color from standaardrooster for late-start restoration
   const origColor = curData().std?.[di]?.[slot.id] || null;
   _toetsCtx = { key, di, slot, slots, dates, origColor };
-  _toetsSelected = null;
-  _toetsStuSelected = null;
+  _toetsRecipients = [];
 
   // Info row
   const date = dates[di];
@@ -4740,16 +4721,11 @@ function openToetsModal(key, di, slot, slots, dates){
   });
   if(!found) document.querySelectorAll('input[name="toets-dur"]').forEach(r => { if(+r.value===45) r.checked=true; });
 
-  // Reset docent mail fields
+  // Reset mail fields
   document.getElementById('toets-search').value = '';
   document.getElementById('toets-results').style.display = 'none';
-  document.getElementById('toets-selected').style.display = 'none';
+  document.getElementById('toets-selected').innerHTML = '';
   document.getElementById('toets-no-m365').style.display = _graphToken ? 'none' : '';
-
-  // Reset leerling mail fields
-  document.getElementById('toets-stu-search').value = '';
-  document.getElementById('toets-stu-results').style.display = 'none';
-  document.getElementById('toets-stu-selected').style.display = 'none';
 
   document.getElementById('toets-send-btn').textContent = '✉️ Mail sturen & opslaan';
 
@@ -4776,28 +4752,17 @@ function _refreshToetsMsg(){
   document.getElementById('toets-time-preview').textContent =
     `📐 ${dur} minuten — ${startTime} t/m ${endTime}`;
 
-  // Docent message
-  const toDocent = _toetsSelected ? _toetsSelected.displayName : '[Docent]';
+  // Build greeting from selected recipients
+  const names = _toetsRecipients.length
+    ? _toetsRecipients.map(r => r.displayName).join(' en ')
+    : '[Ontvanger]';
   document.getElementById('toets-msg').value =
-    `Beste ${toDocent},\n\n` +
+    `Beste ${names},\n\n` +
     `Er is een toets ingepland voor ${stuName}.\n\n` +
     (subject ? `📖 Onderwerp: ${subject}\n` : '') +
     `📅 ${dayName} ${fmt(date)}\n` +
     `🕐 ${ctx.slot.label}  (${startTime} – ${endTime})\n` +
     `⏱ Duur: ${dur} minuten\n\n` +
-    `Wil je de toets bij me aanleveren alsjeblieft.\n\n` +
-    `Groet Coach 2.0`;
-
-  // Leerling message
-  const toStu = _toetsStuSelected ? _toetsStuSelected.displayName : stuName;
-  document.getElementById('toets-stu-msg').value =
-    `Beste ${toStu},\n\n` +
-    `Herinnering: je hebt een toets ingepland staan.\n\n` +
-    (subject ? `📖 Onderwerp: ${subject}\n` : '') +
-    `📅 ${dayName} ${fmt(date)}\n` +
-    `🕐 ${ctx.slot.label}  (${startTime} – ${endTime})\n` +
-    `⏱ Duur: ${dur} minuten\n\n` +
-    `Succes met je voorbereiding!\n\n` +
     `Groet Coach 2.0`;
 }
 
@@ -4831,65 +4796,32 @@ async function onToetsSearch(query){
 }
 
 function _selectToetsUser(user){
-  _toetsSelected = user;
   document.getElementById('toets-results').style.display='none';
   document.getElementById('toets-search').value='';
+  // Avoid duplicates
+  if(_toetsRecipients.some(r=>r.mail===user.mail)) return;
+  _toetsRecipients.push(user);
+  _renderToetsChips();
+  _refreshToetsMsg();
+}
+
+function _renderToetsChips(){
   const sel=document.getElementById('toets-selected');
-  sel.innerHTML=`<span class="toets-selected-name">✓ ${user.displayName} &lt;${user.mail}&gt;</span><span class="toets-selected-clear" onclick="_clearToetsUser()">✕</span>`;
-  sel.style.display='';
+  sel.innerHTML='';
+  _toetsRecipients.forEach((r,idx)=>{
+    const chip=document.createElement('span');
+    chip.className='toets-chip';
+    chip.innerHTML=`${r.displayName}<span class="toets-chip-clear" onclick="_removeToetsRecipient(${idx})">✕</span>`;
+    sel.appendChild(chip);
+  });
+}
+
+function _removeToetsRecipient(idx){
+  _toetsRecipients.splice(idx,1);
+  _renderToetsChips();
   _refreshToetsMsg();
 }
 
-function _clearToetsUser(){
-  _toetsSelected=null;
-  document.getElementById('toets-selected').style.display='none';
-  _refreshToetsMsg();
-}
-
-async function onToetsStuSearch(query){
-  clearTimeout(_toetsStuSearchTimer);
-  const results = document.getElementById('toets-stu-results');
-  if(!query || query.length < 2){ results.style.display='none'; return; }
-  _toetsStuSearchTimer = setTimeout(async()=>{
-    if(!_graphToken){ results.style.display='none'; return; }
-    results.innerHTML='<div class="toets-result-item" style="color:var(--muted)">Zoeken…</div>';
-    results.style.display='';
-    const data = await graphFetch('GET',
-      `/users?$search="displayName:${encodeURIComponent(query)}"&$select=displayName,mail,jobTitle&$top=10&$orderby=displayName`,
-      null,
-      {'ConsistencyLevel':'eventual'}
-    );
-    results.innerHTML='';
-    const users = (data?.value||[]).filter(u=>u.mail);
-    if(users.length===0){
-      results.innerHTML='<div class="toets-result-item" style="color:var(--muted)">Geen resultaten.</div>';
-      return;
-    }
-    users.forEach(u=>{
-      const item=document.createElement('div');
-      item.className='toets-result-item';
-      item.innerHTML=`<span class="toets-result-name">${u.displayName}</span><span class="toets-result-mail">${u.mail}${u.jobTitle?' &nbsp;·&nbsp; '+u.jobTitle:''}</span>`;
-      item.addEventListener('click',()=>_selectToetsStu(u));
-      results.appendChild(item);
-    });
-  }, 320);
-}
-
-function _selectToetsStu(user){
-  _toetsStuSelected = user;
-  document.getElementById('toets-stu-results').style.display='none';
-  document.getElementById('toets-stu-search').value='';
-  const sel=document.getElementById('toets-stu-selected');
-  sel.innerHTML=`<span class="toets-selected-name">✓ ${user.displayName} &lt;${user.mail}&gt;</span><span class="toets-selected-clear" onclick="_clearToetsStu()">✕</span>`;
-  sel.style.display='';
-  _refreshToetsMsg();
-}
-
-function _clearToetsStu(){
-  _toetsStuSelected=null;
-  document.getElementById('toets-stu-selected').style.display='none';
-  _refreshToetsMsg();
-}
 
 function _applyToets(){
   if(!_toetsCtx) return;
@@ -4946,56 +4878,32 @@ async function confirmToetsMail(){
   const errEl=document.getElementById('toets-err');
   errEl.style.display='none';
 
-  // Require at least one recipient if M365 is connected
-  if(_graphToken && !_toetsSelected && !_toetsStuSelected){
-    errEl.textContent='Selecteer een docent en/of leerling om de mail naar te sturen.';
+  // Send mail if M365 connected and recipients selected
+  if(_graphToken && _toetsRecipients.length === 0){
+    errEl.textContent='Selecteer minimaal één ontvanger om de mail naar te sturen.';
     errEl.style.display='';
     return;
   }
 
-  if(_graphToken && (_toetsSelected || _toetsStuSelected)){
+  if(_graphToken && _toetsRecipients.length > 0){
     document.getElementById('toets-send-btn').textContent='⏳ Versturen…';
     const stu = S.students.find(s=>s.id===S.currentStudentId);
     const stuName = stu?.name||'leerling';
-
-    // Send to docent
-    if(_toetsSelected){
-      const payload={
-        message:{
-          subject:`Toets ingepland — ${stuName}`,
-          body:{ contentType:'Text', content: document.getElementById('toets-msg').value },
-          toRecipients:[{ emailAddress:{ address:_toetsSelected.mail, name:_toetsSelected.displayName }}],
-        },
-        saveToSentItems:true,
-      };
-      const res = await graphFetch('POST','/me/sendMail',payload);
-      if(res===null){
-        errEl.textContent='Mail aan docent kon niet worden verstuurd. Controleer de M365-verbinding.';
-        errEl.style.display='';
-        document.getElementById('toets-send-btn').textContent='✉️ Mail sturen & opslaan';
-        return;
-      }
+    const payload={
+      message:{
+        subject:`Toets ingepland — ${stuName}`,
+        body:{ contentType:'Text', content: document.getElementById('toets-msg').value },
+        toRecipients: _toetsRecipients.map(r=>({ emailAddress:{ address:r.mail, name:r.displayName }})),
+      },
+      saveToSentItems:true,
+    };
+    const res = await graphFetch('POST','/me/sendMail',payload);
+    if(res===null){
+      errEl.textContent='Mail kon niet worden verstuurd. Controleer de M365-verbinding.';
+      errEl.style.display='';
+      document.getElementById('toets-send-btn').textContent='✉️ Mail sturen & opslaan';
+      return;
     }
-
-    // Send to leerling
-    if(_toetsStuSelected){
-      const payload={
-        message:{
-          subject:`Toets herinnering — ${stuName}`,
-          body:{ contentType:'Text', content: document.getElementById('toets-stu-msg').value },
-          toRecipients:[{ emailAddress:{ address:_toetsStuSelected.mail, name:_toetsStuSelected.displayName }}],
-        },
-        saveToSentItems:true,
-      };
-      const res = await graphFetch('POST','/me/sendMail',payload);
-      if(res===null){
-        errEl.textContent='Mail aan leerling kon niet worden verstuurd. Controleer de M365-verbinding.';
-        errEl.style.display='';
-        document.getElementById('toets-send-btn').textContent='✉️ Mail sturen & opslaan';
-        return;
-      }
-    }
-
     setSyncChip('ok','✉️ Mail verzonden');
     setTimeout(()=>setSyncChip(_graphToken?'idle':'','☁️ M365'),3000);
   }
