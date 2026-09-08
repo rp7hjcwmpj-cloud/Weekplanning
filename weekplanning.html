@@ -151,13 +151,21 @@ body.dark .toets-icon-btn:hover{background:rgba(0,0,0,.6);}
 body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .toets-dur-opt input{width:14px;height:14px;accent-color:var(--brand);cursor:pointer;}
 .toets-time-preview{font-size:.82rem;font-weight:600;color:var(--brand);margin-top:.38rem;min-height:1.1em;transition:opacity .2s;}
-/* Partial toets fill — yellow strip on the left of a lesson cell */
+/* Partial toets fill — yellow strip from top of overflow slot */
 .dc.toets-partial{overflow:hidden;}
 .dc.toets-partial::before{content:'';position:absolute;top:0;left:0;right:0;height:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
 /* Gesplitst uur: alleen kleuren zichtbaar, geen tekst */
 .dc.toets-partial .cell-lbl,
 .dc.toets-partial .cell-note,
 .dc.toets-partial .cell-note-input { display:none!important; }
+/* Late-start toets — yellow strip from offset down in origin slot */
+.dc.toets-late-start{overflow:hidden;}
+.dc.toets-late-start::after{content:'';position:absolute;top:var(--toets-late-offset,50%);left:0;right:0;height:var(--toets-late-height,50%);background:var(--y-bg);z-index:0;pointer-events:none;}
+.dc.toets-late-start .cell-lbl,
+.dc.toets-late-start .cell-note,
+.dc.toets-late-start .cell-note-input{position:relative;z-index:1;}
+/* Pauze cel geel tijdens toets */
+.dc.pause-dc[data-c="yellow"]{background:var(--y-bg)!important;}
 /* ── Beschikbaarheid circles ────────────────────── */
 .besch-circle{
   position:absolute;left:3px;
@@ -957,7 +965,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 
 <!-- ══ TOETS POPUP ══════════════════════════════════ -->
 <div class="overlay" id="modal-toets">
-  <div class="modal-card" style="max-width:500px;">
+  <div class="modal-card" style="max-width:520px;">
     <h2>📝 Toets ingepland</h2>
     <div class="toets-info-row" id="toets-info"></div>
 
@@ -970,6 +978,17 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
              style="margin-bottom:0;">
     </div>
 
+    <!-- Starttijd -->
+    <div class="toets-section">
+      <div class="toets-section-lbl">Starttijd toets</div>
+      <input class="field-inp" type="time" id="toets-starttime"
+             oninput="_refreshToetsMsg()"
+             style="margin-bottom:0;max-width:140px;">
+      <div style="font-size:.78rem;color:var(--muted);margin-top:.3rem;">
+        Laat leeg om de toets te laten starten bij het begin van het lesuur.
+      </div>
+    </div>
+
     <!-- Duur -->
     <div class="toets-section">
       <div class="toets-section-lbl">Duur toets</div>
@@ -977,32 +996,50 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
         <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="30" onchange="_refreshToetsMsg()"> 30 min</label>
         <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="45" onchange="_refreshToetsMsg()"> 45 min</label>
         <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="50" onchange="_refreshToetsMsg()"> 50 min</label>
+        <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="60" onchange="_refreshToetsMsg()"> 60 min</label>
         <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="100" onchange="_refreshToetsMsg()"> 100 min</label>
+        <label class="toets-dur-opt"><input type="radio" name="toets-dur" value="120" onchange="_refreshToetsMsg()"> 120 min</label>
       </div>
       <div class="toets-time-preview" id="toets-time-preview"></div>
     </div>
 
-    <!-- Docent selecteren -->
+    <!-- Docent mail -->
     <div class="toets-section">
-      <div class="toets-section-lbl">Mail sturen aan docent</div>
+      <div class="toets-section-lbl">✉️ Mail sturen aan docent</div>
       <div class="toets-search-wrap">
         <input class="field-inp" type="text" id="toets-search"
-               placeholder="Zoek op naam in de organisatie…"
+               placeholder="Zoek docent op naam in de organisatie…"
                oninput="onToetsSearch(this.value)"
                autocomplete="off" style="margin-bottom:0;">
         <div id="toets-results" class="toets-results" style="display:none;"></div>
       </div>
       <div id="toets-selected" class="toets-selected" style="display:none;"></div>
       <div id="toets-no-m365" class="toets-no-m365" style="display:none;">
-        ℹ️ Koppel de app aan Microsoft 365 (Admin → ☁️ Microsoft 365) om docenten te zoeken en mails te sturen.
+        ℹ️ Koppel de app aan Microsoft 365 (Admin → ☁️ Microsoft 365) om mails te sturen.
+      </div>
+      <div class="toets-section" id="toets-msg-wrap" style="margin-top:.6rem;padding:0;">
+        <div class="toets-section-lbl" style="font-size:.78rem;font-weight:500;color:var(--muted);">Bericht aan docent</div>
+        <textarea class="field-inp" id="toets-msg" rows="5"
+                  style="resize:vertical;font-size:.84rem;font-family:inherit;"></textarea>
       </div>
     </div>
 
-    <!-- Berichttekst -->
-    <div class="toets-section" id="toets-msg-wrap">
-      <div class="toets-section-lbl">Bericht</div>
-      <textarea class="field-inp" id="toets-msg" rows="5"
-                style="resize:vertical;font-size:.84rem;font-family:inherit;"></textarea>
+    <!-- Leerling mail -->
+    <div class="toets-section">
+      <div class="toets-section-lbl">✉️ Mail sturen aan leerling</div>
+      <div class="toets-search-wrap">
+        <input class="field-inp" type="text" id="toets-stu-search"
+               placeholder="Zoek leerling op naam in de organisatie…"
+               oninput="onToetsStuSearch(this.value)"
+               autocomplete="off" style="margin-bottom:0;">
+        <div id="toets-stu-results" class="toets-results" style="display:none;"></div>
+      </div>
+      <div id="toets-stu-selected" class="toets-selected" style="display:none;"></div>
+      <div class="toets-section" id="toets-stu-msg-wrap" style="margin-top:.6rem;padding:0;">
+        <div class="toets-section-lbl" style="font-size:.78rem;font-weight:500;color:var(--muted);">Bericht aan leerling</div>
+        <textarea class="field-inp" id="toets-stu-msg" rows="5"
+                  style="resize:vertical;font-size:.84rem;font-family:inherit;"></textarea>
+      </div>
     </div>
 
     <div class="err-msg" id="toets-err" style="display:none;margin-bottom:.5rem;"></div>
@@ -2769,14 +2806,19 @@ function fmtPeriodDates(pid, klass){
   const t=pd.to?fmtDate(pd.to):'?';
   return f+' – '+t;
 }
-function getActivePeriodId(stu){
+function getActivePeriodId(stu, dateStr){
   if(!stu) return null;
-  const today=new Date().toISOString().slice(0,10);
+  // Use the provided date, the viewed week's Monday, or today (in that order)
+  let checkDate = dateStr;
+  if(!checkDate && S.wy && S.wy.week && S.wy.year){
+    try{ checkDate=weekDates(S.wy.year,S.wy.week)[0].toISOString().slice(0,10); }catch(e){}
+  }
+  if(!checkDate) checkDate=new Date().toISOString().slice(0,10);
   const periods=getPeriodList(stu.klass);
   const periodData=getPeriodData(stu.klass);
   for(const p of periods){
     const pd=periodData[p.id]||{};
-    if(pd.from&&pd.to&&today>=pd.from&&today<=pd.to) return p.id;
+    if(pd.from&&pd.to&&checkDate>=pd.from&&checkDate<=pd.to) return p.id;
   }
   return null;
 }
@@ -4155,6 +4197,8 @@ function renderSchedule(){
   const area=document.getElementById('sched-area');
   area.innerHTML='';
   area.appendChild(buildGrid(slots,dates,dayIdxs,dayNames,key,editable));
+  // Update student bar so vakken chips reflect the period of the viewed week
+  updateStudentBar();
 }
 
 /* ══ MONTH VIEW ═════════════════════════════════════ */
@@ -4295,10 +4339,20 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
           cell.appendChild(lbl);
         }
       } else if(pause){
-        cell.innerHTML='<div class="pause-lbl">pauze</div>';
+        // Check if this pause is covered by a toets (in extended list)
+        const _dayToetsPause = curData().toets?.[key]?.[di];
+        let pauseIsToets = false;
+        if(_dayToetsPause){
+          for(const td of Object.values(_dayToetsPause)){
+            if(td.extended && td.extended.includes(slot.id)){ pauseIsToets=true; break; }
+          }
+        }
+        if(pauseIsToets){ cell.setAttribute('data-c','yellow'); }
+        else { cell.innerHTML='<div class="pause-lbl">pauze</div>'; }
       } else {
         const c=getColor(key,di,slot.id);
-        applyCell(cell,c);
+        const _cellTime=curData().std?.times?.[di]?.[slot.id]||null;
+        applyCell(cell,c,_cellTime);
         _refreshNoteUI(cell,c,key,di,slot,editable);
         _refreshToetsBtn(cell,c,key,di,slot,slots,dates,editable);
         // Beschikbaarheid circles (only for leerling/ouder/coach/coordinator view)
@@ -4338,9 +4392,22 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
             });
           }
         }
-        // Apply partial toets fill if this slot is the overflow slot of a toets
+        // Apply toets visual effects
         const _dayToets = curData().toets?.[key]?.[di];
         if(_dayToets){
+          // Late-start: this slot is the toets origin with a delayed start
+          const _toetsOriginData = _dayToets[slot.id];
+          if(_toetsOriginData && _toetsOriginData.lateStart > 0){
+            cell.classList.add('toets-late-start');
+            const slotDur = _slotDuration(slot);
+            const lateOffset = _toetsOriginData.lateStart * 100;
+            const remainingInSlot = slotDur * (1 - _toetsOriginData.lateStart);
+            const yellowMin = Math.min(_toetsOriginData.duration || 45, remainingInSlot);
+            const lateHeight = (yellowMin / slotDur) * 100;
+            cell.style.setProperty('--toets-late-offset', lateOffset.toFixed(1)+'%');
+            cell.style.setProperty('--toets-late-height', lateHeight.toFixed(1)+'%');
+          }
+          // Partial overflow: this slot is partially covered by a toets from a previous slot
           for(const toetsData of Object.values(_dayToets)){
             if(toetsData.partial && toetsData.partial.slotId === slot.id){
               cell.classList.add('toets-partial');
@@ -4388,7 +4455,7 @@ function _buildCellPicker(cell, currentColor, key, di, slot, slots, dates){
         _clearToetsData(key,di,slot.id);
       }
       setOvr(key,di,slot.id,clr);
-      applyCell(cell,clr);
+      applyCell(cell,clr,curData().std?.times?.[di]?.[slot.id]||null);
       _buildCellPicker(cell,clr,key,di,slot,slots,dates); // rebuild picker with new active dot
       _refreshNoteUI(cell,clr,key,di,slot,true);
       _refreshToetsBtn(cell,clr,key,di,slot,slots,dates,true);
@@ -4400,30 +4467,33 @@ function _buildCellPicker(cell, currentColor, key, di, slot, slots, dates){
   cell.insertBefore(picker, cell.firstChild);
 }
 
-function applyCell(cell,c){
+function applyCell(cell,c,time){
   if(c) cell.setAttribute('data-c',c); else cell.removeAttribute('data-c');
-  cell.classList.remove('toets-partial');
+  cell.classList.remove('toets-partial','toets-late-start');
   cell.style.removeProperty('--toets-fill');
+  cell.style.removeProperty('--toets-late-offset');
+  cell.style.removeProperty('--toets-late-height');
   ['.cell-lbl','.toets-icon-btn','.cell-note','.cell-note-input'].forEach(sel=>{
     const old=cell.querySelector(sel); if(old) old.remove();
   });
   if(c){
     const lbl=document.createElement('div'); lbl.className='cell-lbl';
-    lbl.textContent=COLOR_LBL[c]||''; cell.appendChild(lbl);
+    // Don't show standaardrooster time on yellow (toets) cells
+    lbl.textContent=(COLOR_LBL[c]||'') + (time && c!=='yellow' ? ' ('+time+')' : '');
+    cell.appendChild(lbl);
   }
 }
 
 function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
   const old=cell.querySelector('.toets-icon-btn'); if(old) old.remove();
-  // Only remove toets-subject note, not notes placed by _refreshNoteUI
   const oldNote=cell.querySelector('.cell-note.toets-subject-note'); if(oldNote) oldNote.remove();
-  if(c!=='yellow') return;
-  // Show subject on the origin slot cell (view + edit mode)
-  const toets = getToets(key, di, slot.id);
-  // Toon onderwerp + duur onder de "Toets" label
-  const durTxt = toets.duration ? ` (${toets.duration} min)` : '';
-  const subTxt = toets.subject || '';
-  const noteTxt = subTxt ? subTxt + durTxt : (durTxt ? durTxt.trim() : '');
+  // Show for yellow cells OR for late-start toets cells (not yellow themselves)
+  const rawToets = curData().toets?.[key]?.[di]?.[slot.id];
+  const isToetsCell = c === 'yellow' || (rawToets && rawToets.lateStart > 0);
+  if(!isToetsCell) return;
+  // Show subject only (no duration text)
+  const toets = rawToets || getToets(key, di, slot.id);
+  const noteTxt = toets.subject || '';
   if(noteTxt){
     const nt=document.createElement('div'); nt.className='cell-note toets-subject-note';
     const maxLen=24;
@@ -4563,7 +4633,7 @@ function applyStd(cell,c){cell.setAttribute('data-c',c||'null');}
 /* ── Toets data helpers ────────────────────────────── */
 function getToets(weekKey, di, sid){
   const d = curData();
-  return (d.toets?.[weekKey]?.[di]?.[sid]) || {subject:'', duration:45, extended:[], partial:null};
+  return (d.toets?.[weekKey]?.[di]?.[sid]) || {subject:'', duration:45, startTime:'', lateStart:0, extended:[], partial:null};
 }
 function setToets(weekKey, di, sid, obj){
   const d = curData();
@@ -4590,38 +4660,65 @@ function _slotDuration(slot){
   const parts = slot.time.split('–');
   return _parseTime(parts[1]) - _parseTime(parts[0]);
 }
-// Returns [{slot, fraction}] for all lesson slots covered by durationMin minutes,
-// starting from startSlot. Pauses consume time but produce no visual entry.
-function _toetsCoverage(startSlot, allSlots, durationMin){
+// Returns [{slot, fraction, lateStart}] for all slots (lesson + pause) covered by
+// durationMin minutes, starting from startSlot. startTimeStr is optional HH:MM for
+// a late start; lateStart is the fraction of the origin slot BEFORE the test begins.
+function _toetsCoverage(startSlot, allSlots, durationMin, startTimeStr){
   let remaining = durationMin, started = false;
   const coverage = [];
   for(const slot of allSlots){
-    if(!started){ if(slot.id !== startSlot.id) continue; started = true; }
-    if(remaining <= 0) break;
-    const dur = _slotDuration(slot);
-    if(slot.kind === 'pause' || slot.kind === 'extra'){
-      remaining -= dur;
-    } else {
-      if(remaining >= dur){
-        coverage.push({slot, fraction:1});
-        remaining -= dur;
+    if(!started){
+      if(slot.id !== startSlot.id) continue;
+      started = true;
+      const slotDur = _slotDuration(slot);
+      let lateOffsetMin = 0;
+      if(startTimeStr){
+        const slotStartMin = _parseTime(slot.time.split('–')[0].trim());
+        const testStartMin = _parseTime(startTimeStr);
+        if(testStartMin > slotStartMin) lateOffsetMin = testStartMin - slotStartMin;
+      }
+      const lateStart = slotDur > 0 ? lateOffsetMin / slotDur : 0;
+      const effective = slotDur - lateOffsetMin; // available time in origin slot
+      if(effective <= 0){ continue; } // late start beyond slot end — skip
+      if(remaining >= effective){
+        coverage.push({slot, fraction:1, lateStart});
+        remaining -= effective;
       } else {
-        coverage.push({slot, fraction: remaining/dur});
+        // test ends within origin slot
+        const yellowFraction = remaining / slotDur;
+        coverage.push({slot, fraction: lateStart + yellowFraction, lateStart});
         remaining = 0;
       }
+      continue;
+    }
+    if(remaining <= 0) break;
+    const dur = _slotDuration(slot);
+    if(slot.kind === 'extra'){ remaining -= dur; continue; } // skip extra
+    // Pauses and lessons both contribute visually now
+    if(remaining >= dur){
+      coverage.push({slot, fraction:1, lateStart:0});
+      remaining -= dur;
+    } else {
+      coverage.push({slot, fraction: remaining/dur, lateStart:0});
+      remaining = 0;
     }
   }
   return coverage;
 }
 
 /* ══ TOETS POPUP ════════════════════════════════════ */
-let _toetsCtx = null;       // { key, di, slot, slots, dates }
-let _toetsSelected = null;  // { displayName, mail }
+let _toetsCtx = null;           // { key, di, slot, slots, dates, origColor }
+let _toetsSelected = null;      // { displayName, mail } – docent
 let _toetsSearchTimer = null;
+let _toetsStuSelected = null;   // { displayName, mail } – leerling
+let _toetsStuSearchTimer = null;
 
 function openToetsModal(key, di, slot, slots, dates){
-  _toetsCtx = { key, di, slot, slots, dates };
+  // Record original (pre-yellow) color from standaardrooster for late-start restoration
+  const origColor = curData().std?.[di]?.[slot.id] || null;
+  _toetsCtx = { key, di, slot, slots, dates, origColor };
   _toetsSelected = null;
+  _toetsStuSelected = null;
 
   // Info row
   const date = dates[di];
@@ -4635,6 +4732,7 @@ function openToetsModal(key, di, slot, slots, dates){
   // Load stored toets data
   const stored = getToets(key, di, slot.id);
   document.getElementById('toets-subject').value = stored.subject || '';
+  document.getElementById('toets-starttime').value = stored.startTime || '';
   const dur = stored.duration || 45;
   let found = false;
   document.querySelectorAll('input[name="toets-dur"]').forEach(r => {
@@ -4642,11 +4740,17 @@ function openToetsModal(key, di, slot, slots, dates){
   });
   if(!found) document.querySelectorAll('input[name="toets-dur"]').forEach(r => { if(+r.value===45) r.checked=true; });
 
-  // Reset mail / search fields
+  // Reset docent mail fields
   document.getElementById('toets-search').value = '';
   document.getElementById('toets-results').style.display = 'none';
   document.getElementById('toets-selected').style.display = 'none';
   document.getElementById('toets-no-m365').style.display = _graphToken ? 'none' : '';
+
+  // Reset leerling mail fields
+  document.getElementById('toets-stu-search').value = '';
+  document.getElementById('toets-stu-results').style.display = 'none';
+  document.getElementById('toets-stu-selected').style.display = 'none';
+
   document.getElementById('toets-send-btn').textContent = '✉️ Mail sturen & opslaan';
 
   _refreshToetsMsg();
@@ -4660,23 +4764,40 @@ function _refreshToetsMsg(){
   const stu = S.students.find(s=>s.id===S.currentStudentId);
   const date = ctx.dates[ctx.di];
   const dayName = DAYS_FULL[ctx.di]||DAYS_SHORT[ctx.di]||'';
-  const toName = _toetsSelected ? _toetsSelected.displayName : '[Docent]';
   const stuName = stu ? stu.name : '[Leerling]';
   const subject = document.getElementById('toets-subject')?.value.trim()||'';
   const dur = +([...document.querySelectorAll('input[name="toets-dur"]')].find(r=>r.checked)?.value||45);
-  const startTime = ctx.slot.time.split('–')[0].trim();
+  const slotStartStr = ctx.slot.time.split('–')[0].trim();
+  const inputStart = document.getElementById('toets-starttime')?.value;
+  const startTime = (inputStart && inputStart > slotStartStr) ? inputStart : slotStartStr;
   const endMin = _parseTime(startTime) + dur;
   const endTime = `${Math.floor(endMin/60)}:${String(endMin%60).padStart(2,'0')}`;
+
   document.getElementById('toets-time-preview').textContent =
     `📐 ${dur} minuten — ${startTime} t/m ${endTime}`;
+
+  // Docent message
+  const toDocent = _toetsSelected ? _toetsSelected.displayName : '[Docent]';
   document.getElementById('toets-msg').value =
-    `Beste ${toName},\n\n` +
+    `Beste ${toDocent},\n\n` +
     `Er is een toets ingepland voor ${stuName}.\n\n` +
     (subject ? `📖 Onderwerp: ${subject}\n` : '') +
     `📅 ${dayName} ${fmt(date)}\n` +
     `🕐 ${ctx.slot.label}  (${startTime} – ${endTime})\n` +
     `⏱ Duur: ${dur} minuten\n\n` +
     `Wil je de toets bij me aanleveren alsjeblieft.\n\n` +
+    `Groet Coach 2.0`;
+
+  // Leerling message
+  const toStu = _toetsStuSelected ? _toetsStuSelected.displayName : stuName;
+  document.getElementById('toets-stu-msg').value =
+    `Beste ${toStu},\n\n` +
+    `Herinnering: je hebt een toets ingepland staan.\n\n` +
+    (subject ? `📖 Onderwerp: ${subject}\n` : '') +
+    `📅 ${dayName} ${fmt(date)}\n` +
+    `🕐 ${ctx.slot.label}  (${startTime} – ${endTime})\n` +
+    `⏱ Duur: ${dur} minuten\n\n` +
+    `Succes met je voorbereiding!\n\n` +
     `Groet Coach 2.0`;
 }
 
@@ -4725,66 +4846,158 @@ function _clearToetsUser(){
   _refreshToetsMsg();
 }
 
+async function onToetsStuSearch(query){
+  clearTimeout(_toetsStuSearchTimer);
+  const results = document.getElementById('toets-stu-results');
+  if(!query || query.length < 2){ results.style.display='none'; return; }
+  _toetsStuSearchTimer = setTimeout(async()=>{
+    if(!_graphToken){ results.style.display='none'; return; }
+    results.innerHTML='<div class="toets-result-item" style="color:var(--muted)">Zoeken…</div>';
+    results.style.display='';
+    const data = await graphFetch('GET',
+      `/users?$search="displayName:${encodeURIComponent(query)}"&$select=displayName,mail,jobTitle&$top=10&$orderby=displayName`,
+      null,
+      {'ConsistencyLevel':'eventual'}
+    );
+    results.innerHTML='';
+    const users = (data?.value||[]).filter(u=>u.mail);
+    if(users.length===0){
+      results.innerHTML='<div class="toets-result-item" style="color:var(--muted)">Geen resultaten.</div>';
+      return;
+    }
+    users.forEach(u=>{
+      const item=document.createElement('div');
+      item.className='toets-result-item';
+      item.innerHTML=`<span class="toets-result-name">${u.displayName}</span><span class="toets-result-mail">${u.mail}${u.jobTitle?' &nbsp;·&nbsp; '+u.jobTitle:''}</span>`;
+      item.addEventListener('click',()=>_selectToetsStu(u));
+      results.appendChild(item);
+    });
+  }, 320);
+}
+
+function _selectToetsStu(user){
+  _toetsStuSelected = user;
+  document.getElementById('toets-stu-results').style.display='none';
+  document.getElementById('toets-stu-search').value='';
+  const sel=document.getElementById('toets-stu-selected');
+  sel.innerHTML=`<span class="toets-selected-name">✓ ${user.displayName} &lt;${user.mail}&gt;</span><span class="toets-selected-clear" onclick="_clearToetsStu()">✕</span>`;
+  sel.style.display='';
+  _refreshToetsMsg();
+}
+
+function _clearToetsStu(){
+  _toetsStuSelected=null;
+  document.getElementById('toets-stu-selected').style.display='none';
+  _refreshToetsMsg();
+}
+
 function _applyToets(){
   if(!_toetsCtx) return;
-  const { key, di, slot, slots } = _toetsCtx;
+  const { key, di, slot, slots, origColor } = _toetsCtx;
   const sub = document.getElementById('toets-subject').value.trim();
   const dur = +([...document.querySelectorAll('input[name="toets-dur"]')].find(r=>r.checked)?.value||45);
+  const startTimeStr = document.getElementById('toets-starttime')?.value || '';
 
   // All slots in schedule order (lesson + pause, no extras)
   const allSlots = slots.filter(s => s.kind==='lesson'||s.kind==='pause');
 
-  // Clear previously extended/partial slots
+  // Clear previously extended/partial slots (lesson slots via setOvr; pauses via extended removal)
   const old = getToets(key, di, slot.id);
-  if(old.extended && old.extended.length) old.extended.forEach(sid => setOvr(key, di, sid, null));
+  if(old.extended && old.extended.length){
+    old.extended.forEach(sid => {
+      const extSlot = slots.find(s => s.id === sid);
+      if(extSlot && extSlot.kind !== 'pause') setOvr(key, di, sid, null);
+    });
+  }
 
-  // Compute new coverage
-  const coverage = _toetsCoverage(slot, allSlots, dur);
+  // Compute new coverage (includes pauses now)
+  const coverage = _toetsCoverage(slot, allSlots, dur, startTimeStr);
   const extended = [];
   let partial = null;
-  coverage.forEach(({slot:covSlot, fraction}, i) => {
-    if(i === 0) return; // origin slot already yellow via setOvr
+  let lateStart = 0;
+
+  coverage.forEach(({slot:covSlot, fraction, lateStart:ls}, i) => {
+    if(i === 0){
+      lateStart = ls || 0;
+      if(lateStart > 0){
+        // Restore origin slot to its standard color (not yellow) — visual overlay handles late start
+        setOvr(key, di, slot.id, origColor || null);
+      }
+      // If test ends within origin slot (fraction < 1 but test doesn't overflow)
+      // The lateStart cell is still the origin — handled in buildGrid via lateStart
+      return;
+    }
     if(fraction >= 1){
-      setOvr(key, di, covSlot.id, 'yellow');
+      if(covSlot.kind !== 'pause') setOvr(key, di, covSlot.id, 'yellow');
       extended.push(covSlot.id);
     } else {
       partial = { slotId: covSlot.id, fraction };
     }
   });
 
-  setToets(key, di, slot.id, { subject: sub, duration: dur, extended, partial });
+  // Compute effective start time string to store
+  const slotStartStr = slot.time.split('–')[0].trim();
+  const effectiveStart = (startTimeStr && startTimeStr > slotStartStr) ? startTimeStr : '';
+
+  setToets(key, di, slot.id, { subject: sub, duration: dur, startTime: effectiveStart, lateStart, extended, partial });
 }
 
 async function confirmToetsMail(){
   const errEl=document.getElementById('toets-err');
   errEl.style.display='none';
 
-  // Send mail if connected and user selected
-  if(_graphToken && _toetsSelected){
+  // Require at least one recipient if M365 is connected
+  if(_graphToken && !_toetsSelected && !_toetsStuSelected){
+    errEl.textContent='Selecteer een docent en/of leerling om de mail naar te sturen.';
+    errEl.style.display='';
+    return;
+  }
+
+  if(_graphToken && (_toetsSelected || _toetsStuSelected)){
     document.getElementById('toets-send-btn').textContent='⏳ Versturen…';
     const stu = S.students.find(s=>s.id===S.currentStudentId);
-    const payload={
-      message:{
-        subject:`Toets ingepland — ${stu?.name||'leerling'}`,
-        body:{ contentType:'Text', content: document.getElementById('toets-msg').value },
-        toRecipients:[{ emailAddress:{ address:_toetsSelected.mail, name:_toetsSelected.displayName }}],
-      },
-      saveToSentItems:true,
-    };
-    const res = await graphFetch('POST','/me/sendMail',payload);
-    if(res===null){
-      errEl.textContent='Mail kon niet worden verstuurd. Controleer de M365-verbinding.';
-      errEl.style.display='';
-      document.getElementById('toets-send-btn').textContent='✉️ Mail sturen & opslaan';
-      return; // Keep popup open so user can retry
+    const stuName = stu?.name||'leerling';
+
+    // Send to docent
+    if(_toetsSelected){
+      const payload={
+        message:{
+          subject:`Toets ingepland — ${stuName}`,
+          body:{ contentType:'Text', content: document.getElementById('toets-msg').value },
+          toRecipients:[{ emailAddress:{ address:_toetsSelected.mail, name:_toetsSelected.displayName }}],
+        },
+        saveToSentItems:true,
+      };
+      const res = await graphFetch('POST','/me/sendMail',payload);
+      if(res===null){
+        errEl.textContent='Mail aan docent kon niet worden verstuurd. Controleer de M365-verbinding.';
+        errEl.style.display='';
+        document.getElementById('toets-send-btn').textContent='✉️ Mail sturen & opslaan';
+        return;
+      }
     }
+
+    // Send to leerling
+    if(_toetsStuSelected){
+      const payload={
+        message:{
+          subject:`Toets herinnering — ${stuName}`,
+          body:{ contentType:'Text', content: document.getElementById('toets-stu-msg').value },
+          toRecipients:[{ emailAddress:{ address:_toetsStuSelected.mail, name:_toetsStuSelected.displayName }}],
+        },
+        saveToSentItems:true,
+      };
+      const res = await graphFetch('POST','/me/sendMail',payload);
+      if(res===null){
+        errEl.textContent='Mail aan leerling kon niet worden verstuurd. Controleer de M365-verbinding.';
+        errEl.style.display='';
+        document.getElementById('toets-send-btn').textContent='✉️ Mail sturen & opslaan';
+        return;
+      }
+    }
+
     setSyncChip('ok','✉️ Mail verzonden');
     setTimeout(()=>setSyncChip(_graphToken?'idle':'','☁️ M365'),3000);
-  } else if(_graphToken && !_toetsSelected){
-    errEl.textContent='Selecteer eerst een docent om de mail naar te sturen.';
-    errEl.style.display='';
-    document.getElementById('toets-send-btn').textContent='✉️ Mail sturen & opslaan';
-    return;
   }
 
   // Save subject + duration + coverage
