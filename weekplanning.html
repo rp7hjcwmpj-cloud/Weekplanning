@@ -1,13 +1,13 @@
-<title>Weekplanning VO</title>
+<title>Planner 2.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 /* ── TOKENS ─────────────────────────────────────── */
 :root {
-  --brand:       #1A3A6B;
-  --brand-mid:   #2D5485;
-  --brand-light: #E4EBF8;
-  --accent:      #D07B28;
+  --brand:       #C85A00;
+  --brand-mid:   #A84900;
+  --brand-light: #FEF0E2;
+  --accent:      #F7941D;
 
   --ground:   #EEF1F8;
   --surface:  #FFFFFF;
@@ -34,7 +34,7 @@
   --std-bg:#F0F0F0; --std-tx:#606060; --std-hdr:rgba(140,140,140,.35);
 }
 body.dark {
-  --brand:#4A80C8; --brand-mid:#3D6BAA; --brand-light:#1A2A42; --accent:#E08A30;
+  --brand:#F7941D; --brand-mid:#E07010; --brand-light:#3A1800; --accent:#FFAD50;
   --ground:#0E1520; --surface:#182234; --surf-2:#1E2A3E;
   --border:#2A3850; --border-s:#3A4E6A;
   --tx:#E8EDF6; --tx2:#9AAAC4; --tx3:#586880;
@@ -62,17 +62,31 @@ input,select{font-family:'DM Sans',system-ui,sans-serif;}
 #screen-roles{
   min-height:100vh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;padding:2rem;
-  background:var(--brand);position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#C84E00 0%,#F7941D 55%,#FFB347 100%);
+  position:relative;overflow:hidden;
 }
 #screen-roles::before{
   content:'';position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
   background-size:52px 52px;
 }
-#screen-roles::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.35) 100%);}
+#screen-roles::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.28) 100%);}
+/* Background logo watermark */
+#login-bg-logo{
+  position:absolute;right:-5%;bottom:-8%;width:55%;max-width:480px;
+  opacity:.12;pointer-events:none;z-index:0;
+  filter:brightness(0) invert(1);
+  display:none; /* shown by JS when logo is set */
+}
 .login-wrap{position:relative;z-index:1;width:100%;max-width:460px;text-align:center;}
+/* School logo shown above the app name */
+#login-logo-img{
+  max-height:80px;max-width:220px;object-fit:contain;
+  margin-bottom:1.1rem;display:none;
+  filter:brightness(0) invert(1); /* white on colored bg */
+}
 .login-title{font-family:'Outfit',sans-serif;font-size:2.1rem;font-weight:800;color:#fff;letter-spacing:-.5px;text-wrap:balance;line-height:1.1;margin-bottom:2.4rem;}
-.login-title span{color:var(--accent);}
+.login-title span{color:rgba(255,255,255,.75);font-size:1.3rem;font-weight:600;}
 .roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem;}
 .role-tile{
   background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:14px;
@@ -699,8 +713,10 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 
 <!-- ══ ROLE SELECT ══════════════════════════════════ -->
 <div id="screen-roles">
+  <img id="login-bg-logo" src="" alt="">
   <div class="login-wrap">
-    <div class="login-title">Weekplanning<br><span id="login-schoolname">Parmant Joris</span></div>
+    <img id="login-logo-img" src="" alt="School logo">
+    <div class="login-title">Planner 2.0<br><span id="login-schoolname">Parmant Joris</span></div>
     <div id="ms-login-err" class="err-msg" style="display:none;margin-bottom:.8rem;text-align:left;"></div>
     <button class="ms-login-btn" id="btn-ms-login" onclick="loginWithMicrosoft()">
       <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
@@ -1183,6 +1199,24 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
           <div class="ok-msg" id="sn-ok">✓ Naam opgeslagen</div>
         </div>
         <div class="fw">
+          <label class="flabel">Logo van de school</label>
+          <div style="display:flex;gap:.75rem;align-items:flex-start;flex-wrap:wrap;">
+            <div id="adm-logo-preview" style="width:90px;height:60px;border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--surf-2);overflow:hidden;flex-shrink:0;">
+              <span style="font-size:.72rem;color:var(--tx3);" id="adm-logo-placeholder">Geen logo</span>
+              <img id="adm-logo-img" src="" alt="" style="max-width:100%;max-height:100%;display:none;object-fit:contain;">
+            </div>
+            <div style="flex:1;min-width:160px;">
+              <label class="btn-save-sm" style="cursor:pointer;display:inline-block;text-align:center;width:100%;">
+                📁 Logo uploaden
+                <input type="file" accept="image/*" id="a-logo-file" onchange="uploadSchoolLogo(this)" style="display:none;">
+              </label>
+              <button class="btn-g" id="adm-logo-remove-btn" onclick="removeSchoolLogo()" style="margin-top:.4rem;width:100%;font-size:.82rem;display:none;">✕ Logo verwijderen</button>
+              <div style="font-size:.74rem;color:var(--tx3);margin-top:.4rem;">PNG, SVG of JPG — zichtbaar op het inlogscherm</div>
+            </div>
+          </div>
+          <div class="ok-msg" id="logo-ok" style="display:none;margin-top:.4rem;">✓ Logo opgeslagen</div>
+        </div>
+        <div class="fw">
           <label class="flabel">Actief schooljaar</label>
           <select class="field-inp" id="a-year" onchange="saveSchoolYear(this.value)" style="margin-bottom:0">
             <option value="2024/2025">2024 / 2025</option>
@@ -1554,6 +1588,7 @@ const S = {
   loggedInEmail:null,    // email of currently logged-in user (from MS login)
   pwsEditMode:false,     // true when pencil is active for PWS dot editing
   aanw:{},               // {weekKey:{di:{stuId:{status:'ok'|'nok'|'mod',note:''}}}} — aanwezigheidsregistratie
+  schoolLogo:'',         // base64 data URL van het schoollogo
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
     preexam:{'P1.1':{from:'',to:''},'P1.2':{from:'',to:''},'P1.3':{from:'',to:''},
@@ -1601,10 +1636,59 @@ function applySchoolName(){
   document.getElementById('login-schoolname').textContent=n;
   document.getElementById('hdr-schoolname').textContent=n;
 }
+function applySchoolLogo(){
+  const logo=S.schoolLogo||'';
+  // Login screen — small logo above title
+  const loginImg=document.getElementById('login-logo-img');
+  const bgLogo=document.getElementById('login-bg-logo');
+  if(logo){
+    loginImg.src=logo; loginImg.style.display='';
+    bgLogo.src=logo; bgLogo.style.display='';
+  } else {
+    loginImg.style.display='none';
+    bgLogo.style.display='none';
+  }
+  // Admin preview
+  const prev=document.getElementById('adm-logo-img');
+  const placeholder=document.getElementById('adm-logo-placeholder');
+  const removeBtn=document.getElementById('adm-logo-remove-btn');
+  if(prev){
+    if(logo){
+      prev.src=logo; prev.style.display='';
+      if(placeholder) placeholder.style.display='none';
+      if(removeBtn) removeBtn.style.display='';
+    } else {
+      prev.style.display='none';
+      if(placeholder) placeholder.style.display='';
+      if(removeBtn) removeBtn.style.display='none';
+    }
+  }
+}
+
+function uploadSchoolLogo(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    S.schoolLogo = e.target.result;
+    persist();
+    applySchoolLogo();
+    const ok = document.getElementById('logo-ok');
+    if(ok){ ok.style.display='block'; setTimeout(()=>ok.style.display='none',2500); }
+  };
+  reader.readAsDataURL(file);
+  // reset so same file can be re-uploaded
+  input.value='';
+}
+function removeSchoolLogo(){
+  S.schoolLogo='';
+  persist();
+  applySchoolLogo();
+}
 
 /* ══ MICROSOFT 365 / GRAPH API ══════════════════════ */
 const SP_KEYS = [
-  'wp_schoolName','wp_year','wp_yearFrom','wp_yearTo',
+  'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
   'wp_aanw'
@@ -2127,6 +2211,7 @@ async function loginWithMicrosoft(){
 function persist(){
   try{
     localStorage.setItem('wp_schoolName', S.schoolName);
+    localStorage.setItem('wp_schoolLogo', S.schoolLogo||'');
     localStorage.setItem('wp_year', S.schoolYear);
     localStorage.setItem('wp_yearFrom', S.schoolYearFrom||'');
     localStorage.setItem('wp_yearTo',   S.schoolYearTo||'');
@@ -2157,6 +2242,7 @@ function persist(){
 function hydrate(){
   try{
     S.schoolName = localStorage.getItem('wp_schoolName')||'Parmant Joris';
+    S.schoolLogo = localStorage.getItem('wp_schoolLogo')||'';
     S.schoolYear = localStorage.getItem('wp_year')||'2026/2027';
     S.schoolYearFrom = localStorage.getItem('wp_yearFrom')||'';
     S.schoolYearTo   = localStorage.getItem('wp_yearTo')||'';
@@ -2371,6 +2457,7 @@ function showAdmin(){
   renderSpecDaysList();
   renderStudentsList();
   renderStudentPasswordList();
+  applySchoolLogo();
 }
 
 function changeAdminPassword(){
@@ -4934,6 +5021,7 @@ function cancelToets(){
   // 2. Hydrate state from localStorage (possibly just populated from SharePoint)
   hydrate();
   applySchoolName();
+  applySchoolLogo();
   // 3. Populate M365 admin fields if admin panel is present
   loadM365Cfg();
 })();
