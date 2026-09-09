@@ -263,40 +263,6 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .pws-admin-dot.d-green {background:#28a745;border-color:#1e7e34;}
 .pws-admin-dot:hover{transform:scale(1.2);}
 
-/* ── LOGBOEK ─────────────────────────────────────── */
-.logb-modal{max-width:min(94vw,680px);width:680px;max-height:91vh;overflow:hidden;
-  display:flex;flex-direction:column;padding:1.5rem;}
-.logb-filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;flex-shrink:0;}
-.logb-filter-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;
-  padding:.22rem .7rem;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--tx2);transition:all .13s;}
-.logb-filter-btn.on{background:var(--brand);color:#fff;border-color:var(--brand);}
-.logb-scroll{overflow-y:auto;flex:1;min-height:0;}
-.logb-row{padding:.55rem .4rem;border-bottom:1px solid var(--border);cursor:pointer;
-  display:flex;align-items:center;gap:.6rem;border-radius:6px;transition:background .12s;}
-.logb-row:last-child{border-bottom:none;}
-.logb-row:hover{background:var(--brand-light);}
-.logb-who{font-size:.7rem;font-weight:700;color:var(--brand);min-width:90px;flex-shrink:0;}
-.logb-stu{font-weight:600;font-size:.84rem;color:var(--tx);flex:1;}
-.logb-day{font-size:.72rem;color:var(--tx3);flex-shrink:0;}
-.logb-cnt{background:var(--brand-light);color:var(--brand);border-radius:10px;
-  padding:.12rem .45rem;font-size:.68rem;font-weight:700;flex-shrink:0;}
-.logb-empty{text-align:center;padding:2.5rem;color:var(--tx3);font-size:.87rem;}
-/* detail popup */
-.logb-detail-row{padding:.45rem .3rem;border-bottom:1px solid var(--border);font-size:.82rem;}
-.logb-detail-row:last-child{border-bottom:none;}
-.logb-detail-slot{font-weight:600;color:var(--tx);min-width:40px;display:inline-block;}
-.logb-chip{display:inline-flex;align-items:center;padding:.1rem .35rem;border-radius:4px;
-  font-size:.68rem;font-weight:700;margin:0 .2rem;}
-.logb-chip.c-null{background:var(--surface);border:1px solid var(--border);color:var(--tx3);}
-.logb-chip.c-green{background:var(--g-bg);color:var(--g-tx);}
-.logb-chip.c-red{background:var(--r-bg);color:var(--r-tx);}
-.logb-chip.c-rose{background:var(--ro-bg);color:var(--ro-tx);}
-.logb-chip.c-blue{background:var(--b-bg);color:var(--b-tx);}
-.logb-chip.c-purple{background:var(--p-bg);color:var(--p-tx);}
-.logb-chip.c-yellow{background:var(--y-bg);color:var(--y-tx);}
-.logb-chip.c-orange{background:var(--o-bg);color:var(--o-tx);}
-.logb-arrow{color:var(--tx3);margin:0 .1rem;}
-.logb-ts{font-size:.65rem;color:var(--tx3);margin-left:.4rem;}
 
 /* ── AANWEZIGHEIDSLIJST ─────────────────────────── */
 .aanw-modal{max-width:min(94vw,680px);width:680px;max-height:91vh;overflow:hidden;
@@ -799,8 +765,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .verg-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem;}
 .verg-sec-title{font-size:.8rem;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;padding-bottom:.35rem;border-bottom:2px solid var(--brand-light);}
 .verg-aanw-wrap{display:flex;flex-direction:column;align-items:center;gap:.18rem;}
-.verg-aanw-role{font-size:.65rem;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
-.verg-aanw-chip{border:2px solid var(--border);background:var(--surf-2);color:var(--tx2);font-size:.88rem;font-weight:700;border-radius:10px;padding:.45rem .8rem;cursor:pointer;transition:all .14s;min-width:60px;text-align:center;}
+.verg-aanw-chip{border:2px solid var(--border);background:var(--surf-2);color:var(--tx2);font-size:.85rem;font-weight:700;border-radius:10px;padding:.42rem .85rem;cursor:pointer;transition:all .14s;min-width:72px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.1rem;}
+.verg-aanw-chip:hover{border-color:var(--brand-mid);}
+.verg-aanw-rolelbl{font-size:.62rem;font-weight:400;opacity:.7;text-transform:uppercase;letter-spacing:.04em;}
 .verg-aanw-chip:hover{border-color:var(--brand-mid);}
 .vac-green{border-color:#27ae60!important;background:#e8f8ed!important;color:#27ae60!important;}
 .vac-red{border-color:#c0392b!important;background:#fde8e8!important;color:#c0392b!important;}
@@ -924,7 +891,6 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
         <button class="hb" onclick="openLeerlingBeschModal()">👨‍🏫 Docenten</button>
         <button class="hb" onclick="showVergaderingScreen()">📒 Vergadering 2.0</button>
         <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
-        <button class="hb" onclick="openLogboek()">📔 Logboek</button>
         <button class="hb" id="btn-print-week" onclick="openPrintModal()">🖨️ Printen</button>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
@@ -1213,27 +1179,6 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="btn-p" id="toets-send-btn" onclick="confirmToetsMail()">✉️ Mail sturen &amp; opslaan</button>
     <button class="btn-g" onclick="saveToetsNoMail()">Opslaan zonder mail</button>
     <button class="btn-ghost" onclick="cancelToets()">✕ Annuleren</button>
-  </div>
-</div>
-
-<!-- ══ LOGBOEK (COORDINATOR / COACH) ════════════════ -->
-<div class="overlay" id="modal-logboek">
-  <div class="modal-card logb-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-shrink:0;">
-      <h2 style="margin:0;">📔 Logboek wijzigingen</h2>
-      <button class="btn-g sm" onclick="document.getElementById('modal-logboek').classList.remove('show')" style="width:auto;padding:.38rem .85rem;font-size:.82rem;">✕ Sluiten</button>
-    </div>
-    <div class="logb-filters" id="logb-filters"></div>
-    <div class="logb-scroll" id="logb-list"></div>
-  </div>
-</div>
-
-<!-- ══ LOGBOEK DETAIL ════════════════════════════════ -->
-<div class="overlay" id="modal-logboek-detail">
-  <div class="modal-card" style="max-width:500px;">
-    <h2 id="logb-detail-title" style="margin-bottom:.8rem;">📔 Wijzigingen</h2>
-    <div id="logb-detail-list" style="max-height:60vh;overflow-y:auto;"></div>
-    <button class="btn-g" style="margin-top:1rem;" onclick="document.getElementById('modal-logboek-detail').classList.remove('show')">Sluiten</button>
   </div>
 </div>
 
@@ -3882,6 +3827,24 @@ function loadVergadering(id){
   _renderVergForm();
 }
 
+function deleteVergadering(){
+  if(!_vergCurrent) return;
+  const isSaved=S.vergaderingen.find(v=>v.id===_vergCurrent.id);
+  const label=isSaved?('vergadering van '+fmtDate(_vergCurrent.date)):'dit nieuwe concept';
+  if(!confirm('Weet je zeker dat je '+label+' wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  S.vergaderingen=S.vergaderingen.filter(v=>v.id!==_vergCurrent.id);
+  persist();
+  _vergDirty=false;
+  // Load most recent remaining meeting, or start fresh
+  if(S.vergaderingen.length){
+    _vergCurrent=JSON.parse(JSON.stringify(S.vergaderingen[S.vergaderingen.length-1]));
+  } else {
+    _vergNieuw(false);
+  }
+  _renderVergTabs();
+  _renderVergForm();
+}
+
 function _renderVergTabs(){
   const ct=document.getElementById('verg-tabs');
   if(!ct) return;
@@ -3932,11 +3895,11 @@ function _renderVergAanwezigheid(){
   ct.innerHTML=deelnemers.map(d=>{
     const status=_vergCurrent.aanwezigheid[d.email];
     const safeEmail=d.email.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    // Show full first name; neutral = no colour class
+    // Show full first name + role in one chip; neutral = no colour class
+    const roleLabel=d.role==='coach'?'Coach':'Coord.';
     return `<div class="verg-aanw-wrap">
       <button class="verg-aanw-chip${status==='aanwezig'?' vac-green':status==='afwezig'?' vac-red':''}"
-        onclick="_vergSetAanw('${safeEmail}')">${d.firstName}</button>
-      <span class="verg-aanw-role">${d.role==='coach'?'Coach':'Coord.'}</span>
+        onclick="_vergSetAanw('${safeEmail}')">${d.firstName} <span class="verg-aanw-rolelbl">${roleLabel}</span></button>
     </div>`;
   }).join('');
 }
@@ -4154,9 +4117,10 @@ function _renderVergForm(){
 
     ${catHtml}
 
-    <div style="display:flex;gap:.65rem;align-items:center;padding:.5rem 0 1rem;">
+    <div style="display:flex;gap:.65rem;align-items:center;padding:.5rem 0 1rem;flex-wrap:wrap;">
       <button class="btn-save" onclick="saveVergadering()">💾 Opslaan</button>
       <button class="btn-save" style="background:var(--surface);color:var(--brand);border:1.5px solid var(--brand);" onclick="printVergadering()">🖨️ PDF / Print</button>
+      <button class="btn-save" style="background:#fff0f0;color:#c0392b;border:1.5px solid #c0392b;margin-left:auto;" onclick="deleteVergadering()">🗑️ Verwijderen</button>
       <span class="ok-msg" id="verg-ok" style="display:none;font-size:.82rem;">✓ Opgeslagen</span>
     </div>
   `;
@@ -4368,93 +4332,6 @@ function _renderLaContent(){
   });
   table.appendChild(tbody);
   ct.appendChild(table);
-}
-
-/* ══ LOGBOEK ═════════════════════════════════════════ */
-const _LOGB_CLR_LBL={null:'Leeg',green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
-let _logbFilter = 'all'; // 'all' | 'coordinator' | 'coach'
-
-function openLogboek(){
-  _logbFilter='all';
-  _renderLogboekFilters();
-  _renderLogboekList();
-  document.getElementById('modal-logboek').classList.add('show');
-}
-
-function _renderLogboekFilters(){
-  const wrap = document.getElementById('logb-filters');
-  wrap.innerHTML = '';
-  const opts=[['all','Alle'],['coordinator','Coördinator'],['coach','Coach']];
-  opts.forEach(([val,lbl])=>{
-    const btn=document.createElement('button');
-    btn.className='logb-filter-btn'+(val===_logbFilter?' on':'');
-    btn.textContent=lbl;
-    btn.onclick=()=>{ _logbFilter=val; _renderLogboekFilters(); _renderLogboekList(); };
-    wrap.appendChild(btn);
-  });
-}
-
-function _renderLogboekList(){
-  const ct = document.getElementById('logb-list');
-  ct.innerHTML = '';
-  // Filter by role if needed
-  const entries = (S.changeLog||[]).filter(e=> _logbFilter==='all'||e.role===_logbFilter||((!e.role)&&_logbFilter==='coordinator'));
-  if(!entries.length){
-    ct.innerHTML='<div class="logb-empty">Nog geen wijzigingen vastgelegd.</div>'; return;
-  }
-  // Group by (studentId, weekKey, di)
-  const groups = {};
-  entries.forEach(e=>{
-    const gk = e.studentId+'|'+e.weekKey+'|'+e.di;
-    if(!groups[gk]) groups[gk]={studentId:e.studentId,studentName:e.studentName,weekKey:e.weekKey,di:e.di,entries:[],latestTs:e.ts,makers:new Set()};
-    groups[gk].entries.push(e);
-    if(e.ts>groups[gk].latestTs) groups[gk].latestTs=e.ts;
-    groups[gk].makers.add(e.madeBy||(e.role==='coach'?'Coach':'Coördinator'));
-  });
-  const sorted = Object.values(groups).sort((a,b)=>b.latestTs.localeCompare(a.latestTs));
-  sorted.forEach(g=>{
-    const row=document.createElement('div');
-    row.className='logb-row';
-    // Parse weekKey → date of that day
-    const [yr,wk2]=g.weekKey.split('-').map(Number);
-    const mon=monday(yr,wk2);
-    const d=new Date(mon); d.setDate(mon.getDate()+g.di);
-    const MNL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-    const dayLabel=(['Ma','Di','Wo','Do','Vr'][g.di]||'?')+' '+d.getDate()+' '+MNL[d.getMonth()]+' '+yr;
-    const whoTxt=[...g.makers].join(', ');
-    row.innerHTML=`<span class="logb-who">${whoTxt}</span><span class="logb-stu">${g.studentName}</span><span class="logb-day">${dayLabel}</span><span class="logb-cnt">${g.entries.length}</span>`;
-    row.onclick=()=>openLogboekDetail(g.studentId,g.studentName,g.weekKey,g.di,g.entries);
-    ct.appendChild(row);
-  });
-}
-
-function openLogboekDetail(stuId,stuName,weekKey,di,entries){
-  const [yr,wk2]=weekKey.split('-').map(Number);
-  const mon=monday(yr,wk2);
-  const d=new Date(mon); d.setDate(mon.getDate()+di);
-  const MNL=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-  const dayLabel=(['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'][di]||'?')+' '+d.getDate()+' '+MNL[d.getMonth()]+' '+yr;
-  document.getElementById('logb-detail-title').textContent='📔 '+stuName+' — '+dayLabel;
-  const ct=document.getElementById('logb-detail-list');
-  ct.innerHTML='';
-  // Sort entries by timestamp, newest first
-  const sorted=[...entries].sort((a,b)=>b.ts.localeCompare(a.ts));
-  sorted.forEach(e=>{
-    const slot=SCHOOL.find(s=>s.id===e.slotId);
-    const slotLbl=slot?slot.label:e.slotId;
-    const fromCls='c-'+(e.from||'null');
-    const toCls='c-'+(e.to||'null');
-    const fromLbl=_LOGB_CLR_LBL[e.from||null]||e.from||'Leeg';
-    const toLbl=_LOGB_CLR_LBL[e.to||null]||e.to||'Leeg';
-    const who=e.madeBy||(e.role==='coach'?'Coach':'Coördinator');
-    const ts=new Date(e.ts);
-    const tsFmt=ts.toLocaleDateString('nl-NL',{day:'2-digit',month:'short'})+' '+ts.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
-    const row=document.createElement('div');
-    row.className='logb-detail-row';
-    row.innerHTML=`<span class="logb-detail-slot">${slotLbl}</span> <span class="logb-chip ${fromCls}">${fromLbl}</span><span class="logb-arrow">→</span><span class="logb-chip ${toCls}">${toLbl}</span> <span style="font-size:.72rem;color:var(--tx3);">door ${who}</span><span class="logb-ts">${tsFmt}</span>`;
-    ct.appendChild(row);
-  });
-  document.getElementById('modal-logboek-detail').classList.add('show');
 }
 
 /* ══ PWS DOTS ════════════════════════════════════════ */
