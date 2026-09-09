@@ -195,6 +195,15 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
   backdrop-filter:blur(0);
 }
 .besch-circle.besch-les{color:#0d2240;border-color:#0d2240;background:rgba(255,255,255,.55);}
+/* Beschikbaarheid slot popup */
+.bsl-mode-btn{flex:1;padding:.75rem .5rem;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--tx);font-size:.88rem;font-weight:600;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;}
+.bsl-mode-btn:hover{border-color:var(--brand-mid);background:var(--brand-light);}
+.bsl-mode-btn.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
+.bsl-klas-grid{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem;}
+.bsl-klas-btn{padding:.42rem .85rem;border:2px solid var(--border);border-radius:20px;background:var(--surface);color:var(--tx2);font-size:.84rem;font-weight:600;cursor:pointer;transition:border-color .15s,background .15s;}
+.bsl-klas-btn:hover{border-color:var(--brand-mid);}
+.bsl-klas-btn.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
+.bsl-slot-info{font-size:.84rem;color:var(--tx2);margin-bottom:1.1rem;padding:.5rem .75rem;background:var(--surf-2);border-radius:8px;}
 .toets-search-wrap{position:relative;}
 .toets-results{position:absolute;left:0;right:0;top:calc(100% + 2px);background:var(--surface);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:300;box-shadow:0 6px 20px rgba(0,0,0,.14);}
 .toets-result-item{padding:.52rem .85rem;cursor:pointer;font-size:.86rem;display:flex;flex-direction:column;gap:.08rem;border-bottom:1px solid var(--border);}
@@ -884,8 +893,31 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <h2>📅 Beschikbaarheid — <span id="besch-vak-title" style="color:var(--accent);"></span></h2>
       <button class="btn-g sm" onclick="closeBeschModal()" style="width:auto;padding:.38rem .85rem;font-size:.82rem;">✕ Sluiten</button>
     </div>
-    <p class="modal-sub" style="margin-bottom:.9rem;">Dit is jouw vaste weekpatroon voor het hele schooljaar. Klik op een cel om de status te wijzigen — wijzigingen worden direct opgeslagen.</p>
+    <p class="modal-sub" style="margin-bottom:.9rem;">Dit is jouw vaste weekpatroon voor het hele schooljaar. Klik op een cel om je beschikbaarheid in te stellen.</p>
     <div id="besch-grid-ct" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<!-- ══ BESCHIKBAARHEID SLOT POPUP ══════════════════ -->
+<div class="overlay" id="modal-besch-slot" style="z-index:1100;">
+  <div class="modal-card" style="max-width:370px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;">
+      <h2 style="font-size:1.05rem;margin:0;">📅 Beschikbaarheid instellen</h2>
+      <button class="btn-g sm" onclick="closeBeschSlotModal()" style="width:auto;padding:.3rem .75rem;font-size:.8rem;">✕</button>
+    </div>
+    <div class="bsl-slot-info" id="bsl-slot-info"></div>
+    <div style="display:flex;gap:.6rem;margin-bottom:1.1rem;">
+      <button class="bsl-mode-btn" id="bsl-btn-lokaal" onclick="selectBeschMode('lokaal107')">🏫 Lokaal 107</button>
+      <button class="bsl-mode-btn" id="bsl-btn-les" onclick="selectBeschMode('les')">📚 Geeft les aan</button>
+    </div>
+    <div id="bsl-les-section" style="display:none;margin-bottom:1rem;">
+      <div style="font-size:.82rem;color:var(--tx2);margin-bottom:.3rem;font-weight:600;">Selecteer klas(sen):</div>
+      <div class="bsl-klas-grid" id="bsl-klas-grid"></div>
+    </div>
+    <div style="display:flex;gap:.6rem;align-items:center;margin-top:.5rem;">
+      <button class="btn-save" style="flex:1;" onclick="saveBeschSlot()">Opslaan</button>
+      <button class="btn-g" onclick="clearBeschSlot()" style="color:var(--r-tx,#7A1A22);width:auto;padding:.52rem 1rem;font-size:.83rem;">Wissen</button>
+    </div>
   </div>
 </div>
 
@@ -1552,12 +1584,13 @@ const PREEXAM_PERIODS = [
 ];
 const PW_DEFAULT      = 'AdminAdmin';
 const SUBJECTS   = ['NE','EN','DU','FA','EC','BEC','BI','NA','SK','GS','AK','WiA','WiB'];
-const BESCH_OPTIONS = [null,'lokaal107','afwezig','les-M3','les-M4','les-H4','les-H5','les-V4','les-V5','les-V6'];
-const BESCH_LBL  = {
-  'lokaal107':'Lokaal 107','afwezig':'Afwezig',
-  'les-M3':'Les M3','les-M4':'Les M4','les-H4':'Les H4','les-H5':'Les H5',
-  'les-V4':'Les V4','les-V5':'Les V5','les-V6':'Les V6'
-};
+const BESCH_KLASSEN = ['M3','M4','H4','H5','V4','V5','V6'];
+function beschValLabel(val){
+  if(!val || val==='afwezig') return '—';
+  if(val==='lokaal107') return 'Lokaal 107';
+  if(val.startsWith('les-')) return 'Les ' + val.slice(4).split(',').join(', ');
+  return val;
+}
 
 /* ══ STATE ══════════════════════════════════════════ */
 const S = {
@@ -3079,19 +3112,13 @@ function setBeschVal(vak,di,slotId,val){
   else S.beschikbaarheid[vak][di][slotId]=val;
   persist();
 }
-function cycleBeschVal(vak,di,slotId){
-  const cur=getBeschVal(vak,di,slotId);
-  const idx=BESCH_OPTIONS.indexOf(cur);
-  return BESCH_OPTIONS[(idx+1)%BESCH_OPTIONS.length];
-}
 function beschCellCls(val){
-  if(!val) return 'bc-null';
-  if(val==='afwezig') return 'bc-red';
+  if(!val || val==='afwezig') return 'bc-null';
   return 'bc-green';
 }
 function applyBeschCell(cell,val){
   cell.className='bc-cell editable '+beschCellCls(val);
-  cell.textContent=val?BESCH_LBL[val]:'—';
+  cell.textContent=beschValLabel(val);
 }
 
 function buildBeschGridEl(vak, editable){
@@ -3113,16 +3140,14 @@ function buildBeschGridEl(vak, editable){
       const cur=getBeschVal(vak,di,slot.id);
       if(editable){
         applyBeschCell(cell,cur);
-        (function(capDi,capSlot){
+        (function(capDi,capSlot,capCell){
           cell.addEventListener('click',()=>{
-            const next=cycleBeschVal(vak,capDi,capSlot.id);
-            setBeschVal(vak,capDi,capSlot.id,next);
-            applyBeschCell(cell,next);
+            openBeschSlotModal(vak,capDi,capSlot,capCell);
           });
-        })(di,slot);
+        })(di,slot,cell);
       } else {
         cell.className='bc-cell '+beschCellCls(cur);
-        cell.textContent=cur?BESCH_LBL[cur]:'—';
+        cell.textContent=beschValLabel(cur);
       }
       grid.appendChild(cell);
     }
@@ -3138,6 +3163,93 @@ function openBeschModal(){
   document.getElementById('modal-besch').classList.add('show');
 }
 function closeBeschModal(){document.getElementById('modal-besch').classList.remove('show');}
+
+/* ── Besch slot popup ── */
+let _beschSlot = null; // {vak, di, slot, cell}
+let _beschSlotMode = null; // 'lokaal107' | 'les'
+let _beschSlotKlassen = []; // selected klassen
+
+function openBeschSlotModal(vak, di, slot, cell){
+  _beschSlot = {vak, di, slot, cell};
+  const cur = getBeschVal(vak, di, slot.id);
+  // Pre-fill mode from current value
+  _beschSlotMode = null;
+  _beschSlotKlassen = [];
+  if(cur === 'lokaal107'){
+    _beschSlotMode = 'lokaal107';
+  } else if(cur && cur.startsWith('les-')){
+    _beschSlotMode = 'les';
+    _beschSlotKlassen = cur.slice(4).split(',');
+  }
+  // Info label
+  const DAYS = ['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
+  document.getElementById('bsl-slot-info').textContent =
+    DAYS[di] + ' — ' + slot.label + ' (' + slot.time + ')';
+  // Mode buttons
+  _renderBslModeButtons();
+  // Klas grid
+  _renderBslKlasGrid();
+  document.getElementById('modal-besch-slot').classList.add('show');
+}
+
+function closeBeschSlotModal(){
+  document.getElementById('modal-besch-slot').classList.remove('show');
+  _beschSlot = null;
+}
+
+function selectBeschMode(mode){
+  _beschSlotMode = mode;
+  _renderBslModeButtons();
+  _renderBslKlasGrid();
+}
+
+function _renderBslModeButtons(){
+  document.getElementById('bsl-btn-lokaal').classList.toggle('active', _beschSlotMode==='lokaal107');
+  document.getElementById('bsl-btn-les').classList.toggle('active', _beschSlotMode==='les');
+  document.getElementById('bsl-les-section').style.display = _beschSlotMode==='les' ? '' : 'none';
+}
+
+function _renderBslKlasGrid(){
+  const grid = document.getElementById('bsl-klas-grid');
+  grid.innerHTML = '';
+  BESCH_KLASSEN.forEach(klas => {
+    const btn = document.createElement('button');
+    btn.className = 'bsl-klas-btn' + (_beschSlotKlassen.includes(klas) ? ' active' : '');
+    btn.textContent = klas;
+    btn.onclick = () => {
+      const idx = _beschSlotKlassen.indexOf(klas);
+      if(idx === -1) _beschSlotKlassen.push(klas);
+      else _beschSlotKlassen.splice(idx, 1);
+      _renderBslKlasGrid();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function saveBeschSlot(){
+  if(!_beschSlot) return;
+  const {vak, di, slot, cell} = _beschSlot;
+  let val = null;
+  if(_beschSlotMode === 'lokaal107'){
+    val = 'lokaal107';
+  } else if(_beschSlotMode === 'les'){
+    if(_beschSlotKlassen.length === 0){ alert('Selecteer minimaal 1 klas.'); return; }
+    // Sort klassen in fixed order
+    const ordered = BESCH_KLASSEN.filter(k => _beschSlotKlassen.includes(k));
+    val = 'les-' + ordered.join(',');
+  }
+  setBeschVal(vak, di, slot.id, val);
+  applyBeschCell(cell, val);
+  closeBeschSlotModal();
+}
+
+function clearBeschSlot(){
+  if(!_beschSlot) return;
+  const {vak, di, slot, cell} = _beschSlot;
+  setBeschVal(vak, di, slot.id, null);
+  applyBeschCell(cell, null);
+  closeBeschSlotModal();
+}
 
 /* ── Leerling beschikbaarheid modal ── */
 function openLeerlingBeschModal(){
@@ -4445,10 +4557,10 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
               let makeCirc=null;
               if(bval==='lokaal107' && stuVakken.includes(vak)){
                 makeCirc={cls:'besch-circle',title:vak+' — Lokaal 107',text:vak};
-              } else if(bval.startsWith('les-')){
-                const lesKlass=bval.slice(4);
-                if(stuKlass===lesKlass && stuVakken.includes(vak)){
-                  makeCirc={cls:'besch-circle besch-les',title:'les '+vak+' ('+lesKlass+')',text:'les '+vak};
+              } else if(bval && bval.startsWith('les-')){
+                const lesKlassen=bval.slice(4).split(',');
+                if(lesKlassen.includes(stuKlass) && stuVakken.includes(vak)){
+                  makeCirc={cls:'besch-circle besch-les',title:'les '+vak+' ('+lesKlassen.join(', ')+')',text:'les '+vak};
                 }
               }
               if(makeCirc){
