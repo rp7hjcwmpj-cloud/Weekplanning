@@ -753,11 +753,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .gesprek-hist-chip:hover{border-color:var(--brand);}
 .gesprek-hist-chip.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand);font-weight:700;}
 
-/* Print coachgesprek */
-@media print{
-  body>*{display:none!important;}
-  #gesprek-print-area{display:block!important;}
-}
+/* Print: gesprek + vergadering — handled by single @media block lower down */
 #gesprek-print-area{display:none;}
 .gp-page{font-family:'Outfit',system-ui,sans-serif;font-size:11pt;color:#111;padding:18mm 16mm;max-width:190mm;margin:0 auto;}
 .gp-title{font-size:15pt;font-weight:800;color:#C85A00;margin-bottom:4mm;}
@@ -783,6 +779,71 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .gp-abv{display:inline-block;width:6mm;height:6mm;border-radius:1mm;border:1pt solid #ddd;text-align:center;line-height:6mm;font-size:8pt;font-weight:700;}
 .gp-abv.sel{background:#C85A00;color:#fff;border-color:#C85A00;}
 .gp-opmerk{border:1pt solid #ddd;border-radius:2mm;padding:3mm;min-height:15mm;font-size:9.5pt;}
+
+/* ── Vergadering 2.0 ── */
+#screen-verg{display:none;flex-direction:column;min-height:100vh;background:var(--ground);}
+#screen-verg.show{display:flex;}
+.verg-hdr{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.2rem;background:linear-gradient(90deg,var(--brand) 0%,var(--accent) 100%);color:#fff;flex-shrink:0;}
+.verg-back-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:.38rem .75rem;font-size:.9rem;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:.35rem;}
+.verg-back-btn:hover{background:rgba(255,255,255,.28);}
+.verg-hdr-title{font-family:'Outfit',sans-serif;font-size:1.08rem;font-weight:800;letter-spacing:-.2px;}
+.verg-hdr-date{font-size:.82rem;opacity:.8;margin-left:.1rem;}
+.verg-tabs-wrap{display:flex;gap:.4rem;padding:.65rem 1.2rem;background:var(--surface);border-bottom:2px solid var(--border);overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch;}
+.verg-tab{border:1.5px solid var(--border);background:var(--surface);color:var(--tx2);font-size:.77rem;border-radius:20px;padding:.3rem .75rem;cursor:pointer;white-space:nowrap;transition:all .12s;flex-shrink:0;}
+.verg-tab:hover{border-color:var(--brand);color:var(--brand);}
+.verg-tab-active{border-color:var(--brand)!important;background:var(--brand-light)!important;color:var(--brand)!important;font-weight:700!important;}
+.verg-body{flex:1;overflow-y:auto;padding:1.2rem;max-width:860px;width:100%;margin:0 auto;}
+.verg-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem;}
+.verg-sec-title{font-size:.8rem;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;padding-bottom:.35rem;border-bottom:2px solid var(--brand-light);}
+.verg-aanw-wrap{display:flex;flex-direction:column;align-items:center;gap:.18rem;}
+.verg-aanw-role{font-size:.65rem;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.verg-aanw-chip{border:2px solid var(--border);background:var(--surf-2);color:var(--tx2);font-size:.88rem;font-weight:700;border-radius:10px;padding:.45rem .8rem;cursor:pointer;transition:all .14s;min-width:60px;text-align:center;}
+.verg-aanw-chip:hover{border-color:var(--brand-mid);}
+.vac-green{border-color:#27ae60!important;background:#e8f8ed!important;color:#27ae60!important;}
+.vac-red{border-color:#c0392b!important;background:#fde8e8!important;color:#c0392b!important;}
+.verg-prev-punt{display:flex;gap:.55rem;align-items:baseline;padding:.38rem .5rem;border-bottom:1px solid var(--border);font-size:.84rem;}
+.verg-prev-punt:last-child{border-bottom:none;}
+.verg-prev-bron{font-size:.72rem;font-weight:700;color:var(--brand);white-space:nowrap;flex-shrink:0;background:var(--brand-light);padding:.1rem .4rem;border-radius:4px;}
+.verg-prev-tekst{color:var(--tx);}
+.verg-stu-list{display:flex;flex-direction:column;gap:0;}
+.verg-stu-row{display:flex;align-items:flex-start;gap:.7rem;padding:.55rem .4rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.verg-stu-row:last-child{border-bottom:none;}
+.verg-stu-name{font-size:.85rem;font-weight:700;color:var(--tx);min-width:140px;flex-shrink:0;padding-top:.2rem;}
+.verg-stu-klas{font-size:.72rem;color:var(--tx3);font-weight:400;margin-left:.25rem;}
+.verg-stu-remarks{display:flex;align-items:flex-start;gap:.35rem;flex-wrap:wrap;flex:1;min-width:180px;}
+.verg-remark{background:var(--surf-2);border:1px solid var(--border);border-radius:6px;padding:.25rem .55rem;font-size:.8rem;color:var(--tx);display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;}
+.verg-remark-vw{border-color:var(--brand);background:var(--brand-light);}
+.verg-remark-tekst{flex:1;}
+.verg-remark-tag{font-size:.68rem;color:var(--brand);font-weight:700;white-space:nowrap;}
+.verg-add-btn{border:1.5px dashed var(--border-s);background:none;color:var(--tx3);font-size:1rem;line-height:1;border-radius:7px;width:28px;height:28px;cursor:pointer;transition:all .12s;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.verg-add-btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-light);}
+.verg-remark-form{width:100%;margin-top:.3rem;padding:.4rem .5rem;background:var(--surf-2);border-radius:8px;border:1px solid var(--border);}
+.verg-cat-remarks{display:flex;flex-direction:column;gap:.35rem;}
+
+/* Print vergadering */
+@media print{
+  body>*{display:none!important;}
+  #gesprek-print-area{display:block!important;}
+  #verg-print-area{display:block!important;}
+}
+#verg-print-area{display:none;}
+.vp-page{font-family:'Outfit',system-ui,sans-serif;font-size:10.5pt;color:#111;padding:16mm 14mm;max-width:190mm;margin:0 auto;}
+.vp-title{font-size:15pt;font-weight:800;color:#C85A00;margin-bottom:1.5mm;}
+.vp-subtitle{font-size:9pt;color:#555;margin-bottom:5mm;}
+.vp-meta{display:flex;gap:10mm;margin-bottom:5mm;font-size:9pt;}
+.vp-sec-title{font-size:8.5pt;font-weight:800;color:#C85A00;text-transform:uppercase;letter-spacing:.06em;margin:4mm 0 2mm;padding-bottom:1mm;border-bottom:1.5pt solid #F7941D;}
+.vp-aanw{display:flex;gap:4mm;flex-wrap:wrap;margin-bottom:2mm;}
+.vp-aanw-chip{border:1pt solid #aaa;border-radius:4pt;padding:1mm 3mm;font-size:9pt;font-weight:700;}
+.vp-aanw-ok{border-color:#27ae60;color:#27ae60;}
+.vp-aanw-nok{border-color:#c0392b;color:#c0392b;}
+.vp-stu-row{display:flex;gap:4mm;padding:1.5mm 0;border-bottom:.5pt solid #eee;font-size:9.5pt;align-items:baseline;}
+.vp-stu-name{font-weight:700;min-width:42mm;flex-shrink:0;font-size:9pt;}
+.vp-remarks{display:flex;flex-direction:column;gap:.8mm;flex:1;}
+.vp-remark{font-size:9pt;color:#333;}
+.vp-remark-vw{color:#C85A00;font-style:italic;}
+.vp-cat-sect{margin-bottom:3mm;}
+.vp-cat-remark{font-size:9.5pt;padding:1mm 0;border-bottom:.5pt solid #eee;}
+.vp-cat-remark-vw{color:#C85A00;font-style:italic;}
 </style>
 
 
@@ -855,6 +916,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div class="hdr-right">
       <div id="hdr-edit-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openLeerlingBeschModal()">👨‍🏫 Docenten</button>
+        <button class="hb" onclick="showVergaderingScreen()">📒 Vergadering 2.0</button>
         <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
         <button class="hb" onclick="openLogboek()">📔 Logboek</button>
         <button class="hb" id="btn-print-week" onclick="openPrintModal()">🖨️ Printen</button>
@@ -1264,6 +1326,25 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 
 <!-- Print output (hidden, shown only via @media print) -->
 <div id="gesprek-print-area"></div>
+<div id="verg-print-area"></div>
+
+<!-- ══ VERGADERING 2.0 SCREEN ══════════════════════════ -->
+<div id="screen-verg">
+  <!-- Header bar -->
+  <div class="verg-hdr">
+    <button class="verg-back-btn" onclick="hideVergaderingScreen()">← Weekplanning</button>
+    <div style="flex:1;display:flex;align-items:baseline;gap:.5rem;">
+      <span class="verg-hdr-title">📒 Vergadering 2.0</span>
+      <span class="verg-hdr-date" id="verg-hdr-date"></span>
+    </div>
+  </div>
+  <!-- Meeting tabs -->
+  <div class="verg-tabs-wrap" id="verg-tabs"></div>
+  <!-- Form content -->
+  <div class="verg-body">
+    <div id="verg-form-ct"></div>
+  </div>
+</div>
 
 <!-- ══ PRINT MODAL ════════════════════════════════════ -->
 <div class="overlay" id="modal-print">
@@ -1713,6 +1794,7 @@ const S = {
   loggedInEmail:null,    // email of currently logged-in user (from MS login)
   pwsEditMode:false,     // true when pencil is active for PWS dot editing
   aanw:{},               // {weekKey:{di:{stuId:{status:'ok'|'nok'|'mod',note:''}}}} — aanwezigheidsregistratie
+  vergaderingen:[],      // [{id,date,week,year,aanwezigheid,puntenVorige,leerlingen,anderezaken,vakdocenten,ontwikkeling}]
   schoolLogo:'',         // base64 data URL van het schoollogo
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
@@ -2353,6 +2435,7 @@ function persist(){
     localStorage.setItem('wp_changeLog', JSON.stringify(S.changeLog));
     localStorage.setItem('wp_coachLastSeen', S.coachLastSeen||'');
     localStorage.setItem('wp_aanw', JSON.stringify(S.aanw));
+    localStorage.setItem('wp_verg', JSON.stringify(S.vergaderingen));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -2384,6 +2467,7 @@ function hydrate(){
     const cls=localStorage.getItem('wp_coachLastSeen'); if(cls) S.coachLastSeen=cls||null;
     const ap=localStorage.getItem('wp_adminPw'); if(ap!==null) S.adminPassword=ap;
     const aan=localStorage.getItem('wp_aanw'); if(aan) S.aanw=JSON.parse(aan);
+    const vrg=localStorage.getItem('wp_verg'); if(vrg) S.vergaderingen=JSON.parse(vrg);
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -2566,6 +2650,7 @@ function switchAdmTab(idx){
 function showAdmin(){
   document.getElementById('screen-roles').style.display='none';
   document.getElementById('screen-main').classList.remove('show');
+  document.getElementById('screen-verg').classList.remove('show');
   document.getElementById('screen-admin').classList.add('show');
   switchAdmTab(0);
   // Automatisch M365 verbinden als er een geldig token is + item-IDs ophalen voor betrouwbare sync
@@ -3688,6 +3773,364 @@ function printGesprek(){
   window.print();
 }
 
+/* ══ VERGADERING 2.0 ════════════════════════════════ */
+let _vergCurrent = null;
+let _vergDirty   = false;
+
+function _vergDeelnemers(){
+  return Object.entries(S.roleMap)
+    .filter(([,m])=>m.role==='coach'||m.role==='coordinator')
+    .map(([email,m])=>{
+      const parts=email.split('@')[0].split('.');
+      const name=parts.map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+      const firstName=parts[0].charAt(0).toUpperCase()+parts[0].slice(1);
+      return {email,name,firstName,role:m.role};
+    });
+}
+
+function showVergaderingScreen(){
+  document.getElementById('screen-roles').style.display='none';
+  document.getElementById('screen-main').classList.remove('show');
+  document.getElementById('screen-admin').classList.remove('show');
+  document.getElementById('screen-verg').classList.add('show');
+  // Load most recent saved meeting or start new
+  if(S.vergaderingen.length){
+    const last=S.vergaderingen[S.vergaderingen.length-1];
+    _vergCurrent=JSON.parse(JSON.stringify(last));
+    _vergDirty=false;
+  } else {
+    _vergNieuw(false);
+  }
+  _renderVergTabs();
+  _renderVergForm();
+}
+
+function hideVergaderingScreen(){
+  if(_vergDirty){
+    const save=confirm('Wil je de vergadernotitie opslaan voor je teruggaat?');
+    if(save) saveVergadering();
+  }
+  document.getElementById('screen-verg').classList.remove('show');
+  if(S.role==='admin') showAdmin();
+  else showMain();
+}
+
+function _newVergObj(){
+  const now=new Date();
+  const wy=weekYear(now);
+  // Collect "volgende week" items from the most recent saved meeting
+  const prevMtg=S.vergaderingen.length?S.vergaderingen[S.vergaderingen.length-1]:null;
+  const puntenVorige=[];
+  if(prevMtg){
+    if(prevMtg.leerlingen){
+      Object.entries(prevMtg.leerlingen).forEach(([stuId,remarks])=>{
+        const stu=S.students.find(s=>s.id===stuId);
+        (remarks||[]).filter(r=>r.volgendeWeek).forEach(r=>{
+          puntenVorige.push({id:uid(),tekst:r.tekst,bron:'leerling',ref:stu?stu.name:stuId});
+        });
+      });
+    }
+    ['anderezaken','vakdocenten','ontwikkeling'].forEach(cat=>{
+      const labels={anderezaken:'Andere zaken',vakdocenten:'Vakdocenten',ontwikkeling:'Ontwikkeling'};
+      (prevMtg[cat]||[]).filter(r=>r.volgendeWeek).forEach(r=>{
+        puntenVorige.push({id:uid(),tekst:r.tekst,bron:cat,ref:labels[cat]});
+      });
+    });
+  }
+  // Default everyone aanwezig
+  const aanwezigheid={};
+  _vergDeelnemers().forEach(d=>{ aanwezigheid[d.email]='aanwezig'; });
+  return {
+    id:uid(), date:toDS(now), week:wy.week, year:wy.year,
+    aanwezigheid, puntenVorige,
+    leerlingen:{}, anderezaken:[], vakdocenten:[], ontwikkeling:[]
+  };
+}
+
+function _vergNieuw(render=true){
+  _vergCurrent=_newVergObj();
+  _vergDirty=false;
+  if(render){ _renderVergTabs(); _renderVergForm(); }
+}
+
+function saveVergadering(){
+  if(!_vergCurrent) return;
+  const idx=S.vergaderingen.findIndex(v=>v.id===_vergCurrent.id);
+  if(idx>=0) S.vergaderingen[idx]=_vergCurrent;
+  else S.vergaderingen.push(_vergCurrent);
+  S.vergaderingen.sort((a,b)=>a.date.localeCompare(b.date));
+  persist();
+  _vergDirty=false;
+  _renderVergTabs();
+  const ok=document.getElementById('verg-ok');
+  if(ok){ok.style.display='';setTimeout(()=>ok.style.display='none',2500);}
+}
+
+function loadVergadering(id){
+  const v=S.vergaderingen.find(v=>v.id===id);
+  if(!v) return;
+  _vergCurrent=JSON.parse(JSON.stringify(v));
+  _vergDirty=false;
+  _renderVergTabs();
+  _renderVergForm();
+}
+
+function _renderVergTabs(){
+  const ct=document.getElementById('verg-tabs');
+  if(!ct) return;
+  const list=S.vergaderingen.slice().reverse();
+  const isNew=_vergCurrent&&!S.vergaderingen.find(v=>v.id===_vergCurrent.id);
+  let html=`<button class="verg-tab${isNew?' verg-tab-active':''}" onclick="_vergNieuw()">+ Nieuwe vergadering</button>`;
+  list.forEach(v=>{
+    const active=_vergCurrent&&_vergCurrent.id===v.id;
+    const label='Wk '+v.week+' · '+fmtDate(v.date).slice(0,-5);
+    html+=`<button class="verg-tab${active?' verg-tab-active':''}" onclick="loadVergadering('${v.id}')">${label}</button>`;
+  });
+  ct.innerHTML=html;
+}
+
+function _vergSetAanw(email){
+  if(!_vergCurrent) return;
+  const cur=_vergCurrent.aanwezigheid[email];
+  if(cur==='aanwezig') _vergCurrent.aanwezigheid[email]='afwezig';
+  else if(cur==='afwezig') delete _vergCurrent.aanwezigheid[email];
+  else _vergCurrent.aanwezigheid[email]='aanwezig';
+  _vergDirty=true;
+  _renderVergAanwezigheid();
+}
+
+function _renderVergAanwezigheid(){
+  const ct=document.getElementById('verg-aanw-ct');
+  if(!ct||!_vergCurrent) return;
+  const deelnemers=_vergDeelnemers();
+  if(!deelnemers.length){
+    ct.innerHTML='<span style="color:var(--tx3);font-size:.83rem;">Geen coaches/coördinatoren in het rolbeheer.</span>';
+    return;
+  }
+  ct.innerHTML=deelnemers.map(d=>{
+    const status=_vergCurrent.aanwezigheid[d.email];
+    return `<div class="verg-aanw-wrap">
+      <button class="verg-aanw-chip${status==='aanwezig'?' vac-green':status==='afwezig'?' vac-red':''}"
+        onclick="_vergSetAanw('${d.email.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${d.firstName}</button>
+      <span class="verg-aanw-role">${d.role==='coach'?'Coach':'Coord.'}</span>
+    </div>`;
+  }).join('');
+}
+
+// Build the content of a remark cell (remarks + add button + hidden form)
+function _buildVergRemarkCell(cat,stuId){
+  const key=stuId?cat+'_'+stuId:cat;
+  let remarks=stuId
+    ?(_vergCurrent?.leerlingen?.[stuId]||[])
+    :(_vergCurrent?.[cat]||[]);
+  let html='';
+  remarks.forEach(r=>{
+    html+=`<div class="verg-remark${r.volgendeWeek?' verg-remark-vw':''}">
+      <span class="verg-remark-tekst">${r.tekst}</span>
+      ${r.volgendeWeek?'<span class="verg-remark-tag">→ Volgende week</span>':''}
+    </div>`;
+  });
+  const escCat=cat.replace(/'/g,"\\'");
+  const escStu=stuId?`'${stuId}'`:'null';
+  html+=`<button class="verg-add-btn" title="Opmerking toevoegen" onclick="_vergOpenForm('${escCat}',${escStu})">＋</button>`;
+  html+=`<div class="verg-remark-form" id="vf-${key}" style="display:none;">
+    <textarea class="field-inp" style="width:100%;min-height:52px;margin:.25rem 0 .35rem;font-size:.83rem;resize:vertical;" placeholder="Opmerking…"></textarea>
+    <div style="display:flex;gap:.38rem;flex-wrap:wrap;">
+      <button class="btn-save-sm" onclick="_vergSaveRemark('${escCat}',${escStu},false)">💾 Opslaan</button>
+      <button class="btn-save-sm" style="background:var(--surf-2);color:var(--brand);border:1.5px solid var(--brand);" onclick="_vergSaveRemark('${escCat}',${escStu},true)">📅 Volgende week</button>
+      <button class="btn-g sm" style="width:auto;padding:.3rem .65rem;font-size:.8rem;" onclick="_vergCloseForm('${escCat}',${escStu})">✕</button>
+    </div>
+  </div>`;
+  return html;
+}
+
+function _vergOpenForm(cat,stuId){
+  const key=stuId?cat+'_'+stuId:cat;
+  const formDiv=document.getElementById('vf-'+key);
+  if(formDiv){
+    formDiv.style.display='';
+    const ta=formDiv.querySelector('textarea');
+    if(ta){ta.value='';ta.focus();}
+  }
+}
+
+function _vergCloseForm(cat,stuId){
+  const key=stuId?cat+'_'+stuId:cat;
+  const formDiv=document.getElementById('vf-'+key);
+  if(formDiv) formDiv.style.display='none';
+}
+
+function _vergSaveRemark(cat,stuId,volgendeWeek){
+  if(!_vergCurrent) return;
+  const key=stuId?cat+'_'+stuId:cat;
+  const formDiv=document.getElementById('vf-'+key);
+  if(!formDiv) return;
+  const ta=formDiv.querySelector('textarea');
+  const tekst=(ta?ta.value:'').trim();
+  if(!tekst){ta&&ta.focus();return;}
+  const remark={id:uid(),tekst,volgendeWeek:!!volgendeWeek};
+  if(stuId){
+    if(!_vergCurrent.leerlingen) _vergCurrent.leerlingen={};
+    if(!_vergCurrent.leerlingen[stuId]) _vergCurrent.leerlingen[stuId]=[];
+    _vergCurrent.leerlingen[stuId].push(remark);
+  } else {
+    if(!Array.isArray(_vergCurrent[cat])) _vergCurrent[cat]=[];
+    _vergCurrent[cat].push(remark);
+  }
+  _vergDirty=true;
+  // Re-render just this cell
+  const cellId='vrc-'+key;
+  const cell=document.getElementById(cellId);
+  if(cell) cell.innerHTML=_buildVergRemarkCell(cat,stuId);
+}
+
+function _renderVergForm(){
+  const ct=document.getElementById('verg-form-ct');
+  if(!ct||!_vergCurrent) return;
+  const g=_vergCurrent;
+
+  // Update header date
+  const dateEl=document.getElementById('verg-hdr-date');
+  if(dateEl) dateEl.textContent=fmtDate(g.date);
+
+  // Punten vorige week
+  const pvHtml=g.puntenVorige&&g.puntenVorige.length?`
+    <div class="verg-sec">
+      <div class="verg-sec-title">📋 Notule vorige week</div>
+      ${g.puntenVorige.map(p=>`<div class="verg-prev-punt">
+        <span class="verg-prev-bron">${p.ref||p.bron}</span>
+        <span class="verg-prev-tekst">${p.tekst}</span>
+      </div>`).join('')}
+    </div>`:'';
+
+  // Leerlingen rows
+  const stuRows=S.students.map(stu=>{
+    const key='leerlingen_'+stu.id;
+    return `<div class="verg-stu-row">
+      <div class="verg-stu-name">${stu.name}<span class="verg-stu-klas">${stu.klass||''}</span></div>
+      <div class="verg-stu-remarks" id="vrc-${key}">${_buildVergRemarkCell('leerlingen',stu.id)}</div>
+    </div>`;
+  }).join('');
+
+  // Category sections
+  const cats=[
+    {key:'anderezaken',  label:'🗂️ Andere zaken'},
+    {key:'vakdocenten',  label:'👨‍🏫 Vakdocenten'},
+    {key:'ontwikkeling', label:'📈 Ontwikkeling'},
+  ];
+  const catHtml=cats.map(({key,label})=>`
+    <div class="verg-sec">
+      <div class="verg-sec-title">${label}</div>
+      <div class="verg-cat-remarks" id="vrc-${key}">${_buildVergRemarkCell(key,null)}</div>
+    </div>`).join('');
+
+  ct.innerHTML=`
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem;flex-wrap:wrap;">
+      <div class="gesprek-field-lbl" style="flex-shrink:0;">Datum vergadering:</div>
+      <input class="field-inp" type="date" value="${g.date}" style="width:160px;font-size:.84rem;"
+        oninput="if(_vergCurrent){_vergCurrent.date=this.value;_vergDirty=true;const el=document.getElementById('verg-hdr-date');if(el)el.textContent=fmtDate(this.value);}">
+    </div>
+
+    <!-- Aanwezigheid -->
+    <div class="verg-sec">
+      <div class="verg-sec-title">👥 Aanwezigheid</div>
+      <div id="verg-aanw-ct" style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-start;"></div>
+    </div>
+
+    ${pvHtml}
+
+    <!-- Leerlingen -->
+    <div class="verg-sec">
+      <div class="verg-sec-title">🎓 Leerlingen</div>
+      <div class="verg-stu-list">${stuRows||'<span style="color:var(--tx3);font-size:.83rem;">Geen leerlingen gevonden.</span>'}</div>
+    </div>
+
+    ${catHtml}
+
+    <div style="display:flex;gap:.65rem;align-items:center;padding:.5rem 0 1rem;">
+      <button class="btn-save" onclick="saveVergadering()">💾 Opslaan</button>
+      <button class="btn-save" style="background:var(--surface);color:var(--brand);border:1.5px solid var(--brand);" onclick="printVergadering()">🖨️ PDF / Print</button>
+      <span class="ok-msg" id="verg-ok" style="display:none;font-size:.82rem;">✓ Opgeslagen</span>
+    </div>
+  `;
+
+  // Render aanwezigheid chips (separate function for re-use)
+  _renderVergAanwezigheid();
+}
+
+function printVergadering(){
+  if(!_vergCurrent) return;
+  const g=_vergCurrent;
+  const deelnemers=_vergDeelnemers();
+
+  const aanwHtml=deelnemers.map(d=>{
+    const s=g.aanwezigheid[d.email];
+    const cls=s==='aanwezig'?' vp-aanw-ok':s==='afwezig'?' vp-aanw-nok':'';
+    const lbl=s==='aanwezig'?'✓ '+d.firstName:s==='afwezig'?'✗ '+d.firstName:'– '+d.firstName;
+    return `<span class="vp-aanw-chip${cls}">${lbl}</span>`;
+  }).join('');
+
+  const pvHtml=g.puntenVorige&&g.puntenVorige.length?`
+    <div class="vp-sec-title">Notule vorige week</div>
+    ${g.puntenVorige.map(p=>`<div class="vp-cat-remark"><strong>${p.ref||p.bron}:</strong> ${p.tekst}</div>`).join('')}`:'';
+
+  const stuHtml=S.students.map(stu=>{
+    const remarks=(g.leerlingen&&g.leerlingen[stu.id])||[];
+    if(!remarks.length) return '';
+    return `<div class="vp-stu-row">
+      <div class="vp-stu-name">${stu.name} <span style="font-weight:400;color:#888;font-size:8.5pt;">${stu.klass||''}</span></div>
+      <div class="vp-remarks">${remarks.map(r=>`<div class="vp-remark${r.volgendeWeek?' vp-remark-vw':''}">${r.tekst}${r.volgendeWeek?' (→ volgende week)':''}</div>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  const catSectHtml=([
+    {key:'anderezaken', label:'Andere zaken'},
+    {key:'vakdocenten', label:'Vakdocenten'},
+    {key:'ontwikkeling', label:'Ontwikkeling'},
+  ]).map(({key,label})=>{
+    const items=g[key]||[];
+    if(!items.length) return '';
+    return `<div class="vp-cat-sect">
+      <div class="vp-sec-title">${label}</div>
+      ${items.map(r=>`<div class="vp-cat-remark${r.volgendeWeek?' vp-cat-remark-vw':''}">${r.tekst}${r.volgendeWeek?' (→ volgende week)':''}</div>`).join('')}
+    </div>`;
+  }).join('');
+
+  document.getElementById('verg-print-area').innerHTML=`
+    <div class="vp-page">
+      <div class="vp-title">Vergadering 2.0</div>
+      <div class="vp-subtitle">${S.schoolName||'Parmant'}</div>
+      <div class="vp-meta">
+        <span><strong>Datum:</strong> ${fmtDate(g.date)}</span>
+        <span><strong>Week:</strong> ${g.week}</span>
+      </div>
+
+      <div class="vp-sec-title">Aanwezigheid</div>
+      <div class="vp-aanw">${aanwHtml||'—'}</div>
+
+      ${pvHtml}
+
+      <div class="vp-sec-title">Leerlingen</div>
+      ${stuHtml||'<div style="font-size:9pt;color:#888;">Geen opmerkingen.</div>'}
+
+      ${catSectHtml}
+
+      <div style="margin-top:14mm;font-size:8pt;color:#888;border-top:1pt solid #ddd;padding-top:3mm;">
+        Uitgedraaid op ${fmtDate(toDS(new Date()))} · ${S.schoolName||'Parmant'}
+      </div>
+    </div>`;
+
+  // Temporarily override print target
+  const gpa=document.getElementById('gesprek-print-area');
+  const vpa=document.getElementById('verg-print-area');
+  const origGpa=gpa.style.cssText;
+  gpa.style.display='none';
+  vpa.style.display='block';
+  window.print();
+  // Restore after print dialog
+  setTimeout(()=>{ gpa.style.cssText=origGpa; vpa.style.display='none'; },500);
+}
+
 /* ── Leerling beschikbaarheid modal ── */
 function openLeerlingBeschModal(){
   const sel=document.getElementById('lbesch-vak-sel');
@@ -4206,6 +4649,7 @@ function showMain(){
   S.currentMonth={year:start.getFullYear(),month:start.getMonth()};
   document.getElementById('screen-roles').style.display='none';
   document.getElementById('screen-admin').classList.remove('show');
+  document.getElementById('screen-verg').classList.remove('show');
   document.getElementById('screen-main').classList.add('show');
   const pillLabel=(S.role==='docent'&&S.docentVak)
     ? 'Docent '+S.docentVak
