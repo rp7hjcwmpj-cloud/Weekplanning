@@ -792,6 +792,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .verg-tab{border:1.5px solid var(--border);background:var(--surface);color:var(--tx2);font-size:.77rem;border-radius:20px;padding:.3rem .75rem;cursor:pointer;white-space:nowrap;transition:all .12s;flex-shrink:0;}
 .verg-tab:hover{border-color:var(--brand);color:var(--brand);}
 .verg-tab-active{border-color:var(--brand)!important;background:var(--brand-light)!important;color:var(--brand)!important;font-weight:700!important;}
+.verg-tab-new{border-style:dashed!important;font-weight:600;}
+.verg-tab-group-lbl{font-size:.68rem;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;align-self:center;white-space:nowrap;}
+.verg-tab-sep{color:var(--border-s);font-size:1.1rem;align-self:center;padding:0 .1rem;}
 .verg-body{flex:1;overflow-y:auto;padding:1.2rem;max-width:860px;width:100%;margin:0 auto;}
 .verg-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem;}
 .verg-sec-title{font-size:.8rem;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;padding-bottom:.35rem;border-bottom:2px solid var(--brand-light);}
@@ -810,6 +813,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .verg-stu-row:last-child{border-bottom:none;}
 .verg-stu-name{font-size:.85rem;font-weight:700;color:var(--tx);min-width:140px;flex-shrink:0;padding-top:.2rem;}
 .verg-stu-klas{font-size:.72rem;color:var(--tx3);font-weight:400;margin-left:.25rem;}
+.verg-stu-vakken{display:block;font-size:.71rem;color:var(--tx3);font-weight:400;margin-top:.1rem;font-style:italic;}
+.verg-edit-btn{background:none;border:none;cursor:pointer;font-size:.82rem;padding:.05rem .2rem;opacity:.55;line-height:1;flex-shrink:0;}
+.verg-edit-btn:hover{opacity:1;}
 .verg-stu-remarks{display:flex;align-items:flex-start;gap:.35rem;flex-wrap:wrap;flex:1;min-width:180px;}
 .verg-remark{background:var(--surf-2);border:1px solid var(--border);border-radius:6px;padding:.25rem .55rem;font-size:.8rem;color:var(--tx);display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;}
 .verg-remark-vw{border-color:var(--brand);background:var(--brand-light);}
@@ -3774,8 +3780,9 @@ function printGesprek(){
 }
 
 /* ══ VERGADERING 2.0 ════════════════════════════════ */
-let _vergCurrent = null;
-let _vergDirty   = false;
+let _vergCurrent    = null;
+let _vergDirty      = false;
+let _vergEditRemark = null; // {cat, stuId, remarkId} — currently being edited
 
 function _vergDeelnemers(){
   return Object.entries(S.roleMap)
@@ -3783,6 +3790,7 @@ function _vergDeelnemers(){
     .map(([email,m])=>{
       const parts=email.split('@')[0].split('.');
       const name=parts.map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+      // Full first name: first dot-segment, capitalised
       const firstName=parts[0].charAt(0).toUpperCase()+parts[0].slice(1);
       return {email,name,firstName,role:m.role};
     });
@@ -3837,9 +3845,8 @@ function _newVergObj(){
       });
     });
   }
-  // Default everyone aanwezig
+  // Start neutral — no default aanwezig
   const aanwezigheid={};
-  _vergDeelnemers().forEach(d=>{ aanwezigheid[d.email]='aanwezig'; });
   return {
     id:uid(), date:toDS(now), week:wy.week, year:wy.year,
     aanwezigheid, puntenVorige,
@@ -3878,23 +3885,38 @@ function loadVergadering(id){
 function _renderVergTabs(){
   const ct=document.getElementById('verg-tabs');
   if(!ct) return;
-  const list=S.vergaderingen.slice().reverse();
+  const saved=S.vergaderingen.slice().reverse(); // newest first
   const isNew=_vergCurrent&&!S.vergaderingen.find(v=>v.id===_vergCurrent.id);
-  let html=`<button class="verg-tab${isNew?' verg-tab-active':''}" onclick="_vergNieuw()">+ Nieuwe vergadering</button>`;
-  list.forEach(v=>{
-    const active=_vergCurrent&&_vergCurrent.id===v.id;
-    const label='Wk '+v.week+' · '+fmtDate(v.date).slice(0,-5);
-    html+=`<button class="verg-tab${active?' verg-tab-active':''}" onclick="loadVergadering('${v.id}')">${label}</button>`;
-  });
+
+  // Left group: saved meetings (old)
+  let html='';
+  if(saved.length){
+    html+=`<span class="verg-tab-group-lbl">Opgeslagen</span>`;
+    saved.forEach(v=>{
+      const active=!isNew&&_vergCurrent&&_vergCurrent.id===v.id;
+      const label='Wk '+v.week+' · '+fmtDate(v.date).slice(0,-5);
+      html+=`<button class="verg-tab${active?' verg-tab-active':''}" onclick="loadVergadering('${v.id}')">${label}</button>`;
+    });
+    html+=`<span class="verg-tab-sep">|</span>`;
+  }
+
+  // Right group: new button + current unsaved concept chip
+  html+=`<button class="verg-tab verg-tab-new" onclick="_vergNieuw()">＋ Nieuwe vergadering</button>`;
+  if(isNew){
+    const label='Nieuw · '+fmtDate(_vergCurrent.date).slice(0,-5);
+    html+=`<button class="verg-tab verg-tab-active" style="font-style:italic;">${label}</button>`;
+  }
+
   ct.innerHTML=html;
 }
 
 function _vergSetAanw(email){
   if(!_vergCurrent) return;
   const cur=_vergCurrent.aanwezigheid[email];
-  if(cur==='aanwezig') _vergCurrent.aanwezigheid[email]='afwezig';
-  else if(cur==='afwezig') delete _vergCurrent.aanwezigheid[email];
-  else _vergCurrent.aanwezigheid[email]='aanwezig';
+  // Cycle: neutral (undefined) → aanwezig (green) → afwezig (red) → neutral
+  if(!cur) _vergCurrent.aanwezigheid[email]='aanwezig';
+  else if(cur==='aanwezig') _vergCurrent.aanwezigheid[email]='afwezig';
+  else delete _vergCurrent.aanwezigheid[email];
   _vergDirty=true;
   _renderVergAanwezigheid();
 }
@@ -3909,29 +3931,47 @@ function _renderVergAanwezigheid(){
   }
   ct.innerHTML=deelnemers.map(d=>{
     const status=_vergCurrent.aanwezigheid[d.email];
+    const safeEmail=d.email.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    // Show full first name; neutral = no colour class
     return `<div class="verg-aanw-wrap">
       <button class="verg-aanw-chip${status==='aanwezig'?' vac-green':status==='afwezig'?' vac-red':''}"
-        onclick="_vergSetAanw('${d.email.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${d.firstName}</button>
+        onclick="_vergSetAanw('${safeEmail}')">${d.firstName}</button>
       <span class="verg-aanw-role">${d.role==='coach'?'Coach':'Coord.'}</span>
     </div>`;
   }).join('');
 }
 
-// Build the content of a remark cell (remarks + add button + hidden form)
+// Build the content of a remark cell (remarks + add button + hidden form + edit support)
 function _buildVergRemarkCell(cat,stuId){
   const key=stuId?cat+'_'+stuId:cat;
-  let remarks=stuId
+  const remarks=stuId
     ?(_vergCurrent?.leerlingen?.[stuId]||[])
     :(_vergCurrent?.[cat]||[]);
-  let html='';
-  remarks.forEach(r=>{
-    html+=`<div class="verg-remark${r.volgendeWeek?' verg-remark-vw':''}">
-      <span class="verg-remark-tekst">${r.tekst}</span>
-      ${r.volgendeWeek?'<span class="verg-remark-tag">→ Volgende week</span>':''}
-    </div>`;
-  });
   const escCat=cat.replace(/'/g,"\\'");
   const escStu=stuId?`'${stuId}'`:'null';
+  let html='';
+  remarks.forEach(r=>{
+    const isEditing=_vergEditRemark&&_vergEditRemark.cat===cat&&_vergEditRemark.stuId===stuId&&_vergEditRemark.remarkId===r.id;
+    const safeId=r.id.replace(/'/g,"\\'");
+    if(isEditing){
+      // Inline edit form
+      html+=`<div class="verg-remark-form" style="display:block;margin:.2rem 0;">
+        <textarea class="field-inp" id="vedit-ta-${r.id}" style="width:100%;min-height:44px;margin:.15rem 0 .3rem;font-size:.83rem;resize:vertical;">${r.tekst.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+        <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+          <button class="btn-save-sm" onclick="_vergCommitEdit('${escCat}',${escStu},'${safeId}')">💾 Opslaan</button>
+          <button class="btn-g sm" style="width:auto;padding:.3rem .65rem;font-size:.8rem;" onclick="_vergCancelEdit('${escCat}',${escStu})">✕</button>
+        </div>
+      </div>`;
+    } else {
+      html+=`<div class="verg-remark${r.volgendeWeek?' verg-remark-vw':''}" style="display:flex;align-items:flex-start;gap:.3rem;">
+        <div style="flex:1;min-width:0;">
+          <span class="verg-remark-tekst">${r.tekst}</span>
+          ${r.volgendeWeek?'<span class="verg-remark-tag">→ Volgende week</span>':''}
+        </div>
+        <button class="verg-edit-btn" title="Bewerken" onclick="_vergStartEdit('${escCat}',${escStu},'${safeId}')">✏️</button>
+      </div>`;
+    }
+  });
   html+=`<button class="verg-add-btn" title="Opmerking toevoegen" onclick="_vergOpenForm('${escCat}',${escStu})">＋</button>`;
   html+=`<div class="verg-remark-form" id="vf-${key}" style="display:none;">
     <textarea class="field-inp" style="width:100%;min-height:52px;margin:.25rem 0 .35rem;font-size:.83rem;resize:vertical;" placeholder="Opmerking…"></textarea>
@@ -3942,6 +3982,39 @@ function _buildVergRemarkCell(cat,stuId){
     </div>
   </div>`;
   return html;
+}
+
+function _vergStartEdit(cat,stuId,remarkId){
+  _vergEditRemark={cat,stuId,remarkId};
+  const key=stuId?cat+'_'+stuId:cat;
+  const cell=document.getElementById('vrc-'+key);
+  if(cell) cell.innerHTML=_buildVergRemarkCell(cat,stuId);
+  const ta=document.getElementById('vedit-ta-'+remarkId);
+  if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}
+}
+
+function _vergCancelEdit(cat,stuId){
+  _vergEditRemark=null;
+  const key=stuId?cat+'_'+stuId:cat;
+  const cell=document.getElementById('vrc-'+key);
+  if(cell) cell.innerHTML=_buildVergRemarkCell(cat,stuId);
+}
+
+function _vergCommitEdit(cat,stuId,remarkId){
+  if(!_vergCurrent) return;
+  const ta=document.getElementById('vedit-ta-'+remarkId);
+  const tekst=(ta?ta.value:'').trim();
+  if(!tekst){if(ta)ta.focus();return;}
+  const arr=stuId
+    ?(_vergCurrent.leerlingen?.[stuId]||[])
+    :(_vergCurrent[cat]||[]);
+  const r=arr.find(x=>x.id===remarkId);
+  if(r) r.tekst=tekst;
+  _vergDirty=true;
+  _vergEditRemark=null;
+  const key=stuId?cat+'_'+stuId:cat;
+  const cell=document.getElementById('vrc-'+key);
+  if(cell) cell.innerHTML=_buildVergRemarkCell(cat,stuId);
 }
 
 function _vergOpenForm(cat,stuId){
@@ -3978,9 +4051,40 @@ function _vergSaveRemark(cat,stuId,volgendeWeek){
     _vergCurrent[cat].push(remark);
   }
   _vergDirty=true;
+
+  // When "Volgende week": auto-create (or find) a meeting 7 days from current meeting date
+  // and append this punt to its puntenVorige
+  if(volgendeWeek){
+    const curDate=new Date(_vergCurrent.date+'T00:00:00');
+    curDate.setDate(curDate.getDate()+7);
+    const nextDS=toDS(curDate);
+    const nextWY=weekYear(curDate);
+    // Save current meeting first so it's in S.vergaderingen
+    const idxCur=S.vergaderingen.findIndex(v=>v.id===_vergCurrent.id);
+    if(idxCur>=0) S.vergaderingen[idxCur]=JSON.parse(JSON.stringify(_vergCurrent));
+    else S.vergaderingen.push(JSON.parse(JSON.stringify(_vergCurrent)));
+    // Find existing meeting for that week or create one
+    let nextMtg=S.vergaderingen.find(v=>v.week===nextWY.week&&v.year===nextWY.year);
+    if(!nextMtg){
+      nextMtg={
+        id:uid(),date:nextDS,week:nextWY.week,year:nextWY.year,
+        aanwezigheid:{},puntenVorige:[],leerlingen:{},anderezaken:[],vakdocenten:[],ontwikkeling:[]
+      };
+      S.vergaderingen.push(nextMtg);
+    }
+    // Build ref label
+    let ref='';
+    if(stuId){const stu=S.students.find(s=>s.id===stuId);ref=stu?stu.name:stuId;}
+    else{const labels={anderezaken:'Andere zaken',vakdocenten:'Vakdocenten',ontwikkeling:'Ontwikkeling'};ref=labels[cat]||cat;}
+    nextMtg.puntenVorige.push({id:uid(),tekst,bron:cat,ref});
+    S.vergaderingen.sort((a,b)=>a.date.localeCompare(b.date));
+    persist();
+    _vergDirty=false;
+    _renderVergTabs();
+  }
+
   // Re-render just this cell
-  const cellId='vrc-'+key;
-  const cell=document.getElementById(cellId);
+  const cell=document.getElementById('vrc-'+key);
   if(cell) cell.innerHTML=_buildVergRemarkCell(cat,stuId);
 }
 
@@ -4003,11 +4107,14 @@ function _renderVergForm(){
       </div>`).join('')}
     </div>`:'';
 
-  // Leerlingen rows
+  // Leerlingen rows: name + klas + vakken
   const stuRows=S.students.map(stu=>{
     const key='leerlingen_'+stu.id;
+    const vakken=getActiveVakken(stu);
+    const vakStr=vakken.length?vakken.join(', '):'';
     return `<div class="verg-stu-row">
-      <div class="verg-stu-name">${stu.name}<span class="verg-stu-klas">${stu.klass||''}</span></div>
+      <div class="verg-stu-name">${stu.name}<span class="verg-stu-klas">${stu.klass||''}</span>${vakStr?`<span class="verg-stu-vakken">${vakStr}</span>`:''}
+      </div>
       <div class="verg-stu-remarks" id="vrc-${key}">${_buildVergRemarkCell('leerlingen',stu.id)}</div>
     </div>`;
   }).join('');
