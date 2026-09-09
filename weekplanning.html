@@ -717,6 +717,69 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   .form-row{grid-template-columns:1fr;}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+
+/* ── Coachgesprek modal ── */
+.gesprek-modal{max-width:680px;width:680px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;padding:1.4rem;}
+.gesprek-hdr-band{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.5rem;margin-bottom:1.1rem;padding:.75rem .9rem;background:var(--surf-2);border-radius:10px;border:1px solid var(--border);}
+.gesprek-hdr-item{display:flex;flex-direction:column;gap:.12rem;}
+.gesprek-hdr-lbl{font-size:.7rem;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.gesprek-hdr-val{font-size:.9rem;font-weight:700;color:var(--tx);}
+.gesprek-sec{margin-bottom:1.2rem;}
+.gesprek-sec-title{font-size:.8rem;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem;padding-bottom:.3rem;border-bottom:2px solid var(--brand-light);}
+.gesprek-welz-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.45rem;flex-wrap:wrap;}
+.gesprek-welz-lbl{font-size:.83rem;color:var(--tx2);min-width:210px;flex-shrink:0;}
+.gesprek-smiles{display:flex;gap:.18rem;}
+.gesprek-smile{border:none;background:none;font-size:1.35rem;cursor:pointer;opacity:.28;transition:opacity .12s,transform .12s;padding:.05rem .08rem;line-height:1;}
+.gesprek-smile:hover{opacity:.65;transform:scale(1.1);}
+.gesprek-smile.active{opacity:1;transform:scale(1.12);}
+.gesprek-ta{width:100%;min-height:60px;resize:vertical;font-size:.84rem;box-sizing:border-box;}
+.gesprek-contract{padding:.6rem .8rem;background:var(--surf-2);border-radius:8px;margin-bottom:.55rem;border:1px solid var(--border);}
+.gesprek-field-lbl{font-size:.72rem;color:var(--tx3);font-weight:700;margin-bottom:.22rem;text-transform:uppercase;letter-spacing:.04em;}
+.gesprek-inp{padding:.35rem .6rem!important;font-size:.84rem!important;margin:0!important;width:100%;box-sizing:border-box;}
+.gesprek-vak-tbl{width:100%;border-collapse:collapse;font-size:.83rem;}
+.gesprek-vak-tbl th{text-align:left;font-size:.72rem;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.38rem .5rem;border-bottom:2px solid var(--border);}
+.gesprek-vak-tbl td{padding:.38rem .45rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.gesprek-vak-name{font-weight:700;color:var(--tx);white-space:nowrap;font-size:.88rem;}
+.gesprek-abv-grp{display:flex;gap:.22rem;}
+.gesprek-abv-btn{border:1.5px solid var(--border);background:var(--surface);color:var(--tx3);font-size:.76rem;font-weight:800;border-radius:5px;padding:.25rem .5rem;cursor:pointer;transition:all .12s;min-width:26px;text-align:center;}
+.gesprek-abv-btn:hover{border-color:var(--brand-mid);color:var(--brand);}
+.gesprek-abv-btn.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
+.gesprek-hist-lbl{font-size:.74rem;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;}
+.gesprek-hist-chips{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.9rem;}
+.gesprek-hist-chip{border:1.5px solid var(--border);background:var(--surface);color:var(--tx2);font-size:.77rem;border-radius:20px;padding:.28rem .7rem;cursor:pointer;transition:all .12s;}
+.gesprek-hist-chip:hover{border-color:var(--brand);}
+.gesprek-hist-chip.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand);font-weight:700;}
+
+/* Print coachgesprek */
+@media print{
+  body>*{display:none!important;}
+  #gesprek-print-area{display:block!important;}
+}
+#gesprek-print-area{display:none;}
+.gp-page{font-family:'Outfit',system-ui,sans-serif;font-size:11pt;color:#111;padding:18mm 16mm;max-width:190mm;margin:0 auto;}
+.gp-title{font-size:15pt;font-weight:800;color:#C85A00;margin-bottom:4mm;}
+.gp-subtitle{font-size:10pt;color:#555;margin-bottom:6mm;}
+.gp-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin-bottom:6mm;border:1pt solid #ddd;padding:3mm;border-radius:2mm;}
+.gp-meta-item{display:flex;flex-direction:column;}
+.gp-meta-lbl{font-size:7.5pt;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.gp-meta-val{font-size:10pt;font-weight:700;}
+.gp-sec-title{font-size:9pt;font-weight:800;color:#C85A00;text-transform:uppercase;letter-spacing:.06em;margin:5mm 0 2.5mm;padding-bottom:1.5mm;border-bottom:1.5pt solid #F7941D;}
+.gp-welz-row{display:flex;align-items:center;gap:4mm;margin-bottom:2.5mm;}
+.gp-welz-lbl{font-size:9.5pt;min-width:55mm;}
+.gp-smile-row{display:flex;gap:2.5mm;font-size:14pt;}
+.gp-smile{opacity:.25;}
+.gp-smile.sel{opacity:1;}
+.gp-note{font-size:9pt;color:#333;margin-top:2mm;padding:2mm 3mm;border:1pt solid #eee;border-radius:2mm;min-height:8mm;}
+.gp-contracts{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:2mm;}
+.gp-contract{border:1pt solid #ddd;border-radius:2mm;padding:3mm;}
+.gp-contract-vek{font-size:8pt;color:#C85A00;font-weight:700;margin-bottom:1mm;}
+.gp-contract-txt{font-size:9.5pt;}
+.gp-vak-tbl{width:100%;border-collapse:collapse;font-size:9pt;}
+.gp-vak-tbl th{text-align:left;font-size:8pt;color:#888;font-weight:700;text-transform:uppercase;padding:2mm 2.5mm;border-bottom:1.5pt solid #ddd;}
+.gp-vak-tbl td{padding:2mm 2.5mm;border-bottom:.75pt solid #eee;}
+.gp-abv{display:inline-block;width:6mm;height:6mm;border-radius:1mm;border:1pt solid #ddd;text-align:center;line-height:6mm;font-size:8pt;font-weight:700;}
+.gp-abv.sel{background:#C85A00;color:#fff;border-color:#C85A00;}
+.gp-opmerk{border:1pt solid #ddd;border-radius:2mm;padding:3mm;min-height:15mm;font-size:9.5pt;}
 </style>
 
 
@@ -826,6 +889,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="stu-nav" id="stu-next" onclick="nextStudent()">›</button>
     <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
       <button class="stu-hb" id="btn-std-rooster" onclick="openStdModal()">📋 Standaard</button>
+      <button class="stu-hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;">📝 Gesprek</button>
       <button class="stu-hb stu-hb-edit" id="btn-edit" onclick="toggleEdit()">✏️ Aanpassen</button>
     </div>
   </div>
@@ -1172,6 +1236,31 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     </div>
   </div>
 </div>
+
+<!-- ══ COACHGESPREK MODAL ════════════════════════════ -->
+<div class="overlay" id="modal-gesprek">
+  <div class="modal-card gesprek-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-shrink:0;">
+      <h2 style="margin:0;">📝 Coachgesprek</h2>
+      <div style="display:flex;gap:.4rem;align-items:center;">
+        <button class="btn-save-sm" onclick="printGesprek()" style="background:var(--surface);color:var(--brand);border:1.5px solid var(--brand);font-size:.8rem;padding:.38rem .75rem;">🖨️ PDF / Print</button>
+        <button class="btn-g sm" onclick="closeGesprekModal()" style="width:auto;padding:.38rem .8rem;font-size:.82rem;">✕ Sluiten</button>
+      </div>
+    </div>
+    <!-- Geschiedenis chips -->
+    <div id="gesprek-history" style="flex-shrink:0;"></div>
+    <!-- Form body -->
+    <div id="gesprek-form-ct" style="overflow-y:auto;flex:1;"></div>
+    <!-- Footer -->
+    <div style="display:flex;gap:.6rem;align-items:center;margin-top:.85rem;flex-shrink:0;padding-top:.75rem;border-top:1px solid var(--border);">
+      <button class="btn-save" onclick="saveGesprek()" style="flex:1;">💾 Opslaan</button>
+      <span class="ok-msg" id="gesprek-ok" style="display:none;font-size:.82rem;">✓ Opgeslagen</span>
+    </div>
+  </div>
+</div>
+
+<!-- Print output (hidden, shown only via @media print) -->
+<div id="gesprek-print-area"></div>
 
 <!-- ══ PRINT MODAL ════════════════════════════════════ -->
 <div class="overlay" id="modal-print">
@@ -3251,6 +3340,303 @@ function clearBeschSlot(){
   closeBeschSlotModal();
 }
 
+/* ══ COACHGESPREK ════════════════════════════════════ */
+let _gesprekCurrent = null;
+let _gesprekIsNew   = true;
+
+const GESPREK_SMILEYS = ['😟','😕','😐','🙂','😄'];
+
+function openGesprekModal(){
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  if(!stu){alert('Selecteer eerst een leerling.');return;}
+  _gesprekIsNew=true;
+  _gesprekCurrent=_newGesprekObj(stu);
+  _renderGesprekForm(stu);
+  _renderGesprekHistory(stu);
+  document.getElementById('modal-gesprek').classList.add('show');
+}
+function closeGesprekModal(){
+  document.getElementById('modal-gesprek').classList.remove('show');
+}
+
+function _newGesprekObj(stu){
+  const now=new Date();
+  const wy=weekYear(now);
+  return {
+    id:uid(), date:toDS(now), week:wy.week,
+    coachName:_gesprekCoachName(),
+    // Welbevinden (0 = niet ingesteld, 1-5)
+    w_algemeen:0, w_sport:0, w_school:0, w_notitie:'',
+    // 2 contractpunten
+    c1_vek:'', c1_tekst:'',
+    c2_vek:'', c2_tekst:'',
+    // Vakken {vak:{planner:'',status:'',notitie:''}}
+    vakken:{},
+    // Algemeen
+    opmerkingen:''
+  };
+}
+
+function _gesprekCoachName(){
+  const stored=localStorage.getItem('wp_coachName');
+  if(stored) return stored;
+  if(S.loggedInEmail){
+    return S.loggedInEmail.split('@')[0].split('.').map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+  }
+  return '';
+}
+
+function _renderGesprekForm(stu){
+  stu=stu||S.students.find(s=>s.id===S.currentStudentId);
+  if(!stu||!_gesprekCurrent) return;
+  const g=_gesprekCurrent;
+  const vakken=getActiveVakken(stu);
+  vakken.forEach(v=>{ if(!g.vakken[v]) g.vakken[v]={planner:'',status:'',notitie:''}; });
+
+  const ct=document.getElementById('gesprek-form-ct');
+  ct.innerHTML=`
+    <div class="gesprek-hdr-band">
+      <div class="gesprek-hdr-item">
+        <span class="gesprek-hdr-lbl">Naam coachee</span>
+        <span class="gesprek-hdr-val">${stu.name}</span>
+      </div>
+      <div class="gesprek-hdr-item">
+        <span class="gesprek-hdr-lbl">Klas</span>
+        <span class="gesprek-hdr-val">${stu.klass||'—'}</span>
+      </div>
+      <div class="gesprek-hdr-item">
+        <span class="gesprek-hdr-lbl">Week</span>
+        <span class="gesprek-hdr-val">${g.week}</span>
+      </div>
+      <div class="gesprek-hdr-item">
+        <span class="gesprek-hdr-lbl">Datum</span>
+        <input class="field-inp gesprek-inp" type="date" value="${g.date}" oninput="_gSet('date',this.value)">
+      </div>
+      <div class="gesprek-hdr-item" style="grid-column:span 2;">
+        <span class="gesprek-hdr-lbl">Coach</span>
+        <input class="field-inp gesprek-inp" type="text" value="${g.coachName}" placeholder="Naam coach"
+          oninput="_gSet('coachName',this.value);localStorage.setItem('wp_coachName',this.value)">
+      </div>
+    </div>
+
+    <!-- 1. Welbevinden -->
+    <div class="gesprek-sec">
+      <div class="gesprek-sec-title">1. Welbevinden</div>
+      ${['w_algemeen','w_sport','w_school'].map((k,i)=>{
+        const labels=['Hoe gaat het met je?','Hoe gaat het met je sport?','Hoe gaat het op school?'];
+        return `<div class="gesprek-welz-row">
+          <span class="gesprek-welz-lbl">${labels[i]}</span>
+          <div class="gesprek-smiles" id="smiles-${k}">
+            ${GESPREK_SMILEYS.map((e,si)=>`<button class="gesprek-smile${g[k]===si+1?' active':''}" onclick="_setSmile('${k}',${si+1})">${e}</button>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+      <textarea class="field-inp gesprek-ta" placeholder="Notities welbevinden…" rows="2"
+        oninput="_gSet('w_notitie',this.value)">${g.w_notitie}</textarea>
+    </div>
+
+    <!-- 2. Contract / afspraken -->
+    <div class="gesprek-sec">
+      <div class="gesprek-sec-title">2. Contract / Afspraken</div>
+      ${[1,2].map(n=>`
+        <div class="gesprek-contract">
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end;">
+            <div style="flex:0 0 auto;">
+              <div class="gesprek-field-lbl">Vak</div>
+              <input class="field-inp gesprek-inp" type="text" value="${g['c'+n+'_vek']}"
+                oninput="_gSet('c${n}_vek',this.value)" placeholder="Bijv. Bi" style="width:70px!important;">
+            </div>
+            <div style="flex:1;min-width:140px;">
+              <div class="gesprek-field-lbl">Afspraak / punt</div>
+              <input class="field-inp gesprek-inp" type="text" value="${g['c'+n+'_tekst']}"
+                oninput="_gSet('c${n}_tekst',this.value)" placeholder="Wat is de afspraak of het aandachtspunt?">
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- 3. Studievooruitgang -->
+    <div class="gesprek-sec">
+      <div class="gesprek-sec-title">3. Tussentijds — studievooruitgang</div>
+      <div style="font-size:.76rem;color:var(--tx3);margin-bottom:.55rem;">A = Aanwezig / Altijd&nbsp;&nbsp;B = Bijna / Bijgewerkt&nbsp;&nbsp;V = Verbetering nodig</div>
+      <table class="gesprek-vak-tbl">
+        <thead><tr>
+          <th>Vak</th>
+          <th>Planner</th>
+          <th>Voortgang</th>
+          <th style="width:100%;">Opmerking</th>
+        </tr></thead>
+        <tbody>
+          ${vakken.map(vak=>{
+            const vd=g.vakken[vak]||{planner:'',status:'',notitie:''};
+            const abvBtns=(field,cur)=>['A','B','V'].map(l=>
+              `<button class="gesprek-abv-btn${cur===l?' active':''}" onclick="_setVakABV('${vak}','${field}','${l}')">${l}</button>`
+            ).join('');
+            return `<tr>
+              <td class="gesprek-vak-name">${vak}</td>
+              <td><div class="gesprek-abv-grp" id="abv-${vak}-planner">${abvBtns('planner',vd.planner)}</div></td>
+              <td><div class="gesprek-abv-grp" id="abv-${vak}-status">${abvBtns('status',vd.status)}</div></td>
+              <td><input class="field-inp gesprek-inp" type="text" value="${vd.notitie||''}"
+                oninput="_setVakNotitie('${vak}',this.value)" placeholder="Opmerking…"></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Opmerkingen -->
+    <div class="gesprek-sec">
+      <div class="gesprek-sec-title">Opmerkingen algemeen</div>
+      <textarea class="field-inp gesprek-ta" rows="3" placeholder="Algemene opmerkingen…"
+        oninput="_gSet('opmerkingen',this.value)">${g.opmerkingen}</textarea>
+    </div>
+  `;
+}
+
+function _gSet(field,val){ if(_gesprekCurrent) _gesprekCurrent[field]=val; }
+
+function _setSmile(key,val){
+  if(!_gesprekCurrent) return;
+  if(_gesprekCurrent[key]===val) val=0; // toggle off
+  _gesprekCurrent[key]=val;
+  const ct=document.getElementById('smiles-'+key);
+  if(ct) ct.querySelectorAll('.gesprek-smile').forEach((b,i)=>b.classList.toggle('active',val===i+1));
+}
+
+function _setVakABV(vak,field,val){
+  if(!_gesprekCurrent) return;
+  if(!_gesprekCurrent.vakken[vak]) _gesprekCurrent.vakken[vak]={planner:'',status:'',notitie:''};
+  if(_gesprekCurrent.vakken[vak][field]===val) val=''; // toggle
+  _gesprekCurrent.vakken[vak][field]=val;
+  const grp=document.getElementById('abv-'+vak+'-'+field);
+  if(grp) grp.querySelectorAll('.gesprek-abv-btn').forEach(b=>b.classList.toggle('active',b.textContent===val));
+}
+
+function _setVakNotitie(vak,val){
+  if(!_gesprekCurrent||!_gesprekCurrent.vakken[vak]) return;
+  _gesprekCurrent.vakken[vak].notitie=val;
+}
+
+function saveGesprek(){
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  if(!stu||!_gesprekCurrent) return;
+  if(!S.studentData[stu.id]) S.studentData[stu.id]={std:{},ovr:{}};
+  if(!S.studentData[stu.id].gesprekken) S.studentData[stu.id].gesprekken=[];
+  const list=S.studentData[stu.id].gesprekken;
+  const idx=list.findIndex(g=>g.id===_gesprekCurrent.id);
+  if(idx>=0) list[idx]=_gesprekCurrent;
+  else list.push(_gesprekCurrent);
+  persist();
+  _gesprekIsNew=false;
+  _renderGesprekHistory(stu);
+  const ok=document.getElementById('gesprek-ok');
+  if(ok){ok.style.display='';setTimeout(()=>ok.style.display='none',2500);}
+}
+
+function _renderGesprekHistory(stu){
+  const list=(S.studentData[stu.id]?.gesprekken||[]).slice().reverse();
+  const ct=document.getElementById('gesprek-history');
+  if(!list.length){ct.innerHTML='';return;}
+  const chips=list.map(g=>`
+    <button class="gesprek-hist-chip${_gesprekCurrent&&_gesprekCurrent.id===g.id&&!_gesprekIsNew?' active':''}"
+      onclick="loadGesprek('${g.id}')">
+      ${g.date} · wk ${g.week}
+    </button>`).join('');
+  ct.innerHTML=`<div class="gesprek-hist-lbl">Eerdere gesprekken</div>
+    <div class="gesprek-hist-chips">
+      <button class="gesprek-hist-chip${_gesprekIsNew?' active':''}" onclick="_gesprekNieuw()">+ Nieuw gesprek</button>
+      ${chips}
+    </div>`;
+}
+
+function loadGesprek(id){
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  if(!stu) return;
+  const g=(S.studentData[stu.id]?.gesprekken||[]).find(g=>g.id===id);
+  if(!g) return;
+  _gesprekCurrent=JSON.parse(JSON.stringify(g));
+  _gesprekIsNew=false;
+  _renderGesprekForm(stu);
+  _renderGesprekHistory(stu);
+}
+
+function _gesprekNieuw(){
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  if(!stu) return;
+  _gesprekIsNew=true;
+  _gesprekCurrent=_newGesprekObj(stu);
+  _renderGesprekForm(stu);
+  _renderGesprekHistory(stu);
+}
+
+function printGesprek(){
+  if(!_gesprekCurrent) return;
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  const g=_gesprekCurrent;
+  const vakken=Object.keys(g.vakken);
+
+  const smileHtml=(key)=>GESPREK_SMILEYS.map((e,i)=>
+    `<span class="gp-smile${g[key]===i+1?' sel':''}">${e}</span>`).join('');
+
+  const vakRows=vakken.map(vak=>{
+    const vd=g.vakken[vak]||{};
+    const abv=(field)=>['A','B','V'].map(l=>
+      `<span class="gp-abv${vd[field]===l?' sel':''}">${l}</span>`).join(' ');
+    return `<tr>
+      <td style="font-weight:700;font-size:9.5pt;">${vak}</td>
+      <td>${abv('planner')}</td>
+      <td>${abv('status')}</td>
+      <td style="font-size:8.5pt;">${vd.notitie||''}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('gesprek-print-area').innerHTML=`
+    <div class="gp-page">
+      <div class="gp-title">Coachgesprek Tussentijds</div>
+      <div class="gp-subtitle">${S.schoolName||'Parmant'}</div>
+      <div class="gp-meta">
+        <div class="gp-meta-item"><span class="gp-meta-lbl">Naam coachee</span><span class="gp-meta-val">${stu?stu.name:'—'}</span></div>
+        <div class="gp-meta-item"><span class="gp-meta-lbl">Klas</span><span class="gp-meta-val">${stu?.klass||'—'}</span></div>
+        <div class="gp-meta-item"><span class="gp-meta-lbl">Datum</span><span class="gp-meta-val">${g.date}</span></div>
+        <div class="gp-meta-item"><span class="gp-meta-lbl">Week</span><span class="gp-meta-val">${g.week}</span></div>
+        <div class="gp-meta-item" style="grid-column:span 2;"><span class="gp-meta-lbl">Coach</span><span class="gp-meta-val">${g.coachName||'—'}</span></div>
+      </div>
+
+      <div class="gp-sec-title">1. Welbevinden</div>
+      <div style="margin-bottom:3mm;">
+        <div class="gp-welz-row"><span class="gp-welz-lbl">Hoe gaat het met je?</span><div class="gp-smile-row">${smileHtml('w_algemeen')}</div></div>
+        <div class="gp-welz-row" style="margin-top:2mm;"><span class="gp-welz-lbl">Hoe gaat het met je sport?</span><div class="gp-smile-row">${smileHtml('w_sport')}</div></div>
+        <div class="gp-welz-row" style="margin-top:2mm;"><span class="gp-welz-lbl">Hoe gaat het op school?</span><div class="gp-smile-row">${smileHtml('w_school')}</div></div>
+      </div>
+      ${g.w_notitie?`<div class="gp-note">${g.w_notitie}</div>`:''}
+
+      <div class="gp-sec-title">2. Contract / Afspraken</div>
+      <div class="gp-contracts">
+        ${[1,2].map(n=>`<div class="gp-contract">
+          <div class="gp-contract-vek">Vak: ${g['c'+n+'_vek']||'—'}</div>
+          <div class="gp-contract-txt">${g['c'+n+'_tekst']||'—'}</div>
+        </div>`).join('')}
+      </div>
+
+      <div class="gp-sec-title">3. Tussentijds — studievooruitgang</div>
+      <table class="gp-vak-tbl">
+        <thead><tr>
+          <th>Vak</th><th>Planner (A/B/V)</th><th>Voortgang (A/B/V)</th><th>Opmerking</th>
+        </tr></thead>
+        <tbody>${vakRows}</tbody>
+      </table>
+
+      <div class="gp-sec-title">Opmerkingen algemeen</div>
+      <div class="gp-opmerk">${g.opmerkingen||''}</div>
+
+      <div style="margin-top:12mm;display:flex;gap:20mm;">
+        <div style="flex:1;border-top:1pt solid #aaa;padding-top:2mm;font-size:8.5pt;color:#666;">Handtekening coach</div>
+        <div style="flex:1;border-top:1pt solid #aaa;padding-top:2mm;font-size:8.5pt;color:#666;">Handtekening leerling</div>
+      </div>
+    </div>`;
+  window.print();
+}
+
 /* ── Leerling beschikbaarheid modal ── */
 function openLeerlingBeschModal(){
   const sel=document.getElementById('lbesch-vak-sel');
@@ -3780,6 +4166,8 @@ function showMain(){
   if(sez) sez.style.display=canEdit?'flex':'none';
   const bsr=document.getElementById('btn-std-rooster');
   if(bsr) bsr.style.display=S.role==='coach'?'':'none';
+  const bgp=document.getElementById('btn-gesprek');
+  if(bgp) bgp.style.display=S.role==='coach'?'':'none';
   document.getElementById('hdr-docent-zone').style.display=S.role==='docent'?'flex':'none';
   document.getElementById('hdr-leerling-zone').style.display=S.role==='leerling'?'flex':'none';
   // Ouder: read-only, geen knoppen
