@@ -744,6 +744,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .gesprek-abv-btn{border:1.5px solid var(--border);background:var(--surface);color:var(--tx3);font-size:.76rem;font-weight:800;border-radius:5px;padding:.25rem .5rem;cursor:pointer;transition:all .12s;min-width:26px;text-align:center;}
 .gesprek-abv-btn:hover{border-color:var(--brand-mid);color:var(--brand);}
 .gesprek-abv-btn.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
+.gesprek-abv-btn.act-a{border-color:#c0392b!important;background:#fde8e8!important;color:#c0392b!important;}
+.gesprek-abv-btn.act-b{border-color:var(--border-s)!important;background:var(--surf-2)!important;color:var(--tx2)!important;}
+.gesprek-abv-btn.act-v{border-color:#27ae60!important;background:#e8f8ed!important;color:#27ae60!important;}
 .gesprek-hist-lbl{font-size:.74rem;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;}
 .gesprek-hist-chips{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.9rem;}
 .gesprek-hist-chip{border:1.5px solid var(--border);background:var(--surface);color:var(--tx2);font-size:.77rem;border-radius:20px;padding:.28rem .7rem;cursor:pointer;transition:all .12s;}
@@ -889,7 +892,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="stu-nav" id="stu-next" onclick="nextStudent()">›</button>
     <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
       <button class="stu-hb" id="btn-std-rooster" onclick="openStdModal()">📋 Standaard</button>
-      <button class="stu-hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;">📝 Gesprek</button>
+      <button class="stu-hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;">📝 Coachgesprek</button>
       <button class="stu-hb stu-hb-edit" id="btn-edit" onclick="toggleEdit()">✏️ Aanpassen</button>
     </div>
   </div>
@@ -3366,11 +3369,10 @@ function _newGesprekObj(stu){
     id:uid(), date:toDS(now), week:wy.week,
     coachName:_gesprekCoachName(),
     // Welbevinden (0 = niet ingesteld, 1-5)
-    w_algemeen:0, w_sport:0, w_school:0, w_notitie:'',
-    // 2 contractpunten
-    c1_vek:'', c1_tekst:'',
-    c2_vek:'', c2_tekst:'',
-    // Vakken {vak:{planner:'',status:'',notitie:''}}
+    w_algemeen:0, w_sport:0, w_school:0,
+    // Contract / afspraken notities per onderwerp
+    cn_algemeen:'', cn_sport:'', cn_school:'', cn_overig:'',
+    // Vakken {vak:{status:'',notitie:''}}
     vakken:{},
     // Algemeen
     opmerkingen:''
@@ -3391,7 +3393,17 @@ function _renderGesprekForm(stu){
   if(!stu||!_gesprekCurrent) return;
   const g=_gesprekCurrent;
   const vakken=getActiveVakken(stu);
-  vakken.forEach(v=>{ if(!g.vakken[v]) g.vakken[v]={planner:'',status:'',notitie:''}; });
+  vakken.forEach(v=>{ if(!g.vakken[v]) g.vakken[v]={status:'',notitie:''}; });
+
+  // Helper: render smile read-only display
+  const smileDisplay=(key)=>`<span style="font-size:1.15rem;opacity:${g[key]?1:.3};">${g[key]?GESPREK_SMILEYS[g[key]-1]:'😐'}</span>`;
+
+  // Helper: ABV buttons with per-letter color classes
+  const abvBtns=(vak,cur)=>['A','B','V'].map(l=>{
+    let cls='gesprek-abv-btn';
+    if(cur===l) cls+=(l==='A'?' act-a':l==='V'?' act-v':' act-b');
+    return `<button class="${cls}" onclick="_setVakABV('${vak}','${l}')">${l}</button>`;
+  }).join('');
 
   const ct=document.getElementById('gesprek-form-ct');
   ct.innerHTML=`
@@ -3419,9 +3431,9 @@ function _renderGesprekForm(stu){
       </div>
     </div>
 
-    <!-- 1. Welbevinden -->
+    <!-- Welbevinden -->
     <div class="gesprek-sec">
-      <div class="gesprek-sec-title">1. Welbevinden</div>
+      <div class="gesprek-sec-title">Welbevinden</div>
       ${['w_algemeen','w_sport','w_school'].map((k,i)=>{
         const labels=['Hoe gaat het met je?','Hoe gaat het met je sport?','Hoe gaat het op school?'];
         return `<div class="gesprek-welz-row">
@@ -3431,51 +3443,47 @@ function _renderGesprekForm(stu){
           </div>
         </div>`;
       }).join('')}
-      <textarea class="field-inp gesprek-ta" placeholder="Notities welbevinden…" rows="2"
-        oninput="_gSet('w_notitie',this.value)">${g.w_notitie}</textarea>
     </div>
 
-    <!-- 2. Contract / afspraken -->
+    <!-- Contract / Afspraken -->
     <div class="gesprek-sec">
-      <div class="gesprek-sec-title">2. Contract / Afspraken</div>
-      ${[1,2].map(n=>`
+      <div class="gesprek-sec-title">Contract / Afspraken</div>
+      ${[
+        {key:'cn_algemeen', label:'Hoe gaat het met je?', wkey:'w_algemeen'},
+        {key:'cn_sport',    label:'Hoe gaat het met je sport?', wkey:'w_sport'},
+        {key:'cn_school',  label:'Hoe gaat het op school?', wkey:'w_school'},
+        {key:'cn_overig',  label:'Overig', wkey:null}
+      ].map(({key,label,wkey})=>`
         <div class="gesprek-contract">
-          <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end;">
-            <div style="flex:0 0 auto;">
-              <div class="gesprek-field-lbl">Vak</div>
-              <input class="field-inp gesprek-inp" type="text" value="${g['c'+n+'_vek']}"
-                oninput="_gSet('c${n}_vek',this.value)" placeholder="Bijv. Bi" style="width:70px!important;">
-            </div>
-            <div style="flex:1;min-width:140px;">
-              <div class="gesprek-field-lbl">Afspraak / punt</div>
-              <input class="field-inp gesprek-inp" type="text" value="${g['c'+n+'_tekst']}"
-                oninput="_gSet('c${n}_tekst',this.value)" placeholder="Wat is de afspraak of het aandachtspunt?">
-            </div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;">
+            ${wkey?smileDisplay(wkey):'<span style="font-size:1.15rem;">📌</span>'}
+            <span style="font-size:.84rem;font-weight:700;color:var(--tx);">${label}</span>
           </div>
+          <textarea class="field-inp gesprek-ta" rows="2" placeholder="Notities…"
+            oninput="_gSet('${key}',this.value)">${g[key]||''}</textarea>
         </div>`).join('')}
     </div>
 
-    <!-- 3. Studievooruitgang -->
+    <!-- Tussentijds studievooruitgang -->
     <div class="gesprek-sec">
-      <div class="gesprek-sec-title">3. Tussentijds — studievooruitgang</div>
-      <div style="font-size:.76rem;color:var(--tx3);margin-bottom:.55rem;">A = Aanwezig / Altijd&nbsp;&nbsp;B = Bijna / Bijgewerkt&nbsp;&nbsp;V = Verbetering nodig</div>
+      <div class="gesprek-sec-title">Tussentijds — studievooruitgang</div>
+      <div style="font-size:.76rem;color:var(--tx3);margin-bottom:.55rem;">
+        <span style="color:#c0392b;font-weight:700;">A</span> = ik loop achter &nbsp;·&nbsp;
+        <span style="font-weight:700;">B</span> = ik ben bij &nbsp;·&nbsp;
+        <span style="color:#27ae60;font-weight:700;">V</span> = ik loop voor
+      </div>
       <table class="gesprek-vak-tbl">
         <thead><tr>
           <th>Vak</th>
-          <th>Planner</th>
           <th>Voortgang</th>
           <th style="width:100%;">Opmerking</th>
         </tr></thead>
         <tbody>
           ${vakken.map(vak=>{
-            const vd=g.vakken[vak]||{planner:'',status:'',notitie:''};
-            const abvBtns=(field,cur)=>['A','B','V'].map(l=>
-              `<button class="gesprek-abv-btn${cur===l?' active':''}" onclick="_setVakABV('${vak}','${field}','${l}')">${l}</button>`
-            ).join('');
+            const vd=g.vakken[vak]||{status:'',notitie:''};
             return `<tr>
               <td class="gesprek-vak-name">${vak}</td>
-              <td><div class="gesprek-abv-grp" id="abv-${vak}-planner">${abvBtns('planner',vd.planner)}</div></td>
-              <td><div class="gesprek-abv-grp" id="abv-${vak}-status">${abvBtns('status',vd.status)}</div></td>
+              <td><div class="gesprek-abv-grp" id="abv-${vak}">${abvBtns(vak,vd.status)}</div></td>
               <td><input class="field-inp gesprek-inp" type="text" value="${vd.notitie||''}"
                 oninput="_setVakNotitie('${vak}',this.value)" placeholder="Opmerking…"></td>
             </tr>`;
@@ -3503,13 +3511,18 @@ function _setSmile(key,val){
   if(ct) ct.querySelectorAll('.gesprek-smile').forEach((b,i)=>b.classList.toggle('active',val===i+1));
 }
 
-function _setVakABV(vak,field,val){
+function _setVakABV(vak,val){
   if(!_gesprekCurrent) return;
-  if(!_gesprekCurrent.vakken[vak]) _gesprekCurrent.vakken[vak]={planner:'',status:'',notitie:''};
-  if(_gesprekCurrent.vakken[vak][field]===val) val=''; // toggle
-  _gesprekCurrent.vakken[vak][field]=val;
-  const grp=document.getElementById('abv-'+vak+'-'+field);
-  if(grp) grp.querySelectorAll('.gesprek-abv-btn').forEach(b=>b.classList.toggle('active',b.textContent===val));
+  if(!_gesprekCurrent.vakken[vak]) _gesprekCurrent.vakken[vak]={status:'',notitie:''};
+  if(_gesprekCurrent.vakken[vak].status===val) val=''; // toggle off
+  _gesprekCurrent.vakken[vak].status=val;
+  const grp=document.getElementById('abv-'+vak);
+  if(grp) grp.querySelectorAll('.gesprek-abv-btn').forEach(b=>{
+    b.className='gesprek-abv-btn';
+    if(b.textContent===val){
+      b.classList.add(val==='A'?'act-a':val==='V'?'act-v':'act-b');
+    }
+  });
 }
 
 function _setVakNotitie(vak,val){
@@ -3534,19 +3547,39 @@ function saveGesprek(){
 }
 
 function _renderGesprekHistory(stu){
-  const list=(S.studentData[stu.id]?.gesprekken||[]).slice().reverse();
+  const list=(S.studentData[stu.id]?.gesprekken||[]).slice().reverse(); // newest first
   const ct=document.getElementById('gesprek-history');
-  if(!list.length){ct.innerHTML='';return;}
-  const chips=list.map(g=>`
-    <button class="gesprek-hist-chip${_gesprekCurrent&&_gesprekCurrent.id===g.id&&!_gesprekIsNew?' active':''}"
-      onclick="loadGesprek('${g.id}')">
-      ${g.date} · wk ${g.week}
-    </button>`).join('');
-  ct.innerHTML=`<div class="gesprek-hist-lbl">Eerdere gesprekken</div>
-    <div class="gesprek-hist-chips">
-      <button class="gesprek-hist-chip${_gesprekIsNew?' active':''}" onclick="_gesprekNieuw()">+ Nieuw gesprek</button>
-      ${chips}
-    </div>`;
+  const lastG=list[0]||null;
+  const olderList=list.slice(1); // everything except the most recent
+
+  const isCurrentNew=_gesprekIsNew;
+  const curId=_gesprekCurrent?._gesprekCurrent?.id||(_gesprekCurrent?.id);
+  const isShowingLast=!isCurrentNew&&lastG&&_gesprekCurrent&&_gesprekCurrent.id===lastG.id;
+
+  let html=`<div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-bottom:.9rem;">`;
+
+  // Nieuw gesprek chip
+  html+=`<button class="gesprek-hist-chip${isCurrentNew?' active':''}" onclick="_gesprekNieuw()">+ Nieuw gesprek</button>`;
+
+  // Last gesprek chip
+  if(lastG){
+    html+=`<button class="gesprek-hist-chip${isShowingLast?' active':''}" onclick="loadGesprek('${lastG.id}')">
+      🕐 ${lastG.date} · wk ${lastG.week}
+    </button>`;
+  }
+
+  // Dropdown for older gesprekken
+  if(olderList.length){
+    const selVal=(!isCurrentNew&&!isShowingLast&&_gesprekCurrent)?_gesprekCurrent.id:'';
+    html+=`<select class="field-inp" style="font-size:.77rem;padding:.28rem .55rem;height:auto;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:${selVal?'var(--brand)':'var(--tx3)'};"
+      onchange="if(this.value)loadGesprek(this.value)">
+      <option value="">Oudere gesprekken…</option>
+      ${olderList.map(g=>`<option value="${g.id}"${selVal===g.id?' selected':''}>${g.date} · wk ${g.week}</option>`).join('')}
+    </select>`;
+  }
+
+  html+=`</div>`;
+  ct.innerHTML=html;
 }
 
 function loadGesprek(id){
@@ -3578,17 +3611,27 @@ function printGesprek(){
   const smileHtml=(key)=>GESPREK_SMILEYS.map((e,i)=>
     `<span class="gp-smile${g[key]===i+1?' sel':''}">${e}</span>`).join('');
 
+  const abvColor=(l)=>l==='A'?'#c0392b':l==='V'?'#27ae60':'#555';
+
   const vakRows=vakken.map(vak=>{
     const vd=g.vakken[vak]||{};
-    const abv=(field)=>['A','B','V'].map(l=>
-      `<span class="gp-abv${vd[field]===l?' sel':''}">${l}</span>`).join(' ');
+    const abv=()=>['A','B','V'].map(l=>{
+      const sel=vd.status===l;
+      return `<span style="display:inline-block;border:1pt solid ${sel?abvColor(l):'#ccc'};border-radius:3pt;padding:0 3pt;font-size:8pt;font-weight:${sel?'800':'400'};color:${sel?abvColor(l):'#aaa'};background:${sel?(l==='A'?'#fde8e8':l==='V'?'#e8f8ed':'#f4f4f4'):'transparent'};">${l}</span>`;
+    }).join(' ');
     return `<tr>
       <td style="font-weight:700;font-size:9.5pt;">${vak}</td>
-      <td>${abv('planner')}</td>
-      <td>${abv('status')}</td>
+      <td>${abv()}</td>
       <td style="font-size:8.5pt;">${vd.notitie||''}</td>
     </tr>`;
   }).join('');
+
+  const contractBlocks=[
+    {label:'Hoe gaat het met je?',    wkey:'w_algemeen', nkey:'cn_algemeen'},
+    {label:'Hoe gaat het met je sport?', wkey:'w_sport',  nkey:'cn_sport'},
+    {label:'Hoe gaat het op school?', wkey:'w_school',  nkey:'cn_school'},
+    {label:'Overig',                   wkey:null,         nkey:'cn_overig'},
+  ];
 
   document.getElementById('gesprek-print-area').innerHTML=`
     <div class="gp-page">
@@ -3602,26 +3645,34 @@ function printGesprek(){
         <div class="gp-meta-item" style="grid-column:span 2;"><span class="gp-meta-lbl">Coach</span><span class="gp-meta-val">${g.coachName||'—'}</span></div>
       </div>
 
-      <div class="gp-sec-title">1. Welbevinden</div>
+      <div class="gp-sec-title">Welbevinden</div>
       <div style="margin-bottom:3mm;">
         <div class="gp-welz-row"><span class="gp-welz-lbl">Hoe gaat het met je?</span><div class="gp-smile-row">${smileHtml('w_algemeen')}</div></div>
         <div class="gp-welz-row" style="margin-top:2mm;"><span class="gp-welz-lbl">Hoe gaat het met je sport?</span><div class="gp-smile-row">${smileHtml('w_sport')}</div></div>
         <div class="gp-welz-row" style="margin-top:2mm;"><span class="gp-welz-lbl">Hoe gaat het op school?</span><div class="gp-smile-row">${smileHtml('w_school')}</div></div>
       </div>
-      ${g.w_notitie?`<div class="gp-note">${g.w_notitie}</div>`:''}
 
-      <div class="gp-sec-title">2. Contract / Afspraken</div>
-      <div class="gp-contracts">
-        ${[1,2].map(n=>`<div class="gp-contract">
-          <div class="gp-contract-vek">Vak: ${g['c'+n+'_vek']||'—'}</div>
-          <div class="gp-contract-txt">${g['c'+n+'_tekst']||'—'}</div>
-        </div>`).join('')}
+      <div class="gp-sec-title">Contract / Afspraken</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-bottom:3mm;">
+        ${contractBlocks.map(({label,wkey,nkey})=>`
+          <div style="border:1pt solid #ddd;border-radius:4pt;padding:3mm;">
+            <div style="display:flex;align-items:center;gap:2mm;margin-bottom:1.5mm;">
+              ${wkey&&g[wkey]?`<span>${GESPREK_SMILEYS[g[wkey]-1]}</span>`:''}
+              <span style="font-size:8pt;font-weight:700;color:#333;">${label}</span>
+            </div>
+            <div style="font-size:8.5pt;color:#222;min-height:10mm;">${g[nkey]||''}</div>
+          </div>`).join('')}
       </div>
 
-      <div class="gp-sec-title">3. Tussentijds — studievooruitgang</div>
+      <div class="gp-sec-title">Tussentijds — studievooruitgang</div>
+      <div style="font-size:7.5pt;color:#666;margin-bottom:2mm;">
+        <span style="color:#c0392b;font-weight:700;">A</span> = ik loop achter &nbsp;·&nbsp;
+        <span style="font-weight:700;">B</span> = ik ben bij &nbsp;·&nbsp;
+        <span style="color:#27ae60;font-weight:700;">V</span> = ik loop voor
+      </div>
       <table class="gp-vak-tbl">
         <thead><tr>
-          <th>Vak</th><th>Planner (A/B/V)</th><th>Voortgang (A/B/V)</th><th>Opmerking</th>
+          <th>Vak</th><th>Voortgang</th><th>Opmerking</th>
         </tr></thead>
         <tbody>${vakRows}</tbody>
       </table>
