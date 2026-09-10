@@ -4680,6 +4680,10 @@ function updateStudentBar(){
   ct.style.display=isLocked?'none':'';
   const sw=document.getElementById('stu-search-wrap');
   if(sw) sw.style.display=isLocked?'none':'';
+  // Voor leerling/ouder: altijd vastzetten op eigen ID (ook als localStorage iets anders heeft)
+  if(isLocked && S.leerlingStudentId){
+    S.currentStudentId=S.leerlingStudentId;
+  }
   const vis=visibleStudents();
   // Ensure currentStudentId is in visible list; if not, pick first visible
   if(!isLocked && vis.length && !vis.find(s=>s.id===S.currentStudentId)){
@@ -4730,8 +4734,14 @@ function nextStudent(){
   if(idx<vis.length-1){ S.currentStudentId=vis[idx+1].id; persist(); updateStudentBar(); renderSchedule(); }
 }
 
-/* ── Visible students (respects docent filter) ── */
+/* ── Visible students (respects docent filter + leerling/ouder lock) ── */
 function visibleStudents(){
+  // Leerling en ouder zien ALLEEN hun eigen profiel — nooit andere leerlingen
+  if(S.role==='leerling'||S.role==='ouder'){
+    if(!S.leerlingStudentId) return [];
+    const own=S.students.find(s=>s.id===S.leerlingStudentId);
+    return own?[own]:[];
+  }
   if(S.role==='docent' && S.docentVak){
     return S.students.filter(stu=>getActiveVakken(stu).includes(S.docentVak));
   }
