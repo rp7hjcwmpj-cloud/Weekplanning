@@ -181,20 +181,35 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 /* Pauze cel geel tijdens toets */
 .dc.pause-dc[data-c="yellow"]{background:var(--y-bg)!important;}
 /* ── Beschikbaarheid circles ────────────────────── */
-.besch-circle{
-  position:absolute;left:3px;
-  height:20px;border-radius:10px;
-  background:rgba(255,255,255,.55);
-  color:#0d2240;
-  border:1.5px solid #0d2240;
-  font-size:.58rem;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
-  z-index:2;pointer-events:none;line-height:1;
-  padding:0 4px;min-width:20px;
-  text-align:center;white-space:nowrap;
-  backdrop-filter:blur(0);
+.besch-circles-wrap{
+  position:absolute;bottom:2px;left:2px;right:2px;
+  display:flex;flex-direction:row;flex-wrap:wrap;gap:2px;
+  z-index:2;overflow:hidden;pointer-events:auto;
 }
-.besch-circle.besch-les{color:#0d2240;border-color:#0d2240;background:rgba(255,255,255,.55);}
+.besch-circle{
+  height:18px;border-radius:9px;
+  border:1.5px solid #888;background:rgba(180,180,180,.25);
+  color:#555;
+  font-size:.55rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:auto;line-height:1;cursor:default;
+  padding:0 4px;min-width:18px;
+  text-align:center;white-space:nowrap;
+}
+.besch-circle.besch-les{
+  background:rgba(255,214,0,.92)!important;
+  border-color:#B8960C!important;
+  color:#5D4000!important;
+}
+/* Beschikbaarheid tooltip */
+.besch-tip{
+  position:absolute;z-index:9999;
+  background:rgba(30,30,40,.93);color:#fff;
+  font-size:.75rem;font-weight:500;
+  padding:.28rem .65rem;border-radius:6px;
+  pointer-events:none;white-space:nowrap;
+  box-shadow:0 2px 10px rgba(0,0,0,.35);
+}
 /* Beschikbaarheid slot popup */
 .bsl-mode-btn{flex:1;padding:.75rem .5rem;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--tx);font-size:.88rem;font-weight:600;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;}
 .bsl-mode-btn:hover{border-color:var(--brand-mid);background:var(--brand-light);}
@@ -840,6 +855,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="role-tile-sm" onclick="openLogin('ouder')">
       👪&nbsp; Ouder <span style="font-size:.7rem;font-weight:400;opacity:.65;">(geen schoolaccount)</span>
     </button>
+    <div style="text-align:center;color:rgba(255,255,255,.3);font-size:.68rem;margin-top:1.4rem;letter-spacing:.04em;">v1.26</div>
   </div>
 </div>
 
@@ -959,6 +975,11 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div class="leg"><div class="leg-sw" style="background:#C8A000"></div>Toets</div>
     <div class="leg"><div class="leg-sw" style="background:#C05818"></div>Toernooi</div>
     <div class="leg"><div class="leg-sw" style="background:#D8D8D8;border:1px solid #AAAAAA"></div>Vakantie / Studiedag</div>
+    <div style="margin-left:auto;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:.7rem;font-weight:700;color:var(--tx3);letter-spacing:.04em;text-transform:uppercase;">Docenten:</span>
+      <div class="leg"><div class="besch-circle besch-lokaal-leg" style="height:15px;min-width:20px;font-size:.52rem;padding:0 4px;border-radius:8px;background:rgba(45,139,80,.32);border-color:#2D8B50;color:#1A6030;display:inline-flex;align-items:center;justify-content:center;font-weight:700;white-space:nowrap;">NE</div>&nbsp;docent in lokaal</div>
+      <div class="leg"><div class="besch-circle besch-les" style="height:15px;min-width:20px;font-size:.52rem;padding:0 4px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;white-space:nowrap;">NE</div>&nbsp;docent geeft les</div>
+    </div>
   </div>
 
   <div class="sched-area" id="sched-area"></div>
@@ -1008,12 +1029,20 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     </div>
     <div class="bsl-slot-info" id="bsl-slot-info"></div>
     <div style="display:flex;gap:.6rem;margin-bottom:1.1rem;">
-      <button class="bsl-mode-btn" id="bsl-btn-lokaal" onclick="selectBeschMode('lokaal107')">🏫 Lokaal 107</button>
+      <button class="bsl-mode-btn" id="bsl-btn-lokaal" onclick="selectBeschMode('lokaal')">🏫 In lokaal</button>
       <button class="bsl-mode-btn" id="bsl-btn-les" onclick="selectBeschMode('les')">📚 Geeft les aan</button>
+    </div>
+    <div id="bsl-lokaal-section" style="display:none;margin-bottom:1rem;">
+      <label style="font-size:.82rem;color:var(--tx2);font-weight:600;display:block;margin-bottom:.35rem;">Lokaal nummer:</label>
+      <input type="text" class="field-inp" id="bsl-lokaal-nr" placeholder="bijv. 107" style="margin-bottom:0;max-width:180px;">
     </div>
     <div id="bsl-les-section" style="display:none;margin-bottom:1rem;">
       <div style="font-size:.82rem;color:var(--tx2);margin-bottom:.3rem;font-weight:600;">Selecteer klas(sen):</div>
       <div class="bsl-klas-grid" id="bsl-klas-grid"></div>
+      <div style="margin-top:.7rem;">
+        <label style="font-size:.82rem;color:var(--tx2);font-weight:600;display:block;margin-bottom:.35rem;">Lokaal (optioneel):</label>
+        <input type="text" class="field-inp" id="bsl-les-lokaal" placeholder="bijv. 108" style="margin-bottom:0;max-width:180px;">
+      </div>
     </div>
     <div style="display:flex;gap:.6rem;align-items:center;margin-top:.5rem;">
       <button class="btn-save" style="flex:1;" onclick="saveBeschSlot()">Opslaan</button>
@@ -1714,8 +1743,14 @@ const SUBJECTS   = ['NE','EN','DU','FA','EC','BEC','BI','NA','SK','GS','AK','WiA
 const BESCH_KLASSEN = ['M3','M4','H4','H5','V4','V5','V6'];
 function beschValLabel(val){
   if(!val || val==='afwezig') return '—';
-  if(val==='lokaal107') return 'Lokaal 107';
-  if(val.startsWith('les-')) return 'Les ' + val.slice(4).split(',').join(', ');
+  if(val==='lokaal107') return 'Lokaal 107'; // backward compat
+  if(val.startsWith('lokaal-')) return 'Lokaal ' + val.slice(7);
+  if(val.startsWith('les-')){
+    const pipeIdx = val.indexOf('|');
+    const klasPart = pipeIdx >= 0 ? val.slice(4, pipeIdx) : val.slice(4);
+    const lokaalStr = pipeIdx >= 0 ? ' (lokaal ' + val.slice(pipeIdx+1) + ')' : '';
+    return 'Les ' + klasPart.split(',').join(', ') + lokaalStr;
+  }
   return val;
 }
 
@@ -3298,10 +3333,47 @@ function openBeschModal(){
 }
 function closeBeschModal(){document.getElementById('modal-besch').classList.remove('show');}
 
+/* ── Besch circle color maps ── */
+const LOKAAL_CIRC_BG = {
+  green:'rgba(45,139,80,.32)',red:'rgba(192,57,43,.32)',rose:'rgba(176,16,16,.32)',
+  blue:'rgba(36,113,163,.32)',purple:'rgba(125,60,152,.32)',yellow:'rgba(200,160,0,.32)',
+  orange:'rgba(192,88,24,.32)'
+};
+const LOKAAL_CIRC_BD = {
+  green:'#2D8B50',red:'#C0392B',rose:'#B01010',
+  blue:'#2471A3',purple:'#7D3C98',yellow:'#C8A000',orange:'#C05818'
+};
+const LOKAAL_CIRC_TX = {
+  green:'#1A6030',red:'#7A1A22',rose:'#6A0808',
+  blue:'#1A3A6B',purple:'#4A1A72',yellow:'#5D4000',orange:'#6B2800'
+};
+
+/* ── Besch tooltip ── */
+let _beschTipEl = null;
+function _showBeschTip(e){
+  const tip = e.currentTarget.dataset.tip;
+  if(!tip) return;
+  if(!_beschTipEl){
+    _beschTipEl = document.createElement('div');
+    _beschTipEl.className = 'besch-tip';
+    document.body.appendChild(_beschTipEl);
+  }
+  _beschTipEl.textContent = tip;
+  _beschTipEl.style.display = 'block';
+  const r = e.currentTarget.getBoundingClientRect();
+  _beschTipEl.style.left = (r.left + window.scrollX) + 'px';
+  _beschTipEl.style.top = (r.top + window.scrollY - 30) + 'px';
+}
+function _hideBeschTip(){
+  if(_beschTipEl) _beschTipEl.style.display = 'none';
+}
+
 /* ── Besch slot popup ── */
 let _beschSlot = null; // {vak, di, slot, cell}
-let _beschSlotMode = null; // 'lokaal107' | 'les'
+let _beschSlotMode = null; // 'lokaal' | 'les'
 let _beschSlotKlassen = []; // selected klassen
+let _beschSlotLokaalNr = ''; // room number for lokaal mode
+let _beschSlotLesLokaal = ''; // room number for les mode
 
 function openBeschSlotModal(vak, di, slot, cell){
   _beschSlot = {vak, di, slot, cell};
@@ -3309,11 +3381,20 @@ function openBeschSlotModal(vak, di, slot, cell){
   // Pre-fill mode from current value
   _beschSlotMode = null;
   _beschSlotKlassen = [];
-  if(cur === 'lokaal107'){
-    _beschSlotMode = 'lokaal107';
+  _beschSlotLokaalNr = '';
+  _beschSlotLesLokaal = '';
+  if(cur === 'lokaal107'){ // backward compat
+    _beschSlotMode = 'lokaal';
+    _beschSlotLokaalNr = '107';
+  } else if(cur && cur.startsWith('lokaal-')){
+    _beschSlotMode = 'lokaal';
+    _beschSlotLokaalNr = cur.slice(7);
   } else if(cur && cur.startsWith('les-')){
     _beschSlotMode = 'les';
-    _beschSlotKlassen = cur.slice(4).split(',');
+    const pipeIdx = cur.indexOf('|');
+    const klasPart = pipeIdx >= 0 ? cur.slice(4, pipeIdx) : cur.slice(4);
+    _beschSlotKlassen = klasPart.split(',');
+    _beschSlotLesLokaal = pipeIdx >= 0 ? cur.slice(pipeIdx+1) : '';
   }
   // Info label
   const DAYS = ['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
@@ -3338,9 +3419,12 @@ function selectBeschMode(mode){
 }
 
 function _renderBslModeButtons(){
-  document.getElementById('bsl-btn-lokaal').classList.toggle('active', _beschSlotMode==='lokaal107');
+  document.getElementById('bsl-btn-lokaal').classList.toggle('active', _beschSlotMode==='lokaal');
   document.getElementById('bsl-btn-les').classList.toggle('active', _beschSlotMode==='les');
+  document.getElementById('bsl-lokaal-section').style.display = _beschSlotMode==='lokaal' ? '' : 'none';
   document.getElementById('bsl-les-section').style.display = _beschSlotMode==='les' ? '' : 'none';
+  if(_beschSlotMode==='lokaal') document.getElementById('bsl-lokaal-nr').value = _beschSlotLokaalNr;
+  if(_beschSlotMode==='les') document.getElementById('bsl-les-lokaal').value = _beschSlotLesLokaal;
 }
 
 function _renderBslKlasGrid(){
@@ -3364,13 +3448,15 @@ function saveBeschSlot(){
   if(!_beschSlot) return;
   const {vak, di, slot, cell} = _beschSlot;
   let val = null;
-  if(_beschSlotMode === 'lokaal107'){
-    val = 'lokaal107';
+  if(_beschSlotMode === 'lokaal'){
+    const nr = (document.getElementById('bsl-lokaal-nr').value||'').trim();
+    val = 'lokaal-' + (nr || '?');
   } else if(_beschSlotMode === 'les'){
     if(_beschSlotKlassen.length === 0){ alert('Selecteer minimaal 1 klas.'); return; }
     // Sort klassen in fixed order
     const ordered = BESCH_KLASSEN.filter(k => _beschSlotKlassen.includes(k));
-    val = 'les-' + ordered.join(',');
+    const lesLokaal = (document.getElementById('bsl-les-lokaal').value||'').trim();
+    val = 'les-' + ordered.join(',') + (lesLokaal ? '|'+lesLokaal : '');
   }
   setBeschVal(vak, di, slot.id, val);
   applyBeschCell(cell, val);
@@ -5430,35 +5516,58 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
           if(stu){
             const stuVakken=getActiveVakken(stu);
             const stuKlass=stu.klass||'';
-            let circIdx=0; // for stacking circles vertically
             // Coach role: only show circles for own vak (docentVak)
             const beschVakken = (S.role==='coach' && S.docentVak)
               ? Object.keys(S.beschikbaarheid).filter(v=>v===S.docentVak)
               : Object.keys(S.beschikbaarheid);
+            const circs=[];
             beschVakken.forEach(vak=>{
               const bdi=S.beschikbaarheid[vak]?.[di];
               if(!bdi) return;
               const bval=bdi[slot.id];
               if(!bval) return;
-              let makeCirc=null;
-              if(bval==='lokaal107' && stuVakken.includes(vak)){
-                makeCirc={cls:'besch-circle',title:vak+' — Lokaal 107',text:vak};
+              if((bval==='lokaal107'||bval.startsWith('lokaal-')) && stuVakken.includes(vak)){
+                const lokaalNr=bval==='lokaal107'?'107':bval.slice(7);
+                circs.push({type:'lokaal',vak,lokaal:lokaalNr,cellColor:c});
               } else if(bval && bval.startsWith('les-')){
-                const lesKlassen=bval.slice(4).split(',');
+                const pipeIdx=bval.indexOf('|');
+                const klasPart=pipeIdx>=0?bval.slice(4,pipeIdx):bval.slice(4);
+                const lesLokaal=pipeIdx>=0?bval.slice(pipeIdx+1):'';
+                const lesKlassen=klasPart.split(',');
                 if(lesKlassen.includes(stuKlass) && stuVakken.includes(vak)){
-                  makeCirc={cls:'besch-circle besch-les',title:'les '+vak+' ('+lesKlassen.join(', ')+')',text:'les '+vak};
+                  circs.push({type:'les',vak,klassen:lesKlassen,lokaal:lesLokaal});
                 }
               }
-              if(makeCirc){
-                const circ=document.createElement('div');
-                circ.className=makeCirc.cls;
-                circ.title=makeCirc.title;
-                circ.textContent=makeCirc.text;
-                circ.style.top=(3 + circIdx*23)+'px';
-                cell.appendChild(circ);
-                circIdx++;
-              }
             });
+            if(circs.length){
+              const wrap=document.createElement('div');
+              wrap.className='besch-circles-wrap';
+              circs.forEach(cd=>{
+                const circ=document.createElement('div');
+                if(cd.type==='les'){
+                  circ.className='besch-circle besch-les';
+                  circ.textContent=cd.vak;
+                  const tip=[cd.vak+' geeft les'];
+                  if(cd.klassen&&cd.klassen.length) tip.push(cd.klassen.join(', '));
+                  if(cd.lokaal) tip.push('lokaal '+cd.lokaal);
+                  circ.dataset.tip=tip.join(' — ');
+                } else {
+                  circ.className='besch-circle';
+                  circ.textContent=cd.vak;
+                  const bg=LOKAAL_CIRC_BG[cd.cellColor]||'rgba(130,130,130,.28)';
+                  const bd=LOKAAL_CIRC_BD[cd.cellColor]||'#888';
+                  const tx=LOKAAL_CIRC_TX[cd.cellColor]||'#444';
+                  circ.style.background=bg;
+                  circ.style.borderColor=bd;
+                  circ.style.color=tx;
+                  circ.dataset.tip=cd.vak+' — lokaal '+cd.lokaal;
+                }
+                circ.addEventListener('mouseenter',_showBeschTip);
+                circ.addEventListener('mouseleave',_hideBeschTip);
+                wrap.appendChild(circ);
+              });
+              cell.appendChild(wrap);
+            }
           }
         }
         // Apply toets visual effects
