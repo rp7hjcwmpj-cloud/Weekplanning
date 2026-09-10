@@ -840,7 +840,6 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="role-tile-sm" onclick="openLogin('ouder')">
       👪&nbsp; Ouder <span style="font-size:.7rem;font-weight:400;opacity:.65;">(geen schoolaccount)</span>
     </button>
-    <button class="admin-tile" onclick="openLogin('admin')" style="margin-top:.55rem;">⚙️ &nbsp;Admin — app instellingen</button>
   </div>
 </div>
 
@@ -903,6 +902,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <span id="sync-chip" class="sync-chip" style="display:none;"></span>
       <button id="btn-m365-login" class="hb" style="display:none;" onclick="m365SignIn()">🔑 Aanmelden M365</button>
       <span class="role-pill" id="role-pill"></span>
+      <button class="hb" id="btn-admin-header" style="display:none;" onclick="showAdmin()">⚙️ Admin</button>
       <button class="hb logout" onclick="logout()">Uitloggen</button>
     </div>
   </div>
@@ -1328,7 +1328,10 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 <div id="screen-admin">
   <div class="adm-hdr">
     <h2>⚙️ Admin — Instellingen</h2>
-    <button class="hb logout" onclick="logout()" style="font-size:.8rem;">Uitloggen</button>
+    <div style="display:flex;gap:.5rem;align-items:center;">
+      <button class="hb" id="btn-admin-back" style="display:none;" onclick="showMain()">← Weekplanning</button>
+      <button class="hb logout" onclick="logout()" style="font-size:.8rem;">Uitloggen</button>
+    </div>
   </div>
   <!-- Tabbladen -->
   <div class="adm-tabs">
@@ -2603,6 +2606,9 @@ function showAdmin(){
   document.getElementById('screen-main').classList.remove('show');
   document.getElementById('screen-verg').classList.remove('show');
   document.getElementById('screen-admin').classList.add('show');
+  // Terugknop alleen voor coach/coordinator (zij kunnen terug naar weekplanning)
+  const backBtn=document.getElementById('btn-admin-back');
+  if(backBtn) backBtn.style.display=(S.role==='coach'||S.role==='coordinator')?'':'none';
   switchAdmTab(0);
   // Automatisch M365 verbinden als er een geldig token is + item-IDs ophalen voor betrouwbare sync
   if(!_graphToken){ acquireToken(false).then(async t=>{ if(t){ _graphToken=t; setSyncChip('idle','☁️ M365'); await spFetchItemIds(); } }); }
@@ -4641,6 +4647,9 @@ function showMain(){
   document.getElementById('role-pill').textContent=pillLabel;
   const canEdit=S.role==='coordinator'||S.role==='coach';
   document.getElementById('hdr-edit-zone').style.display=canEdit?'flex':'none';
+  // Admin-knop alleen zichtbaar voor coach en coordinator (M365-ingelogd)
+  const btnAdm=document.getElementById('btn-admin-header');
+  if(btnAdm) btnAdm.style.display=canEdit?'':'none';
   const sez=document.getElementById('stu-edit-zone');
   if(sez) sez.style.display=canEdit?'flex':'none';
   const bsr=document.getElementById('btn-std-rooster');
