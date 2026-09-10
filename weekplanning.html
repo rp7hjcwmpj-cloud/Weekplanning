@@ -977,7 +977,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div class="leg"><div class="leg-sw" style="background:#D8D8D8;border:1px solid #AAAAAA"></div>Vakantie / Studiedag</div>
     <div style="margin-left:auto;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;">
       <span style="font-size:.7rem;font-weight:700;color:var(--tx3);letter-spacing:.04em;text-transform:uppercase;">Docenten:</span>
-      <div class="leg"><div class="besch-circle besch-lokaal-leg" style="height:15px;min-width:20px;font-size:.52rem;padding:0 4px;border-radius:8px;background:rgba(45,139,80,.32);border-color:#2D8B50;color:#1A6030;display:inline-flex;align-items:center;justify-content:center;font-weight:700;white-space:nowrap;">NE</div>&nbsp;docent in lokaal</div>
+      <div class="leg"><div class="besch-circle besch-lokaal-leg" style="height:15px;min-width:20px;font-size:.52rem;padding:0 4px;border-radius:8px;background:rgba(255,255,255,.55);border:1.5px solid rgba(0,0,0,.18);color:rgba(0,0,0,.5);display:inline-flex;align-items:center;justify-content:center;font-weight:700;white-space:nowrap;">NE</div>&nbsp;docent in lokaal</div>
       <div class="leg"><div class="besch-circle besch-les" style="height:15px;min-width:20px;font-size:.52rem;padding:0 4px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;white-space:nowrap;">NE</div>&nbsp;docent geeft les</div>
     </div>
   </div>
@@ -5554,12 +5554,10 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
                 } else {
                   circ.className='besch-circle';
                   circ.textContent=cd.vak;
-                  const bg=LOKAAL_CIRC_BG[cd.cellColor]||'rgba(130,130,130,.28)';
-                  const bd=LOKAAL_CIRC_BD[cd.cellColor]||'#888';
-                  const tx=LOKAAL_CIRC_TX[cd.cellColor]||'#444';
-                  circ.style.background=bg;
-                  circ.style.borderColor=bd;
-                  circ.style.color=tx;
+                  circ.style.background='rgba(255,255,255,.38)';
+                  circ.style.borderColor='rgba(0,0,0,.14)';
+                  circ.style.color='rgba(0,0,0,.52)';
+                  circ.style.backdropFilter='blur(2px)';
                   circ.dataset.tip=cd.vak+' — lokaal '+cd.lokaal;
                 }
                 circ.addEventListener('mouseenter',_showBeschTip);
