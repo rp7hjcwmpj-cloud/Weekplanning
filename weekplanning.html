@@ -3839,7 +3839,7 @@ function printGesprek(){
   const vakken=Object.keys(g.vakken);
 
   const smileHtml=(key)=>GESPREK_SMILEYS.map((e,i)=>
-    `<span class="gp-smile${g[key]===i+1?' sel':''}">${e}</span>`).join('');
+    `<span style="font-size:14pt;opacity:${g[key]===i+1?'1':'.2'};">${e}</span>`).join('');
 
   const abvColor=(l)=>l==='A'?'#c0392b':l==='V'?'#27ae60':'#555';
 
@@ -3850,9 +3850,9 @@ function printGesprek(){
       return `<span style="display:inline-block;border:1pt solid ${sel?abvColor(l):'#ccc'};border-radius:3pt;padding:0 3pt;font-size:8pt;font-weight:${sel?'800':'400'};color:${sel?abvColor(l):'#aaa'};background:${sel?(l==='A'?'#fde8e8':l==='V'?'#e8f8ed':'#f4f4f4'):'transparent'};">${l}</span>`;
     }).join(' ');
     return `<tr>
-      <td style="font-weight:700;font-size:9.5pt;">${vak}</td>
-      <td>${abv()}</td>
-      <td style="font-size:8.5pt;">${vd.notitie||''}</td>
+      <td style="font-weight:700;font-size:9.5pt;padding:2mm 2.5mm;border-bottom:.75pt solid #eee;">${vak}</td>
+      <td style="padding:2mm 2.5mm;border-bottom:.75pt solid #eee;">${abv()}</td>
+      <td style="font-size:8.5pt;padding:2mm 2.5mm;border-bottom:.75pt solid #eee;">${vd.notitie||''}</td>
     </tr>`;
   }).join('');
 
@@ -3863,71 +3863,99 @@ function printGesprek(){
     {label:'Overig',                   wkey:null,         nkey:'cn_overig'},
   ];
 
-  document.getElementById('gesprek-print-area').innerHTML=`
-    <div class="gp-page">
-      <div class="gp-title">Coachgesprek Tussentijds</div>
-      <div class="gp-subtitle">${S.schoolName||'Parmant'}</div>
-      <div class="gp-meta">
-        <div class="gp-meta-item"><span class="gp-meta-lbl">Naam coachee</span><span class="gp-meta-val">${stu?stu.name:'—'}</span></div>
-        <div class="gp-meta-item"><span class="gp-meta-lbl">Klas</span><span class="gp-meta-val">${stu?.klass||'—'}</span></div>
-        <div class="gp-meta-item"><span class="gp-meta-lbl">Datum</span><span class="gp-meta-val">${g.date}</span></div>
-        <div class="gp-meta-item"><span class="gp-meta-lbl">Week</span><span class="gp-meta-val">${g.week}</span></div>
-        <div class="gp-meta-item" style="grid-column:span 2;"><span class="gp-meta-lbl">Coach</span><span class="gp-meta-val">${g.coachName||'—'}</span></div>
-      </div>
+  // Build fully self-contained HTML for a popup window — no dependency on main page CSS
+  const html=`<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Coachgesprek — ${stu?stu.name:''}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:11pt;color:#111;background:#fff;}
+.page{padding:18mm 16mm;max-width:190mm;margin:0 auto;}
+h1{font-size:15pt;font-weight:800;color:#C85A00;margin-bottom:2mm;}
+.subtitle{font-size:10pt;color:#555;margin-bottom:6mm;}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin-bottom:6mm;border:1pt solid #ddd;padding:3mm;border-radius:2mm;}
+.meta-item{display:flex;flex-direction:column;}
+.meta-lbl{font-size:7.5pt;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.meta-val{font-size:10pt;font-weight:700;}
+.sec-title{font-size:9pt;font-weight:800;color:#C85A00;text-transform:uppercase;letter-spacing:.06em;margin:5mm 0 2.5mm;padding-bottom:1.5mm;border-bottom:1.5pt solid #F7941D;}
+.welz-row{display:flex;align-items:center;gap:4mm;margin-bottom:2.5mm;}
+.welz-lbl{font-size:9.5pt;min-width:55mm;}
+.contract-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-bottom:3mm;}
+.contract-box{border:1pt solid #ddd;border-radius:4pt;padding:3mm;}
+.contract-lbl{font-size:8pt;font-weight:700;color:#333;margin-bottom:1.5mm;}
+.contract-txt{font-size:8.5pt;color:#222;min-height:10mm;}
+table{width:100%;border-collapse:collapse;font-size:9pt;}
+thead th{text-align:left;font-size:8pt;color:#888;font-weight:700;text-transform:uppercase;padding:2mm 2.5mm;border-bottom:1.5pt solid #ddd;}
+.opmerk{border:1pt solid #ddd;border-radius:2mm;padding:3mm;min-height:15mm;font-size:9.5pt;margin-top:1mm;}
+.sigs{display:flex;gap:20mm;margin-top:12mm;}
+.sig{flex:1;border-top:1pt solid #aaa;padding-top:2mm;font-size:8.5pt;color:#666;}
+.hint{text-align:center;font-size:9pt;color:#888;padding:6mm;border:1pt dashed #ddd;border-radius:4pt;margin-bottom:6mm;}
+@media print{.hint{display:none;}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hint">✓ Druk op <strong>Ctrl+P</strong> (of Cmd+P) om op te slaan als PDF — sluit dit venster daarna gewoon.</div>
+  <h1>Coachgesprek Tussentijds</h1>
+  <div class="subtitle">${S.schoolName||'Parmant'}</div>
+  <div class="meta">
+    <div class="meta-item"><span class="meta-lbl">Naam coachee</span><span class="meta-val">${stu?stu.name:'—'}</span></div>
+    <div class="meta-item"><span class="meta-lbl">Klas</span><span class="meta-val">${stu?.klass||'—'}</span></div>
+    <div class="meta-item"><span class="meta-lbl">Datum</span><span class="meta-val">${g.date||'—'}</span></div>
+    <div class="meta-item"><span class="meta-lbl">Week</span><span class="meta-val">${g.week||'—'}</span></div>
+    <div class="meta-item" style="grid-column:span 2;"><span class="meta-lbl">Coach</span><span class="meta-val">${g.coachName||'—'}</span></div>
+  </div>
 
-      <div class="gp-sec-title">Welbevinden</div>
-      <div style="margin-bottom:3mm;">
-        <div class="gp-welz-row"><span class="gp-welz-lbl">Hoe gaat het met je?</span><div class="gp-smile-row">${smileHtml('w_algemeen')}</div></div>
-        <div class="gp-welz-row" style="margin-top:2mm;"><span class="gp-welz-lbl">Hoe gaat het met je sport?</span><div class="gp-smile-row">${smileHtml('w_sport')}</div></div>
-        <div class="gp-welz-row" style="margin-top:2mm;"><span class="gp-welz-lbl">Hoe gaat het op school?</span><div class="gp-smile-row">${smileHtml('w_school')}</div></div>
-      </div>
+  <div class="sec-title">Welbevinden</div>
+  <div style="margin-bottom:3mm;">
+    <div class="welz-row"><span class="welz-lbl">Hoe gaat het met je?</span><div>${smileHtml('w_algemeen')}</div></div>
+    <div class="welz-row" style="margin-top:2mm;"><span class="welz-lbl">Hoe gaat het met je sport?</span><div>${smileHtml('w_sport')}</div></div>
+    <div class="welz-row" style="margin-top:2mm;"><span class="welz-lbl">Hoe gaat het op school?</span><div>${smileHtml('w_school')}</div></div>
+  </div>
 
-      <div class="gp-sec-title">Contract / Afspraken</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-bottom:3mm;">
-        ${contractBlocks.map(({label,wkey,nkey})=>`
-          <div style="border:1pt solid #ddd;border-radius:4pt;padding:3mm;">
-            <div style="display:flex;align-items:center;gap:2mm;margin-bottom:1.5mm;">
-              ${wkey&&g[wkey]?`<span>${GESPREK_SMILEYS[g[wkey]-1]}</span>`:''}
-              <span style="font-size:8pt;font-weight:700;color:#333;">${label}</span>
-            </div>
-            <div style="font-size:8.5pt;color:#222;min-height:10mm;">${g[nkey]||''}</div>
-          </div>`).join('')}
-      </div>
+  <div class="sec-title">Contract / Afspraken</div>
+  <div class="contract-grid">
+    ${contractBlocks.map(({label,wkey,nkey})=>`
+      <div class="contract-box">
+        <div class="contract-lbl">${wkey&&g[wkey]?`<span style="margin-right:2mm;">${GESPREK_SMILEYS[g[wkey]-1]}</span>`:''}${label}</div>
+        <div class="contract-txt">${g[nkey]||''}</div>
+      </div>`).join('')}
+  </div>
 
-      <div class="gp-sec-title">Tussentijds — studievooruitgang</div>
-      <div style="font-size:7.5pt;color:#666;margin-bottom:2mm;">
-        <span style="color:#c0392b;font-weight:700;">A</span> = ik loop achter &nbsp;·&nbsp;
-        <span style="font-weight:700;">B</span> = ik ben bij &nbsp;·&nbsp;
-        <span style="color:#27ae60;font-weight:700;">V</span> = ik loop voor
-      </div>
-      <table class="gp-vak-tbl">
-        <thead><tr>
-          <th>Vak</th><th>Voortgang</th><th>Opmerking</th>
-        </tr></thead>
-        <tbody>${vakRows}</tbody>
-      </table>
+  <div class="sec-title">Tussentijds — studievooruitgang</div>
+  <div style="font-size:7.5pt;color:#666;margin-bottom:2mm;">
+    <span style="color:#c0392b;font-weight:700;">A</span> = ik loop achter &nbsp;·&nbsp;
+    <span style="font-weight:700;">B</span> = ik ben bij &nbsp;·&nbsp;
+    <span style="color:#27ae60;font-weight:700;">V</span> = ik loop voor
+  </div>
+  <table>
+    <thead><tr><th>Vak</th><th>Voortgang</th><th>Opmerking</th></tr></thead>
+    <tbody>${vakRows}</tbody>
+  </table>
 
-      <div class="gp-sec-title">Opmerkingen algemeen</div>
-      <div class="gp-opmerk">${g.opmerkingen||''}</div>
+  <div class="sec-title">Opmerkingen algemeen</div>
+  <div class="opmerk">${g.opmerkingen||''}</div>
 
-      <div style="margin-top:12mm;display:flex;gap:20mm;">
-        <div style="flex:1;border-top:1pt solid #aaa;padding-top:2mm;font-size:8.5pt;color:#666;">Handtekening coach</div>
-        <div style="flex:1;border-top:1pt solid #aaa;padding-top:2mm;font-size:8.5pt;color:#666;">Handtekening leerling</div>
-      </div>
-    </div>`;
+  <div class="sigs">
+    <div class="sig">Handtekening coach</div>
+    <div class="sig">Handtekening leerling</div>
+  </div>
+</div>
+<script>
+  window.addEventListener('load',()=>{
+    setTimeout(()=>{ window.print(); },300);
+  });
+  window.addEventListener('afterprint',()=>{ setTimeout(()=>window.close(),200); });
+<\/script>
+</body>
+</html>`;
 
-  // Hide the modal before printing so it doesn't block the print area or freeze UI afterwards
-  const gesprekModal = document.getElementById('modal-gesprek');
-  const modalWasShown = gesprekModal.classList.contains('show');
-  gesprekModal.classList.remove('show');
-
-  const _restoreAfterPrint = () => {
-    if(modalWasShown) gesprekModal.classList.add('show');
-    window.removeEventListener('afterprint', _restoreAfterPrint);
-  };
-  window.addEventListener('afterprint', _restoreAfterPrint);
-
-  window.print();
+  const pw=window.open('','_blank','width=900,height=700,menubar=no,toolbar=no,location=no');
+  if(!pw){ alert('Pop-up blokkering actief. Sta pop-ups toe voor deze pagina en probeer opnieuw.'); return; }
+  pw.document.write(html);
+  pw.document.close();
 }
 
 /* ══ VERGADERING 2.0 ════════════════════════════════ */
