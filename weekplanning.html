@@ -3186,9 +3186,9 @@ function getActivePeriodId(stu, dateStr){
   // Use the provided date, the viewed week's Monday, or today (in that order)
   let checkDate = dateStr;
   if(!checkDate && S.wy && S.wy.week && S.wy.year){
-    try{ checkDate=weekDates(S.wy.year,S.wy.week)[0].toISOString().slice(0,10); }catch(e){}
+    try{ checkDate=toDS(weekDates(S.wy.year,S.wy.week)[0]); }catch(e){}
   }
-  if(!checkDate) checkDate=new Date().toISOString().slice(0,10);
+  if(!checkDate) checkDate=toDS(new Date());
   const periods=getPeriodList(stu.klass);
   const periodData=getPeriodData(stu.klass);
   for(const p of periods){
@@ -3915,6 +3915,18 @@ function printGesprek(){
         <div style="flex:1;border-top:1pt solid #aaa;padding-top:2mm;font-size:8.5pt;color:#666;">Handtekening leerling</div>
       </div>
     </div>`;
+
+  // Hide the modal before printing so it doesn't block the print area or freeze UI afterwards
+  const gesprekModal = document.getElementById('modal-gesprek');
+  const modalWasShown = gesprekModal.classList.contains('show');
+  gesprekModal.classList.remove('show');
+
+  const _restoreAfterPrint = () => {
+    if(modalWasShown) gesprekModal.classList.add('show');
+    window.removeEventListener('afterprint', _restoreAfterPrint);
+  };
+  window.addEventListener('afterprint', _restoreAfterPrint);
+
   window.print();
 }
 
