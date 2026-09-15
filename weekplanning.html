@@ -775,6 +775,50 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 /* ── Vergadering 2.0 ── */
 #screen-verg{display:none;flex-direction:column;min-height:100vh;background:var(--ground);}
 #screen-verg.show{display:flex;}
+
+/* ── Cijfers scherm ── */
+#screen-cijfers{display:none;flex-direction:column;min-height:100vh;background:var(--ground);}
+#screen-cijfers.show{display:flex;}
+.cij-hdr{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.2rem;background:linear-gradient(90deg,var(--brand) 0%,var(--accent) 100%);color:#fff;flex-shrink:0;}
+.cij-back-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:.38rem .75rem;font-size:.9rem;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:.35rem;}
+.cij-back-btn:hover{background:rgba(255,255,255,.25);}
+.cij-hdr-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.05rem;}
+.cij-body{flex:1;padding:1.2rem;max-width:900px;width:100%;margin:0 auto;}
+.cij-add-btn{display:flex;align-items:center;gap:.45rem;background:var(--brand);color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .15s;margin-bottom:1.4rem;}
+.cij-add-btn:hover{background:var(--brand-mid);}
+.cij-student-block{background:var(--surface);border-radius:12px;border:1px solid var(--border);margin-bottom:1rem;overflow:hidden;}
+.cij-student-hdr{background:var(--surf-2);padding:.6rem 1rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--border);}
+.cij-student-name{font-family:'Outfit',sans-serif;font-weight:700;font-size:.95rem;color:var(--tx);}
+.cij-student-klass{font-size:.78rem;color:var(--tx3);background:var(--border);border-radius:6px;padding:.15rem .5rem;}
+.cij-grade-list{padding:.5rem .75rem;}
+.cij-grade-row{display:flex;align-items:center;gap:.65rem;padding:.42rem .25rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.cij-grade-row:last-child{border-bottom:none;}
+.cij-grade-vak{font-weight:700;font-size:.82rem;color:var(--brand);min-width:46px;}
+.cij-grade-onderwerp{font-size:.83rem;color:var(--tx);flex:1;min-width:80px;}
+.cij-grade-meta{font-size:.75rem;color:var(--tx3);}
+.cij-grade-pta{font-size:.72rem;font-weight:700;border-radius:5px;padding:.1rem .4rem;background:var(--p-bg);color:var(--p-tx);white-space:nowrap;}
+.cij-grade-docent{font-size:.72rem;color:var(--tx3);font-style:italic;}
+.cij-del-btn{background:none;border:1px solid var(--r-bd);color:var(--r-tx);border-radius:6px;padding:.18rem .5rem;font-size:.72rem;cursor:pointer;margin-left:auto;transition:background .15s;flex-shrink:0;}
+.cij-del-btn:hover{background:var(--r-bg);}
+.cij-empty{text-align:center;padding:2.5rem 1rem;color:var(--tx3);font-size:.9rem;}
+
+/* Cijfer popup */
+#modal-cijfer{display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;}
+#modal-cijfer.show{display:flex;}
+.cij-modal-box{background:var(--surface);border-radius:16px;padding:1.6rem 1.4rem;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.28);max-height:92vh;overflow-y:auto;}
+.cij-modal-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.1rem;color:var(--tx);margin-bottom:1.1rem;}
+.cij-modal-label{font-size:.8rem;font-weight:600;color:var(--tx2);margin-bottom:.25rem;display:block;}
+.cij-modal-inp{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.52rem .75rem;font-size:.92rem;font-family:'DM Sans',sans-serif;color:var(--tx);background:var(--surface);margin-bottom:.9rem;outline:none;transition:border-color .15s;}
+.cij-modal-inp:focus{border-color:var(--accent);}
+.cij-modal-row{display:flex;gap:.7rem;margin-bottom:.9rem;}
+.cij-modal-row .cij-modal-inp{margin-bottom:0;}
+.cij-pta-grp{display:flex;gap:.5rem;margin-bottom:.9rem;}
+.cij-pta-opt{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:.45rem;text-align:center;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--tx2);}
+.cij-pta-opt.sel{border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
+.cij-modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:.4rem;}
+.cij-modal-cancel{background:none;border:1.5px solid var(--border);border-radius:8px;padding:.5rem 1rem;font-size:.9rem;color:var(--tx2);cursor:pointer;}
+.cij-modal-save{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .15s;}
+.cij-modal-save:hover{background:var(--brand-mid);}
 .verg-hdr{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.2rem;background:linear-gradient(90deg,var(--brand) 0%,var(--accent) 100%);color:#fff;flex-shrink:0;}
 .verg-back-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:.38rem .75rem;font-size:.9rem;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:.35rem;}
 .verg-back-btn:hover{background:rgba(255,255,255,.28);}
@@ -866,7 +910,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="role-tile-sm" onclick="openLogin('ouder')">
       👪&nbsp; Ouder <span style="font-size:.7rem;font-weight:400;opacity:.65;">(geen schoolaccount)</span>
     </button>
-    <div style="text-align:center;color:rgba(255,255,255,.3);font-size:.68rem;margin-top:1.4rem;letter-spacing:.04em;">v1.27</div>
+    <div style="text-align:center;color:rgba(255,255,255,.3);font-size:.68rem;margin-top:1.4rem;letter-spacing:.04em;">v1.28</div>
   </div>
 </div>
 
@@ -917,11 +961,13 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
         <button class="hb" onclick="openLeerlingBeschModal()">👨‍🏫 Docenten</button>
         <button class="hb" onclick="showVergaderingScreen()">📒 Vergadering 2.0</button>
         <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
+        <button class="hb" onclick="showCijfersScreen()">📊 Cijfers</button>
         <button class="hb" id="btn-print-week" onclick="openPrintModal()">🖨️ Printen</button>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openBeschModal()">📅 Beschikbaarheid</button>
         <button class="hb" onclick="openLaModal()">👥 Leerling aanwezigheid</button>
+        <button class="hb" onclick="showCijfersScreen()">📊 Cijfers</button>
       </div>
       <div id="hdr-leerling-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openLeerlingBeschModal()">👁 Beschikbaarheid docenten</button>
@@ -1331,6 +1377,44 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   <!-- Form content -->
   <div class="verg-body">
     <div id="verg-form-ct"></div>
+  </div>
+</div>
+
+<!-- ══ CIJFERS SCREEN ═════════════════════════════════ -->
+<div id="screen-cijfers">
+  <div class="cij-hdr">
+    <button class="cij-back-btn" onclick="hideCijfersScreen()">← Weekplanning</button>
+    <div style="flex:1;">
+      <span class="cij-hdr-title">📊 Cijfers</span>
+    </div>
+  </div>
+  <div class="cij-body">
+    <button class="cij-add-btn" onclick="openCijferModal()">＋ Nieuw cijfer invoeren</button>
+    <div id="cij-list"></div>
+  </div>
+</div>
+
+<!-- Cijfer invoer popup -->
+<div class="overlay" id="modal-cijfer">
+  <div class="cij-modal-box">
+    <div class="cij-modal-title">📊 Cijfer invoeren</div>
+    <label class="cij-modal-label">Leerling</label>
+    <select class="cij-modal-inp" id="cij-student-sel"></select>
+    <label class="cij-modal-label">Vak</label>
+    <select class="cij-modal-inp" id="cij-vak-sel"></select>
+    <label class="cij-modal-label">Onderwerp / toetsnaam</label>
+    <input type="text" class="cij-modal-inp" id="cij-onderwerp" placeholder="bijv. Hoofdstuk 4 – begrippen">
+    <label class="cij-modal-label">PTA?</label>
+    <div class="cij-pta-grp">
+      <div class="cij-pta-opt" id="cij-pta-ja" onclick="setCijPta(true)">✔ Ja</div>
+      <div class="cij-pta-opt" id="cij-pta-nee" onclick="setCijPta(false)">✗ Nee</div>
+    </div>
+    <label class="cij-modal-label">Weging</label>
+    <input type="text" class="cij-modal-inp" id="cij-weging" placeholder="bijv. 1× of 25%">
+    <div class="cij-modal-actions">
+      <button class="cij-modal-cancel" onclick="closeCijferModal()">Annuleren</button>
+      <button class="cij-modal-save" onclick="saveCijfer()">Opslaan</button>
+    </div>
   </div>
 </div>
 
@@ -1792,6 +1876,7 @@ const S = {
   pwsEditMode:false,     // true when pencil is active for PWS dot editing
   aanw:{},               // {weekKey:{di:{stuId:{status:'ok'|'nok'|'mod',note:''}}}} — aanwezigheidsregistratie
   vergaderingen:[],      // [{id,date,week,year,aanwezigheid,puntenVorige,leerlingen,anderezaken,vakdocenten,ontwikkeling}]
+  cijfers:[],            // [{id,ts,docentVak,studentId,studentName,vak,onderwerp,pta,weging}]
   schoolLogo:'',         // base64 data URL van het schoollogo
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
@@ -2433,6 +2518,7 @@ function persist(){
     localStorage.setItem('wp_coachLastSeen', S.coachLastSeen||'');
     localStorage.setItem('wp_aanw', JSON.stringify(S.aanw));
     localStorage.setItem('wp_verg', JSON.stringify(S.vergaderingen));
+    localStorage.setItem('wp_cijfers', JSON.stringify(S.cijfers));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -2465,6 +2551,7 @@ function hydrate(){
     const ap=localStorage.getItem('wp_adminPw'); if(ap!==null) S.adminPassword=ap;
     const aan=localStorage.getItem('wp_aanw'); if(aan) S.aanw=JSON.parse(aan);
     const vrg=localStorage.getItem('wp_verg'); if(vrg) S.vergaderingen=JSON.parse(vrg);
+    const cij=localStorage.getItem('wp_cijfers'); if(cij) S.cijfers=JSON.parse(cij);
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -2648,6 +2735,7 @@ function showAdmin(){
   document.getElementById('screen-roles').style.display='none';
   document.getElementById('screen-main').classList.remove('show');
   document.getElementById('screen-verg').classList.remove('show');
+  document.getElementById('screen-cijfers').classList.remove('show');
   document.getElementById('screen-admin').classList.add('show');
   // Terugknop alleen voor coach/coordinator (zij kunnen terug naar weekplanning)
   const backBtn=document.getElementById('btn-admin-back');
@@ -3845,6 +3933,7 @@ function showVergaderingScreen(){
   document.getElementById('screen-roles').style.display='none';
   document.getElementById('screen-main').classList.remove('show');
   document.getElementById('screen-admin').classList.remove('show');
+  document.getElementById('screen-cijfers').classList.remove('show');
   document.getElementById('screen-verg').classList.add('show');
   // Load most recent saved meeting or start new
   if(S.vergaderingen.length){
@@ -3866,6 +3955,155 @@ function hideVergaderingScreen(){
   document.getElementById('screen-verg').classList.remove('show');
   if(S.role==='admin') showAdmin();
   else showMain();
+}
+
+/* ══ CIJFERS ════════════════════════════════════════ */
+let _cijPta = false;
+
+function showCijfersScreen(){
+  document.getElementById('screen-roles').style.display='none';
+  document.getElementById('screen-main').classList.remove('show');
+  document.getElementById('screen-admin').classList.remove('show');
+  document.getElementById('screen-verg').classList.remove('show');
+  document.getElementById('screen-cijfers').classList.add('show');
+  renderCijfersList();
+}
+
+function hideCijfersScreen(){
+  document.getElementById('screen-cijfers').classList.remove('show');
+  if(S.role==='admin') showAdmin();
+  else showMain();
+}
+
+function openCijferModal(){
+  // Populate student dropdown
+  const sel=document.getElementById('cij-student-sel');
+  sel.innerHTML='<option value="">— Kies leerling —</option>';
+  const sorted=[...S.students].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
+  sorted.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.id;
+    o.textContent=s.name+(s.klass?' ('+s.klass+')':'');
+    sel.appendChild(o);
+  });
+  // Populate vak dropdown
+  const vsel=document.getElementById('cij-vak-sel');
+  vsel.innerHTML='<option value="">— Kies vak —</option>';
+  SUBJECTS.forEach(v=>{
+    const o=document.createElement('option');
+    o.value=v; o.textContent=v;
+    vsel.appendChild(o);
+  });
+  // If logged in as docent, pre-select their vak
+  if(S.docentVak){
+    for(let i=0;i<vsel.options.length;i++){
+      if(vsel.options[i].value===S.docentVak){ vsel.selectedIndex=i; break; }
+    }
+  }
+  document.getElementById('cij-onderwerp').value='';
+  document.getElementById('cij-weging').value='';
+  _cijPta=false;
+  _updateCijPtaUI();
+  document.getElementById('modal-cijfer').classList.add('show');
+}
+
+function closeCijferModal(){
+  document.getElementById('modal-cijfer').classList.remove('show');
+}
+
+function setCijPta(val){
+  _cijPta=val;
+  _updateCijPtaUI();
+}
+
+function _updateCijPtaUI(){
+  document.getElementById('cij-pta-ja').classList.toggle('sel',_cijPta===true);
+  document.getElementById('cij-pta-nee').classList.toggle('sel',_cijPta===false);
+}
+
+function saveCijfer(){
+  const studentId=document.getElementById('cij-student-sel').value;
+  const vak=document.getElementById('cij-vak-sel').value;
+  const onderwerp=(document.getElementById('cij-onderwerp').value||'').trim();
+  const weging=(document.getElementById('cij-weging').value||'').trim();
+  if(!studentId){ alert('Selecteer een leerling.'); return; }
+  if(!vak){ alert('Selecteer een vak.'); return; }
+  if(!onderwerp){ alert('Voer een onderwerp in.'); return; }
+  const stu=S.students.find(s=>s.id===studentId)||{};
+  const entry={
+    id:uid(),
+    ts:new Date().toISOString(),
+    docentVak: S.docentVak || S.role,
+    studentId,
+    studentName: stu.name||studentId,
+    vak,
+    onderwerp,
+    pta: _cijPta,
+    weging
+  };
+  S.cijfers.push(entry);
+  persist();
+  closeCijferModal();
+  renderCijfersList();
+}
+
+function deleteCijfer(id){
+  if(!confirm('Weet je zeker dat je dit cijfer wil verwijderen?')) return;
+  S.cijfers=S.cijfers.filter(c=>c.id!==id);
+  persist();
+  renderCijfersList();
+}
+
+function renderCijfersList(){
+  const ct=document.getElementById('cij-list');
+  if(!ct) return;
+  if(S.cijfers.length===0){
+    ct.innerHTML='<div class="cij-empty">Nog geen cijfers ingevoerd.<br>Klik op ＋ om te beginnen.</div>';
+    return;
+  }
+  // Group by studentId, sorted alphabetically
+  const byStudent={};
+  S.cijfers.forEach(c=>{
+    if(!byStudent[c.studentId]) byStudent[c.studentId]=[];
+    byStudent[c.studentId].push(c);
+  });
+  // Sort students by name
+  const stuIds=Object.keys(byStudent).sort((a,b)=>{
+    const na=(S.students.find(s=>s.id===a)||{}).name||a;
+    const nb=(S.students.find(s=>s.id===b)||{}).name||b;
+    return na.localeCompare(nb,'nl');
+  });
+  ct.innerHTML='';
+  stuIds.forEach(stuId=>{
+    const stu=S.students.find(s=>s.id===stuId)||{name:stuId,klass:''};
+    const block=document.createElement('div');
+    block.className='cij-student-block';
+    const hdr=document.createElement('div');
+    hdr.className='cij-student-hdr';
+    hdr.innerHTML=`<span class="cij-student-name">${stu.name}</span>`
+      +(stu.klass?`<span class="cij-student-klass">${stu.klass}</span>`:'');
+    block.appendChild(hdr);
+    const list=document.createElement('div');
+    list.className='cij-grade-list';
+    // Sort grades: most recent first
+    const entries=[...byStudent[stuId]].sort((a,b)=>b.ts.localeCompare(a.ts));
+    entries.forEach(c=>{
+      const row=document.createElement('div');
+      row.className='cij-grade-row';
+      const ts=new Date(c.ts);
+      const dateStr=ts.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+      row.innerHTML=
+        `<span class="cij-grade-vak">${c.vak}</span>`+
+        `<span class="cij-grade-onderwerp">${c.onderwerp}</span>`+
+        (c.pta?`<span class="cij-grade-pta">PTA</span>`:'')+
+        (c.weging?`<span class="cij-grade-meta">Weging: ${c.weging}</span>`:'')+
+        `<span class="cij-grade-docent">${c.docentVak||''} · ${dateStr}</span>`+
+        `<button class="cij-del-btn" onclick="deleteCijfer('${c.id}')">✕ Verwijder</button>`;
+      list.appendChild(row);
+    });
+    block.appendChild(list);
+    ct.appendChild(block);
+  });
 }
 
 function _newVergObj(){
@@ -4734,6 +4972,7 @@ function showMain(){
   document.getElementById('screen-roles').style.display='none';
   document.getElementById('screen-admin').classList.remove('show');
   document.getElementById('screen-verg').classList.remove('show');
+  document.getElementById('screen-cijfers').classList.remove('show');
   document.getElementById('screen-main').classList.add('show');
   const pillLabel=(S.role==='docent'&&S.docentVak)
     ? 'Docent '+S.docentVak
