@@ -798,8 +798,12 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .cij-grade-meta{font-size:.75rem;color:var(--tx3);}
 .cij-grade-pta{font-size:.72rem;font-weight:700;border-radius:5px;padding:.1rem .4rem;background:var(--p-bg);color:var(--p-tx);white-space:nowrap;}
 .cij-grade-docent{font-size:.72rem;color:var(--tx3);font-style:italic;}
-.cij-del-btn{background:none;border:1px solid var(--r-bd);color:var(--r-tx);border-radius:6px;padding:.18rem .5rem;font-size:.72rem;cursor:pointer;margin-left:auto;transition:background .15s;flex-shrink:0;}
+.cij-del-btn{background:none;border:1px solid var(--r-bd);color:var(--r-tx);border-radius:6px;padding:.18rem .5rem;font-size:.72rem;cursor:pointer;transition:background .15s;flex-shrink:0;}
 .cij-del-btn:hover{background:var(--r-bg);}
+.cij-edit-btn{background:none;border:1px solid var(--border);color:var(--tx3);border-radius:6px;padding:.18rem .5rem;font-size:.72rem;cursor:pointer;transition:background .15s;flex-shrink:0;}
+.cij-edit-btn:hover{background:var(--surf-2);color:var(--tx);}
+.cij-grade-cijfer{font-size:.88rem;font-weight:800;color:var(--tx);background:var(--surf-2);border:1.5px solid var(--border-s);border-radius:7px;padding:.1rem .45rem;min-width:36px;text-align:center;flex-shrink:0;}
+.cij-grade-actions{display:flex;gap:.35rem;margin-left:auto;flex-shrink:0;}
 .cij-empty{text-align:center;padding:2.5rem 1rem;color:var(--tx3);font-size:.9rem;}
 
 /* Cijfer popup */
@@ -1394,14 +1398,16 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   </div>
 </div>
 
-<!-- Cijfer invoer popup -->
+<!-- Cijfer invoer/bewerken popup -->
 <div class="overlay" id="modal-cijfer">
   <div class="cij-modal-box">
-    <div class="cij-modal-title">📊 Cijfer invoeren</div>
+    <div class="cij-modal-title" id="cij-modal-title">📊 Cijfer invoeren</div>
     <label class="cij-modal-label">Leerling</label>
-    <select class="cij-modal-inp" id="cij-student-sel"></select>
+    <select class="cij-modal-inp" id="cij-student-sel" onchange="onCijStuChange()"></select>
     <label class="cij-modal-label">Vak</label>
     <select class="cij-modal-inp" id="cij-vak-sel"></select>
+    <label class="cij-modal-label">Cijfer</label>
+    <input type="text" class="cij-modal-inp" id="cij-cijfer" placeholder="bijv. 7.5">
     <label class="cij-modal-label">Onderwerp / toetsnaam</label>
     <input type="text" class="cij-modal-inp" id="cij-onderwerp" placeholder="bijv. Hoofdstuk 4 – begrippen">
     <label class="cij-modal-label">PTA?</label>
@@ -1876,7 +1882,7 @@ const S = {
   pwsEditMode:false,     // true when pencil is active for PWS dot editing
   aanw:{},               // {weekKey:{di:{stuId:{status:'ok'|'nok'|'mod',note:''}}}} — aanwezigheidsregistratie
   vergaderingen:[],      // [{id,date,week,year,aanwezigheid,puntenVorige,leerlingen,anderezaken,vakdocenten,ontwikkeling}]
-  cijfers:[],            // [{id,ts,docentVak,studentId,studentName,vak,onderwerp,pta,weging}]
+  cijfers:[],            // [{id,ts,docentVak,studentId,studentName,vak,cijfer,onderwerp,pta,weging}]
   schoolLogo:'',         // base64 data URL van het schoollogo
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
@@ -3959,6 +3965,7 @@ function hideVergaderingScreen(){
 
 /* ══ CIJFERS ════════════════════════════════════════ */
 let _cijPta = false;
+let _cijEditId = null; // null = nieuw, string = bewerken
 
 function showCijfersScreen(){
   document.getElementById('screen-roles').style.display='none';
@@ -3975,8 +3982,7 @@ function hideCijfersScreen(){
   else showMain();
 }
 
-function openCijferModal(){
-  // Populate student dropdown
+function _fillCijStudentDrop(selectedId){
   const sel=document.getElementById('cij-student-sel');
   sel.innerHTML='<option value="">— Kies leerling —</option>';
   const sorted=[...S.students].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
@@ -3984,30 +3990,94 @@ function openCijferModal(){
     const o=document.createElement('option');
     o.value=s.id;
     o.textContent=s.name+(s.klass?' ('+s.klass+')':'');
+    if(s.id===selectedId) o.selected=true;
     sel.appendChild(o);
   });
-  // Populate vak dropdown
+}
+
+function _fillCijVakDrop(stuId, selectedVak){
   const vsel=document.getElementById('cij-vak-sel');
   vsel.innerHTML='<option value="">— Kies vak —</option>';
-  SUBJECTS.forEach(v=>{
+  // Use student's active vakken if available, fallback to all SUBJECTS
+  const stu=S.students.find(s=>s.id===stuId);
+  const vakken=(stu && getActiveVakken(stu).length) ? getActiveVakken(stu) : SUBJECTS;
+  vakken.forEach(v=>{
     const o=document.createElement('option');
     o.value=v; o.textContent=v;
+    if(v===selectedVak) o.selected=true;
     vsel.appendChild(o);
   });
-  // If logged in as docent, pre-select their vak
-  if(S.docentVak){
+  // If no student chosen yet, fallback to all
+  if(!stuId){
+    SUBJECTS.forEach(v=>{
+      if(!vakken.includes(v)){
+        const o=document.createElement('option');
+        o.value=v; o.textContent=v;
+        if(v===selectedVak) o.selected=true;
+        vsel.appendChild(o);
+      }
+    });
+  }
+}
+
+function onCijStuChange(){
+  const stuId=document.getElementById('cij-student-sel').value;
+  const curVak=document.getElementById('cij-vak-sel').value;
+  _fillCijVakDrop(stuId, curVak);
+  // If logged in as docent, keep their vak if it's available for this student
+  if(S.docentVak && !document.getElementById('cij-vak-sel').value){
+    const vsel=document.getElementById('cij-vak-sel');
     for(let i=0;i<vsel.options.length;i++){
       if(vsel.options[i].value===S.docentVak){ vsel.selectedIndex=i; break; }
     }
   }
-  document.getElementById('cij-onderwerp').value='';
-  document.getElementById('cij-weging').value='';
-  _cijPta=false;
+}
+
+function openCijferModal(editId){
+  _cijEditId = editId || null;
+  const isEdit = !!_cijEditId;
+  document.getElementById('cij-modal-title').textContent = isEdit ? '✏️ Cijfer aanpassen' : '📊 Cijfer invoeren';
+
+  let prefStuId = null;
+  let prefVak = S.docentVak || null;
+  let prefCijfer = '';
+  let prefOnderwerp = '';
+  let prefPta = false;
+  let prefWeging = '';
+
+  if(isEdit){
+    const c=S.cijfers.find(x=>x.id===_cijEditId);
+    if(c){
+      prefStuId=c.studentId; prefVak=c.vak; prefCijfer=c.cijfer||'';
+      prefOnderwerp=c.onderwerp; prefPta=!!c.pta; prefWeging=c.weging||'';
+    }
+  }
+
+  // Student dropdown — disable when editing (student is fixed)
+  _fillCijStudentDrop(prefStuId);
+  document.getElementById('cij-student-sel').disabled = isEdit;
+
+  // Vak dropdown filtered by student
+  _fillCijVakDrop(prefStuId, prefVak);
+
+  // If docent and no prefVak set yet, try to pre-select their vak
+  if(!isEdit && S.docentVak){
+    const vsel=document.getElementById('cij-vak-sel');
+    for(let i=0;i<vsel.options.length;i++){
+      if(vsel.options[i].value===S.docentVak){ vsel.selectedIndex=i; break; }
+    }
+  }
+
+  document.getElementById('cij-cijfer').value = prefCijfer;
+  document.getElementById('cij-onderwerp').value = prefOnderwerp;
+  document.getElementById('cij-weging').value = prefWeging;
+  _cijPta = prefPta;
   _updateCijPtaUI();
   document.getElementById('modal-cijfer').classList.add('show');
 }
 
 function closeCijferModal(){
+  document.getElementById('cij-student-sel').disabled = false;
   document.getElementById('modal-cijfer').classList.remove('show');
 }
 
@@ -4024,24 +4094,33 @@ function _updateCijPtaUI(){
 function saveCijfer(){
   const studentId=document.getElementById('cij-student-sel').value;
   const vak=document.getElementById('cij-vak-sel').value;
+  const cijfer=(document.getElementById('cij-cijfer').value||'').trim();
   const onderwerp=(document.getElementById('cij-onderwerp').value||'').trim();
   const weging=(document.getElementById('cij-weging').value||'').trim();
   if(!studentId){ alert('Selecteer een leerling.'); return; }
   if(!vak){ alert('Selecteer een vak.'); return; }
   if(!onderwerp){ alert('Voer een onderwerp in.'); return; }
-  const stu=S.students.find(s=>s.id===studentId)||{};
-  const entry={
-    id:uid(),
-    ts:new Date().toISOString(),
-    docentVak: S.docentVak || S.role,
-    studentId,
-    studentName: stu.name||studentId,
-    vak,
-    onderwerp,
-    pta: _cijPta,
-    weging
-  };
-  S.cijfers.push(entry);
+
+  if(_cijEditId){
+    // Update existing
+    const idx=S.cijfers.findIndex(c=>c.id===_cijEditId);
+    if(idx>=0){
+      S.cijfers[idx]={...S.cijfers[idx], vak, cijfer, onderwerp, pta:_cijPta, weging};
+    }
+  } else {
+    // New entry
+    const stu=S.students.find(s=>s.id===studentId)||{};
+    S.cijfers.push({
+      id:uid(),
+      ts:new Date().toISOString(),
+      docentVak: S.docentVak || S.role,
+      studentId,
+      studentName: stu.name||studentId,
+      vak, cijfer, onderwerp,
+      pta: _cijPta,
+      weging
+    });
+  }
   persist();
   closeCijferModal();
   renderCijfersList();
@@ -4094,11 +4173,15 @@ function renderCijfersList(){
       const dateStr=ts.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
       row.innerHTML=
         `<span class="cij-grade-vak">${c.vak}</span>`+
+        (c.cijfer?`<span class="cij-grade-cijfer">${c.cijfer}</span>`:'')+
         `<span class="cij-grade-onderwerp">${c.onderwerp}</span>`+
         (c.pta?`<span class="cij-grade-pta">PTA</span>`:'')+
         (c.weging?`<span class="cij-grade-meta">Weging: ${c.weging}</span>`:'')+
         `<span class="cij-grade-docent">${c.docentVak||''} · ${dateStr}</span>`+
-        `<button class="cij-del-btn" onclick="deleteCijfer('${c.id}')">✕ Verwijder</button>`;
+        `<div class="cij-grade-actions">`+
+          `<button class="cij-edit-btn" onclick="openCijferModal('${c.id}')">✏️</button>`+
+          `<button class="cij-del-btn" onclick="deleteCijfer('${c.id}')">✕</button>`+
+        `</div>`;
       list.appendChild(row);
     });
     block.appendChild(list);
