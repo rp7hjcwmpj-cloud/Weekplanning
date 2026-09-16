@@ -1391,6 +1391,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div style="flex:1;">
       <span class="cij-hdr-title">📊 Cijfers</span>
     </div>
+    <span id="cij-sync-chip" style="display:none;font-size:.8rem;background:rgba(255,255,255,.2);border-radius:6px;padding:.2rem .6rem;color:#fff;"></span>
   </div>
   <div class="cij-body">
     <button class="cij-add-btn" onclick="openCijferModal()">＋ Nieuw cijfer invoeren</button>
@@ -1986,7 +1987,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw'
+  'wp_aanw','wp_verg','wp_cijfers'
 ];
 
 let _graphToken = null;
@@ -4013,7 +4014,18 @@ function showCijfersScreen(){
   document.getElementById('screen-admin').classList.remove('show');
   document.getElementById('screen-verg').classList.remove('show');
   document.getElementById('screen-cijfers').classList.add('show');
-  renderCijfersList();
+  // Als M365 verbonden: haal eerst verse data op zodat alle docenten elkaars cijfers zien
+  if(_graphToken){
+    const chip = document.getElementById('cij-sync-chip');
+    if(chip){ chip.textContent='⟳ Laden…'; chip.style.display=''; }
+    spLoad().then(()=>{
+      hydrate();
+      renderCijfersList();
+      if(chip){ chip.textContent='✓ Bijgewerkt'; setTimeout(()=>{ chip.style.display='none'; },2000); }
+    }).catch(()=>{ renderCijfersList(); if(chip) chip.style.display='none'; });
+  } else {
+    renderCijfersList();
+  }
 }
 
 function hideCijfersScreen(){
