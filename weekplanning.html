@@ -1306,7 +1306,10 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <div class="fw" style="margin-bottom:0">
         <label class="flabel">Klas</label>
         <select class="field-inp" id="estu-class" onchange="onEstuClassChange()" style="margin-bottom:0">
-          <option value="M3">M3</option><option value="M4">M4</option>
+          <option value="H2">H2</option><option value="H3">H3</option>
+          <option value="M3">M3</option>
+          <option value="V2">V2</option><option value="V3">V3</option>
+          <option value="M4">M4</option>
           <option value="H4">H4</option><option value="H5">H5</option>
           <option value="V4">V4</option><option value="V5">V5</option>
           <option value="V6">V6</option>
@@ -1613,6 +1616,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <button class="adm-tab" onclick="switchAdmTab(3)">👥 Leerlingen</button>
     <button class="adm-tab" onclick="switchAdmTab(4)">☁️ Microsoft 365</button>
     <button class="adm-tab" onclick="switchAdmTab(5)">📋 Aanwezigheid</button>
+    <button class="adm-tab" onclick="switchAdmTab(6)">🔐 Superadmin</button>
   </div>
 
   <div class="adm-body">
@@ -1702,7 +1706,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
           <div id="period-exam-list"></div>
         </div>
         <div class="sp-section" style="margin-bottom:.2rem;">
-          <div class="sp-section-lbl">Voorexamenleerlingen (M3, H4, V4, V5)</div>
+          <div class="sp-section-lbl">Voorexamenleerlingen (H2, H3, M3, V2, V3, H4, V4, V5)</div>
           <div id="period-preexam-list"></div>
         </div>
         <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.75rem;">
@@ -1808,7 +1812,11 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
             <div class="fw" style="margin-bottom:0">
               <label class="flabel">Klas</label>
               <select class="field-inp" id="stu-class-inp" onchange="onClassChange()" style="margin-bottom:0">
+                <option value="H2">H2</option>
+                <option value="H3">H3</option>
                 <option value="M3">M3</option>
+                <option value="V2">V2</option>
+                <option value="V3">V3</option>
                 <option value="M4">M4</option>
                 <option value="H4">H4</option>
                 <option value="H5">H5</option>
@@ -1912,6 +1920,25 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       </div>
     </div>
 
+    <!-- Tabblad 7: Superadmin -->
+    <div class="adm-panel">
+      <div class="adm-card">
+        <h3>🔐 Superadmin — Toegang tot Admin</h3>
+        <p class="card-note" style="margin-bottom:1rem;">
+          Alleen de e-mailadressen in deze lijst zien de <strong>⚙️ Admin</strong>-knop na het inloggen met Microsoft 365.
+          Is de lijst leeg, dan kunnen <em>alle</em> coaches en coördinatoren bij Admin (zoals voorheen).
+        </p>
+        <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.75rem;">
+          <input class="field-inp" type="email" id="sadm-email-inp" placeholder="naam@school.nl" style="margin:0;flex:1;"
+            onkeydown="if(event.key==='Enter')addSuperadmin()">
+          <button class="btn-save-sm" onclick="addSuperadmin()">+ Toevoegen</button>
+        </div>
+        <div class="ok-msg" id="sadm-ok" style="display:none;margin-bottom:.5rem;">✓ Opgeslagen</div>
+        <div class="err-msg" id="sadm-err" style="display:none;margin-bottom:.5rem;"></div>
+        <div id="sadm-list" style="display:flex;flex-direction:column;gap:.4rem;"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1970,7 +1997,7 @@ const STD_LBL    = {null:'—',green:'Aanwezig',red:'Training',rose:'Overig',blu
 const ROLE_NAME  = {coordinator:'Coördinator',coach:'Coach',leerling:'Leerling',ouder:'Ouder',docent:'Docent',admin:'Admin'};
 const NEEDS_YEAR      = ['M4','H5','V6'];
 const EXAM_CLASSES    = ['M4','H5','V6'];
-const PREEXAM_CLASSES = ['M3','H4','V4','V5'];
+const PREEXAM_CLASSES = ['H2','H3','M3','V2','V3','H4','V4','V5'];
 const EXAM_PERIODS    = [
   {id:'E1',label:'Periode 1'},
   {id:'E2',label:'Periode 2'},
@@ -1983,7 +2010,7 @@ const PREEXAM_PERIODS = [
 ];
 const PW_DEFAULT      = 'AdminAdmin';
 const SUBJECTS   = ['NE','EN','DU','FA','EC','BEC','BI','NA','SK','GS','AK','WiA','WiB'];
-const BESCH_KLASSEN = ['M3','M4','H4','H5','V4','V5','V6'];
+const BESCH_KLASSEN = ['H2','H3','M3','V2','V3','M4','H4','H5','V4','V5','V6'];
 function beschValLabel(val){
   if(!val || val==='afwezig') return '—';
   if(val==='lokaal107') return 'Lokaal 107'; // backward compat
@@ -2030,6 +2057,7 @@ const S = {
   vergaderingen:[],      // [{id,date,week,year,aanwezigheid,puntenVorige,leerlingen,anderezaken,vakdocenten,ontwikkeling}]
   cijfers:[],            // [{id,ts,docentVak,studentId,studentName,vak,cijfer,onderwerp,pta,weging}]
   huiswerk:[],           // [{id,studentId,week,les,opmerking,weekKey,di,slotId,ts}] — weekKey/di/slotId null = ongeplaatst
+  superadmins:[],        // [email, ...] — wie de Admin-knop ziet; leeg = alle coaches/coordinatoren (backward compat)
   schoolLogo:'',         // base64 data URL van het schoollogo
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
@@ -2133,7 +2161,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins'
 ];
 
 let _graphToken = null;
@@ -2686,6 +2714,7 @@ function persist(){
     localStorage.setItem('wp_verg', JSON.stringify(S.vergaderingen));
     localStorage.setItem('wp_cijfers', JSON.stringify(S.cijfers));
     localStorage.setItem('wp_huiswerk', JSON.stringify(S.huiswerk));
+    localStorage.setItem('wp_superadmins', JSON.stringify(S.superadmins));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -2720,6 +2749,7 @@ function hydrate(){
     const vrg=localStorage.getItem('wp_verg'); if(vrg) S.vergaderingen=JSON.parse(vrg);
     const cij=localStorage.getItem('wp_cijfers'); if(cij) S.cijfers=JSON.parse(cij);
     const hwk=localStorage.getItem('wp_huiswerk'); if(hwk) S.huiswerk=JSON.parse(hwk);
+    const sadm=localStorage.getItem('wp_superadmins'); if(sadm) S.superadmins=JSON.parse(sadm);
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -2924,6 +2954,7 @@ function showAdmin(){
   renderStudentsList();
   renderStudentPasswordList();
   applySchoolLogo();
+  renderSuperadminList();
 }
 
 function changeAdminPassword(){
@@ -2951,6 +2982,58 @@ function changeAdminPassword(){
   document.getElementById('adm-pw-confirm').value='';
   okEl.style.display='block';
   setTimeout(()=>okEl.style.display='none', 2500);
+}
+
+/* ── Superadmin beheer ── */
+function renderSuperadminList(){
+  const ct=document.getElementById('sadm-list');
+  if(!ct) return;
+  if(!S.superadmins.length){
+    ct.innerHTML='<span style="color:var(--tx3);font-size:.83rem;">Geen superadmins ingesteld — alle coaches en coördinatoren hebben toegang tot Admin.</span>';
+    return;
+  }
+  ct.innerHTML='';
+  S.superadmins.forEach(email=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--surf-2);border:1px solid var(--border);border-radius:8px;padding:.45rem .8rem;gap:.5rem;';
+    const lbl=document.createElement('span');
+    lbl.style.cssText='font-size:.84rem;color:var(--tx);font-weight:500;word-break:break-all;';
+    lbl.textContent=email;
+    const btn=document.createElement('button');
+    btn.className='btn-danger';
+    btn.style.cssText='font-size:.75rem;padding:.2rem .6rem;white-space:nowrap;';
+    btn.textContent='✕ Verwijderen';
+    btn.onclick=()=>removeSuperadmin(email);
+    row.appendChild(lbl); row.appendChild(btn);
+    ct.appendChild(row);
+  });
+}
+function addSuperadmin(){
+  const inp=document.getElementById('sadm-email-inp');
+  const errEl=document.getElementById('sadm-err');
+  const okEl=document.getElementById('sadm-ok');
+  errEl.style.display='none'; okEl.style.display='none';
+  const email=(inp.value||'').trim().toLowerCase();
+  if(!email||!email.includes('@')){ errEl.textContent='Voer een geldig e-mailadres in.'; errEl.style.display='block'; return; }
+  if(S.superadmins.includes(email)){ errEl.textContent='Dit adres staat al in de lijst.'; errEl.style.display='block'; return; }
+  S.superadmins.push(email);
+  persist();
+  inp.value='';
+  renderSuperadminList();
+  // herbereken zichtbaarheid admin-knop
+  const canAdmin = !S.superadmins.length || S.superadmins.includes(S.loggedInEmail||'');
+  const btnAdm=document.getElementById('btn-admin-header');
+  if(btnAdm && (S.role==='coach'||S.role==='coordinator')) btnAdm.style.display=canAdmin?'':'none';
+  okEl.style.display='block'; setTimeout(()=>okEl.style.display='none',2000);
+}
+function removeSuperadmin(email){
+  S.superadmins=S.superadmins.filter(e=>e!==email);
+  persist();
+  renderSuperadminList();
+  // herbereken zichtbaarheid admin-knop
+  const canAdmin = !S.superadmins.length || S.superadmins.includes(S.loggedInEmail||'');
+  const btnAdm=document.getElementById('btn-admin-header');
+  if(btnAdm && (S.role==='coach'||S.role==='coordinator')) btnAdm.style.display=canAdmin?'':'none';
 }
 
 function saveSchoolName(){
@@ -3210,7 +3293,7 @@ function addStudent(){
   if(!S.currentStudentId) S.currentStudentId=id;
   persist();
   document.getElementById('stu-name-inp').value='';
-  document.getElementById('stu-class-inp').value='M3';
+  document.getElementById('stu-class-inp').value='H2';
   document.getElementById('stu-year-wrap').style.display='none';
   hideForm('stu-form','btn-add-stu');
   renderStudentsList();
@@ -5315,9 +5398,10 @@ function showMain(){
   document.getElementById('role-pill').textContent=pillLabel;
   const canEdit=S.role==='coordinator'||S.role==='coach';
   document.getElementById('hdr-edit-zone').style.display=canEdit?'flex':'none';
-  // Admin-knop alleen zichtbaar voor coach en coordinator (M365-ingelogd)
+  // Admin-knop: zichtbaar voor coach/coordinator én alleen als superadmin (of lijst leeg = iedereen)
   const btnAdm=document.getElementById('btn-admin-header');
-  if(btnAdm) btnAdm.style.display=canEdit?'':'none';
+  const isSuperadmin = !S.superadmins.length || S.superadmins.includes(S.loggedInEmail||'');
+  if(btnAdm) btnAdm.style.display=(canEdit && isSuperadmin)?'':'none';
   const sez=document.getElementById('stu-edit-zone');
   if(sez) sez.style.display=canEdit?'flex':'none';
   const bsr=document.getElementById('btn-std-rooster');
