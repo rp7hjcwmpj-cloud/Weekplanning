@@ -448,7 +448,7 @@ body.dark .student-bar{background:#3D1C00;}
 
 /* ── WEEK NAV ────────────────────────────────────── */
 .week-nav-wrap{display:flex;justify-content:center;padding:.3rem 1rem .1rem;}
-.week-nav{background:var(--surface);padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);border:1px solid var(--border);width:50%;min-width:320px;}
+.week-nav{background:var(--ground);padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;border-radius:14px;border:1.5px solid var(--border-s);width:50%;min-width:320px;}
 .wk-center{text-align:center;flex:1;}
 .wk-num{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;color:var(--brand);letter-spacing:-.2px;}
 .wk-range{font-size:.71rem;color:var(--tx3);margin-top:.08rem;}
@@ -529,7 +529,7 @@ body.dark .student-bar{background:#3D1C00;}
 .dag-dot{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,.65);cursor:pointer;flex-shrink:0;transition:transform .1s,box-shadow .1s;box-sizing:border-box;}
 .dag-dot:hover{transform:scale(1.3);box-shadow:0 0 0 2px rgba(0,0,0,.22);}
 .dag-dot.dag-dot-empty{background:var(--surf-2);border:1.5px solid var(--border);}
-.legend{background:var(--surface);padding:.38rem 1rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;font-size:.71rem;color:var(--tx2);border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);border:1px solid var(--border);}
+.legend{background:var(--ground);padding:.38rem 1rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;font-size:.71rem;color:var(--tx2);border-radius:14px;border:1.5px solid var(--border-s);}
 .legend-wrap{padding:.3rem 1rem .6rem;}
 .leg{display:flex;align-items:center;gap:.35rem;}
 .leg-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
@@ -1021,6 +1021,64 @@ body.dark .student-bar{background:#3D1C00;}
 .vp-cat-sect{margin-bottom:3mm;}
 .vp-cat-remark{font-size:9.5pt;padding:1mm 0;border-bottom:.5pt solid #eee;}
 .vp-cat-remark-vw{color:#C85A00;font-style:italic;}
+
+/* ── DISPLAY SCREEN ─────────────────────────────── */
+#screen-display{display:none;min-height:100vh;flex-direction:column;background:var(--ground);}
+#screen-display.show{display:flex;}
+.display-hdr{
+  background:#7A3500;padding:.7rem 1.2rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,.22);
+}
+body.dark .display-hdr{background:#3D1C00;}
+.display-hdr-title{
+  font-family:'Outfit',sans-serif;font-size:1.15rem;font-weight:700;
+  color:#fff;letter-spacing:-.2px;
+}
+.display-logout-btn{
+  background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.2);
+  color:#fff;border-radius:8px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;
+  cursor:pointer;transition:background .15s;
+}
+.display-logout-btn:hover{background:rgba(200,40,0,.5);}
+.display-tiles{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:1rem;
+}
+.display-tile{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:16px;padding:1.6rem 1rem;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.5rem;cursor:pointer;
+  transition:background .15s,border-color .15s,transform .12s,box-shadow .12s;
+  min-height:130px;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+  -webkit-user-select:none;user-select:none;
+}
+.display-tile:hover{background:var(--surf-2);border-color:var(--border-s);transform:translateY(-3px);box-shadow:0 4px 16px rgba(0,0,0,.13);}
+.display-tile:active{transform:translateY(-1px);}
+.display-tile-initial{
+  font-family:'Outfit',sans-serif;font-size:2.2rem;font-weight:800;
+  width:2.6rem;height:2.6rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--brand-light);color:var(--brand);
+  flex-shrink:0;
+}
+body.dark .display-tile-initial{background:#3A1800;color:#F7941D;}
+.display-tile-name{
+  font-family:'Outfit',sans-serif;font-size:1.15rem;font-weight:700;
+  color:var(--tx);text-align:center;line-height:1.2;
+}
+.display-tile-klass{font-size:.78rem;color:var(--tx3);font-weight:500;}
+.display-back-btn{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--tx2);border-radius:8px;padding:.35rem .8rem;font-size:.82rem;font-weight:600;
+  cursor:pointer;margin-bottom:.2rem;
+  transition:background .15s,border-color .15s;
+}
+.display-back-btn:hover{background:var(--surf-2);border-color:var(--border-s);}
 </style>
 
 
@@ -1044,6 +1102,11 @@ body.dark .student-bar{background:#3D1C00;}
     <button class="role-tile-sm" onclick="openLogin('ouder')">
       👪&nbsp; Ouder <span style="font-size:.7rem;font-weight:400;opacity:.65;">(geen schoolaccount)</span>
     </button>
+    <div id="btn-display-login-wrap" style="display:none;margin-top:.6rem;">
+      <button class="role-tile-sm" onclick="openDisplayLogin()" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);">
+        🖥️&nbsp; Display <span style="font-size:.7rem;font-weight:400;opacity:.65;">(klasscherm)</span>
+      </button>
+    </div>
     <div style="text-align:center;color:rgba(255,255,255,.3);font-size:.68rem;margin-top:1.4rem;letter-spacing:.04em;">v1.28</div>
   </div>
 </div>
@@ -1111,7 +1174,11 @@ body.dark .student-bar{background:#3D1C00;}
       <button id="btn-m365-login" class="hb" style="display:none;" onclick="m365SignIn()">🔑 Aanmelden M365</button>
       <span class="role-pill" id="role-pill"></span>
       <button class="hb" id="btn-admin-header" style="display:none;" onclick="showAdmin()">⚙️ Admin</button>
-      <button class="hb logout" onclick="logout()">Uitloggen</button>
+      <div id="hdr-display-zone" style="display:none;gap:.45rem;align-items:center;">
+        <button class="hb" onclick="displayBack()">← Alle leerlingen</button>
+        <button class="hb logout" onclick="displayLogout()">Uitloggen</button>
+      </div>
+      <button class="hb logout" id="btn-main-logout" onclick="logout()">Uitloggen</button>
     </div>
   </div>
 
@@ -1953,8 +2020,49 @@ body.dark .student-bar{background:#3D1C00;}
         <div class="err-msg" id="sadm-err" style="display:none;margin-bottom:.5rem;"></div>
         <div id="sadm-list" style="display:flex;flex-direction:column;gap:.4rem;"></div>
       </div>
+
+      <!-- Display wachtwoord -->
+      <div class="adm-card" style="margin-top:1rem;">
+        <h3>🖥️ Display — Klasscherm</h3>
+        <p class="card-note" style="margin-bottom:1rem;">
+          Het Display-scherm toont alle leerlingen als tegels op een touchscreen. Klik op een tegel om de weekplanning te openen.
+          Stel hier een wachtwoord in. Op het inlogscherm verschijnt dan een <strong>🖥️ Display</strong>-knop.
+          Laat het weld leeg om de Display-knop te verbergen.
+        </p>
+        <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem;">
+          <input class="field-inp" type="password" id="display-pw-inp" placeholder="Display wachtwoord" style="margin:0;flex:1;"
+            onkeydown="if(event.key==='Enter')saveDisplayPw()">
+          <button class="btn-save-sm" onclick="saveDisplayPw()">Opslaan</button>
+        </div>
+        <div class="ok-msg" id="display-pw-ok" style="display:none;margin-bottom:.3rem;">✓ Opgeslagen</div>
+        <div id="display-pw-status" style="font-size:.8rem;color:var(--tx3);"></div>
+      </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ══ DISPLAY SCREEN ══════════════════════════════ -->
+<div id="screen-display">
+  <div class="display-hdr">
+    <div class="display-hdr-title" id="display-hdr-title">Weekplanning</div>
+    <button class="display-logout-btn" onclick="displayLogout()">Uitloggen</button>
+  </div>
+  <div style="flex:1;padding:1.2rem 1rem;overflow-y:auto;">
+    <div id="display-tiles-ct" class="display-tiles"></div>
+  </div>
+</div>
+
+<!-- Display login modal -->
+<div class="overlay" id="modal-display-login">
+  <div class="modal-card">
+    <h2>🖥️ Display</h2>
+    <p class="modal-sub">Voer het Display-wachtwoord in om het klasscherm te openen.</p>
+    <input type="password" class="field-inp" id="display-login-pw" placeholder="Wachtwoord"
+      onkeydown="if(event.key==='Enter')doDisplayLogin()">
+    <div class="err-msg" id="display-login-err">Onjuist wachtwoord — probeer opnieuw.</div>
+    <button class="btn-p" onclick="doDisplayLogin()">Openen →</button>
+    <button class="btn-g" onclick="closeDisplayLogin()">Annuleren</button>
   </div>
 </div>
 
@@ -2074,6 +2182,7 @@ const S = {
   cijfers:[],            // [{id,ts,docentVak,studentId,studentName,vak,cijfer,onderwerp,pta,weging}]
   huiswerk:[],           // [{id,studentId,week,les,opmerking,weekKey,di,slotId,ts}] — weekKey/di/slotId null = ongeplaatst
   superadmins:[],        // [email, ...] — wie de Admin-knop ziet; leeg = alle coaches/coordinatoren (backward compat)
+  displayPassword:'',    // wachtwoord voor Display-rol (leeg = knop verborgen)
   schoolLogo:'',         // base64 data URL van het schoollogo
   schoolPeriods:{        // datums per periode
     exam:   {E1:{from:'',to:''},E2:{from:'',to:''},E3:{from:'',to:''}},
@@ -2177,7 +2286,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw'
 ];
 
 let _graphToken = null;
@@ -2731,6 +2840,7 @@ function persist(){
     localStorage.setItem('wp_cijfers', JSON.stringify(S.cijfers));
     localStorage.setItem('wp_huiswerk', JSON.stringify(S.huiswerk));
     localStorage.setItem('wp_superadmins', JSON.stringify(S.superadmins));
+    localStorage.setItem('wp_displayPw', S.displayPassword||'');
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -2766,6 +2876,7 @@ function hydrate(){
     const cij=localStorage.getItem('wp_cijfers'); if(cij) S.cijfers=JSON.parse(cij);
     const hwk=localStorage.getItem('wp_huiswerk'); if(hwk) S.huiswerk=JSON.parse(hwk);
     const sadm=localStorage.getItem('wp_superadmins'); if(sadm) S.superadmins=JSON.parse(sadm);
+    const dpw=localStorage.getItem('wp_displayPw'); if(dpw!==null) S.displayPassword=dpw;
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -2943,6 +3054,7 @@ function switchAdmTab(idx){
   document.querySelectorAll('.adm-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
   if(idx===2) renderRollenList();
   if(idx===4) loadM365Cfg();
+  if(idx===6){ renderSuperadminList(); renderDisplayPwStatus(); }
 }
 
 function showAdmin(){
@@ -2971,6 +3083,7 @@ function showAdmin(){
   renderStudentPasswordList();
   applySchoolLogo();
   renderSuperadminList();
+  renderDisplayPwStatus();
 }
 
 function changeAdminPassword(){
@@ -3050,6 +3163,110 @@ function removeSuperadmin(email){
   const canAdmin = !S.superadmins.length || S.superadmins.includes(S.loggedInEmail||'');
   const btnAdm=document.getElementById('btn-admin-header');
   if(btnAdm && (S.role==='coach'||S.role==='coordinator')) btnAdm.style.display=canAdmin?'':'none';
+}
+
+/* ── Display wachtwoord beheer ── */
+function renderDisplayPwStatus(){
+  const st=document.getElementById('display-pw-status');
+  if(!st) return;
+  st.textContent = S.displayPassword
+    ? '✓ Display-knop actief (wachtwoord ingesteld)'
+    : 'Geen wachtwoord — Display-knop verborgen op inlogscherm';
+  const inp=document.getElementById('display-pw-inp');
+  if(inp) inp.value='';
+}
+function saveDisplayPw(){
+  const inp=document.getElementById('display-pw-inp');
+  const okEl=document.getElementById('display-pw-ok');
+  const val=(inp.value||'').trim();
+  S.displayPassword=val;
+  persist();
+  renderDisplayPwStatus();
+  // Toon/verberg de Display-knop op het inlogscherm
+  const wrap=document.getElementById('btn-display-login-wrap');
+  if(wrap) wrap.style.display=S.displayPassword?'':'none';
+  okEl.style.display='block';
+  setTimeout(()=>okEl.style.display='none',2000);
+}
+
+/* ── Display inloggen ── */
+function openDisplayLogin(){
+  document.getElementById('display-login-pw').value='';
+  document.getElementById('display-login-err').style.display='none';
+  document.getElementById('modal-display-login').classList.add('show');
+  setTimeout(()=>document.getElementById('display-login-pw').focus(),80);
+}
+function closeDisplayLogin(){
+  document.getElementById('modal-display-login').classList.remove('show');
+}
+function doDisplayLogin(){
+  const pw=document.getElementById('display-login-pw').value;
+  if(!S.displayPassword || pw!==S.displayPassword){
+    document.getElementById('display-login-err').style.display='block';
+    document.getElementById('display-login-pw').value='';
+    document.getElementById('display-login-pw').focus();
+    return;
+  }
+  closeDisplayLogin();
+  S.role='display';
+  showDisplay();
+}
+
+/* ── Display scherm ── */
+function showDisplay(){
+  document.getElementById('screen-roles').style.display='none';
+  document.getElementById('screen-main').classList.remove('show');
+  document.getElementById('screen-admin').classList.remove('show');
+  document.getElementById('screen-verg').classList.remove('show');
+  document.getElementById('screen-cijfers').classList.remove('show');
+  const ds=document.getElementById('screen-display');
+  ds.classList.add('show');
+  // set header school name
+  const hdrTitle=document.getElementById('display-hdr-title');
+  if(hdrTitle) hdrTitle.textContent=S.schoolName||'Weekplanning';
+  renderDisplayTiles();
+}
+
+function renderDisplayTiles(){
+  const ct=document.getElementById('display-tiles-ct');
+  if(!ct) return;
+  const stus=[...S.students].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
+  if(!stus.length){
+    ct.innerHTML='<div style="color:var(--tx3);text-align:center;padding:3rem;grid-column:1/-1;">Geen leerlingen gevonden.</div>';
+    return;
+  }
+  ct.innerHTML='';
+  stus.forEach(stu=>{
+    const firstName=stu.name.trim().split(/\s+/)[0];
+    const initial=firstName[0]||'?';
+    const tile=document.createElement('div');
+    tile.className='display-tile';
+    tile.innerHTML=`
+      <div class="display-tile-initial">${initial}</div>
+      <div class="display-tile-name">${firstName}</div>
+      <div class="display-tile-klass">${stu.klass||''}</div>`;
+    tile.onclick=()=>openDisplayStu(stu.id);
+    ct.appendChild(tile);
+  });
+}
+
+function openDisplayStu(stuId){
+  S.currentStudentId=stuId;
+  // Switch to main screen in display mode (read-only)
+  showMain(); // showMain already hides screen-display via classList.remove
+}
+
+function displayBack(){
+  // Return from main screen back to display tiles
+  document.getElementById('screen-main').classList.remove('show');
+  showDisplay();
+}
+
+function displayLogout(){
+  S.role=null; S.editMode=false;
+  document.getElementById('screen-display').classList.remove('show');
+  document.getElementById('screen-main').classList.remove('show');
+  document.getElementById('screen-roles').style.display='';
 }
 
 function saveSchoolName(){
@@ -5407,6 +5624,7 @@ function showMain(){
   document.getElementById('screen-admin').classList.remove('show');
   document.getElementById('screen-verg').classList.remove('show');
   document.getElementById('screen-cijfers').classList.remove('show');
+  document.getElementById('screen-display').classList.remove('show');
   document.getElementById('screen-main').classList.add('show');
   const pillLabel=(S.role==='docent'&&S.docentVak)
     ? 'Docent '+S.docentVak
@@ -5426,6 +5644,12 @@ function showMain(){
   if(bgp) bgp.style.display=S.role==='coach'?'':'none';
   document.getElementById('hdr-docent-zone').style.display=S.role==='docent'?'flex':'none';
   document.getElementById('hdr-leerling-zone').style.display=S.role==='leerling'?'flex':'none';
+  // Display rol: eigen header knoppen, geen reguliere logout
+  const isDisplay=S.role==='display';
+  const dispZone=document.getElementById('hdr-display-zone');
+  if(dispZone) dispZone.style.display=isDisplay?'flex':'none';
+  const mainLogout=document.getElementById('btn-main-logout');
+  if(mainLogout) mainLogout.style.display=isDisplay?'none':'';
   // Ouder: read-only, geen knoppen
   updateEditUI(); updateStudentBar(); renderWeekNav(); renderSchedule();
   // Coach: show change log popup after render
@@ -5438,8 +5662,8 @@ function showMain(){
 function updateStudentBar(){
   const nd=document.getElementById('stu-name-d');
   const md=document.getElementById('stu-meta-d');
-  // Leerling en ouder zijn vergrendeld op één profiel — verberg nav + zoek
-  const isLocked=S.role==='leerling'||S.role==='ouder';
+  // Leerling, ouder en display zijn vergrendeld op één profiel — verberg nav + zoek
+  const isLocked=S.role==='leerling'||S.role==='ouder'||S.role==='display';
   const prevBtn=document.getElementById('btn-stu-prev');
   const nextBtn=document.getElementById('btn-stu-next');
   const searchBtn=document.getElementById('btn-stu-search');
@@ -5575,6 +5799,7 @@ function doLogout(){
   document.getElementById('screen-roles').style.display='';
   document.getElementById('screen-main').classList.remove('show');
   document.getElementById('screen-admin').classList.remove('show');
+  document.getElementById('screen-display').classList.remove('show');
 }
 
 function syncThenLogout(){
@@ -7269,6 +7494,9 @@ function cancelToets(){
   hydrate();
   applySchoolName();
   applySchoolLogo();
+  // Show Display login button if a display password is set
+  const dw=document.getElementById('btn-display-login-wrap');
+  if(dw) dw.style.display=S.displayPassword?'':'none';
   // 3. Populate M365 admin fields if admin panel is present
   loadM365Cfg();
 })();
