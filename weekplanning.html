@@ -718,6 +718,8 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .sdc-time-inp{border:1px solid var(--border-s);border-radius:4px;padding:.18rem .22rem;font-size:.62rem;width:68px;text-align:center;background:var(--surface);color:var(--tx);font-family:inherit;outline:none;transition:border-color .13s;margin-top:.25rem;}
 .sdc-time-inp:focus{border-color:var(--brand);}
 .sdc-time-inp::placeholder{color:var(--tx3);}
+.sdc-vak-sel{border:1px solid var(--g-bd);border-radius:4px;padding:.18rem .22rem;font-size:.62rem;width:100%;background:var(--g-bg);color:var(--g-tx);font-family:inherit;outline:none;cursor:pointer;margin-top:.25rem;font-weight:600;}
+.sdc-vak-sel:focus{border-color:var(--brand);}
 .la-cell-time{font-size:.58rem;font-weight:400;opacity:.75;margin-left:.18rem;}
 .modal-actions{display:flex;gap:.55rem;margin-top:.9rem;}
 .btn-p.sm{width:auto;padding:.65rem 1.7rem;}
@@ -1195,9 +1197,6 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <div class="leg"><div class="leg-sw" style="background:#C0392B"></div>Training</div>
       <div class="leg"><div class="leg-sw" style="background:#B01010"></div>Overig</div>
       <div class="leg"><div class="leg-sw" style="background:#2471A3"></div>Rust</div>
-      <div class="leg"><div class="leg-sw" style="background:#7D3C98"></div>Wedstrijd</div>
-      <div class="leg"><div class="leg-sw" style="background:#C8A000"></div>Toets</div>
-      <div class="leg"><div class="leg-sw" style="background:#C05818"></div>Toernooi</div>
     </div>
     <div id="std-grid-ct"></div>
     <div class="modal-actions">
@@ -2011,6 +2010,7 @@ const S = {
   studentData:{},        // {studentId:{std:{},ovr:{}}}
   tmpStd:{},
   tmpStdTimes:{},        // {di:{slotId:'HH:MM'}, ...} — aankomsttijd per cel (tijdelijk tijdens edit)
+  tmpStdVak:{},          // {di:{slotId:'vakNaam'}, ...} — vak per groene cel (tijdelijk tijdens edit)
   teacherPasswords:{},   // {NE:'pw', EN:'pw', ...}
   docentVak:null,
   studentPasswords:{},   // {studentId:'pw'}
@@ -2364,6 +2364,19 @@ async function graphFetch(method, path, body, extraHeaders){
     if(!res.ok){ const err=await res.text(); console.error('Graph error', res.status, err); return null; }
     return res.json();
   }catch(e){ return null; }
+}
+
+// Fetch a single SharePoint key into localStorage (lightweight, for background refreshes)
+async function spLoadKey(key){
+  if(!_graphToken) return false;
+  const listBase=`${_spListBase()}/items`;
+  const data=await graphFetchVerbose('GET', listBase+`?$filter=fields/Title eq '${key}'&$expand=fields($select=Title,Value)&$top=1`);
+  if(!data?.value?.length) return false;
+  const item=data.value[0];
+  if(item.fields?.Title) _spItemIds[item.fields.Title]=item.id;
+  const val=item.fields?.Value;
+  if(val!==undefined&&val!==null){ localStorage.setItem(key,val); return true; }
+  return false;
 }
 
 async function spLoad(){
@@ -6143,7 +6156,8 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
       } else {
         const c=getColor(key,di,slot.id);
         const _cellTime=curData().std?.times?.[di]?.[slot.id]||null;
-        applyCell(cell,c,_cellTime);
+        const _cellVak=curData().std?.vakken?.[di]?.[slot.id]||'';
+        applyCell(cell,c,_cellTime,_cellVak);
         // Huiswerk drop-target attributes
         cell.dataset.hwKey=key;
         cell.dataset.hwDi=String(di);
@@ -6246,6 +6260,7 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
 
 // Kleurkiezer: 7 gekleurde rondjes bovenin de cel in bewerkmodus
 const _PICKER_COLORS = [null,'green','red','rose','blue','purple','yellow','orange'];
+const _STD_PICKER_COLORS = [null,'green','red','rose','blue']; // Wedstrijd/Toets/Toernooi alleen via weekplanning
 const _PICKER_BG = {
   green:'#D4EDDA', red:'#F8D7DA', rose:'#FFE2DC',
   blue:'#D1E8FF', purple:'#E8D5F5', yellow:'#FFFDE7', orange:'#FFD9A8'
@@ -6272,7 +6287,7 @@ function _buildCellPicker(cell, currentColor, key, di, slot, slots, dates){
         _clearToetsData(key,di,slot.id);
       }
       setOvr(key,di,slot.id,clr);
-      applyCell(cell,clr,curData().std?.times?.[di]?.[slot.id]||null);
+      applyCell(cell,clr,curData().std?.times?.[di]?.[slot.id]||null,curData().std?.vakken?.[di]?.[slot.id]||'');
       _buildCellPicker(cell,clr,key,di,slot,slots,dates); // rebuild picker with new active dot
       _refreshNoteUI(cell,clr,key,di,slot,true);
       _refreshToetsBtn(cell,clr,key,di,slot,slots,dates,true);
@@ -6284,7 +6299,7 @@ function _buildCellPicker(cell, currentColor, key, di, slot, slots, dates){
   cell.insertBefore(picker, cell.firstChild);
 }
 
-function applyCell(cell,c,time){
+function applyCell(cell,c,time,vak){
   if(c) cell.setAttribute('data-c',c); else cell.removeAttribute('data-c');
   cell.classList.remove('toets-partial','toets-late-start');
   cell.style.removeProperty('--toets-fill');
@@ -6296,7 +6311,8 @@ function applyCell(cell,c,time){
   if(c){
     const lbl=document.createElement('div'); lbl.className='cell-lbl';
     // Don't show standaardrooster time on yellow (toets) cells
-    lbl.textContent=(COLOR_LBL[c]||'') + (time && c!=='yellow' ? ' ('+time+')' : '');
+    let lblTxt = (c==='green'&&vak) ? 'Les: '+vak : (COLOR_LBL[c]||'');
+    lbl.textContent=lblTxt + (time && c!=='yellow' ? ' ('+time+')' : '');
     cell.appendChild(lbl);
   }
 }
@@ -6586,7 +6602,20 @@ function _hideHwTip(){
   if(_hwTipEl) _hwTipEl.style.display='none';
 }
 
-function renderAllHwPictos(){
+let _hwRefreshing=false;
+function renderAllHwPictos(skipRefresh=false){
+  // Coaches/coordinators/docenten/ouders: stille achtergrond-refresh van wp_huiswerk
+  if(!skipRefresh && S.role!=='leerling' && _graphToken && !_hwRefreshing){
+    _hwRefreshing=true;
+    spLoadKey('wp_huiswerk').then(ok=>{
+      _hwRefreshing=false;
+      if(ok){
+        const raw=localStorage.getItem('wp_huiswerk');
+        if(raw) try{ S.huiswerk=JSON.parse(raw); }catch(e){}
+        renderAllHwPictos(true); // hertekenen met verse data
+      }
+    }).catch(()=>{ _hwRefreshing=false; });
+  }
   // Remove any existing picto wraps
   document.querySelectorAll('.hw-pictos-wrap').forEach(el=>el.remove());
   if(!S.currentStudentId) return;
@@ -6638,10 +6667,11 @@ function openStdModal(){
   const sd=curData();
   S.tmpStd=JSON.parse(JSON.stringify(sd.std||{}));
   S.tmpStdTimes=JSON.parse(JSON.stringify(sd.std?.times||{}));
+  S.tmpStdVak=JSON.parse(JSON.stringify(sd.std?.vakken||{}));
   const stu=S.students.find(s=>s.id===S.currentStudentId);
   document.getElementById('std-modal-sub').innerHTML=
     'Standaardrooster voor <strong>'+(stu?stu.name:'leerling')+'</strong>.<br>'
-    +'1× Aanwezig &nbsp;·&nbsp; 2× Afwezig &nbsp;·&nbsp; 3× Vrij/verlof &nbsp;·&nbsp; 4× Toernooi &nbsp;·&nbsp; 5× Leeg';
+    +'Klik op een kleur · kies bij groen ook het vak';
   renderStdGrid();
   document.getElementById('modal-std').classList.add('show');
 }
@@ -6651,32 +6681,57 @@ function saveStd(){
   const d=curData();
   d.std=JSON.parse(JSON.stringify(S.tmpStd));
   d.std.times=JSON.parse(JSON.stringify(S.tmpStdTimes));
+  d.std.vakken=JSON.parse(JSON.stringify(S.tmpStdVak));
   persist(); closeStdModal(); renderSchedule();
 }
 function _buildStdPicker(cell, currentColor, di, slotId){
-  // Dots row
+  // Dots row — alleen Aanwezig/Training/Overig/Rust (+ leeg); Wedstrijd/Toets/Toernooi via weekplanning
   const picker=document.createElement('div');
   picker.className='sdc-picker';
-  _PICKER_COLORS.forEach(clr=>{
+  _STD_PICKER_COLORS.forEach(clr=>{
     const dot=document.createElement('div');
     dot.className='cell-picker-dot'+(clr===currentColor?' active':'')+(clr===null?' dot-empty':'');
     if(clr) dot.style.cssText=`background:${_PICKER_BG[clr]};border-color:${_PICKER_BD[clr]};`;
-    dot.title=clr?(COLOR_LBL[clr]||clr):'Leeg';
+    dot.title=clr?(STD_LBL[clr]||clr):'Leeg';
     dot.addEventListener('click',(e)=>{
       e.stopPropagation();
       if(!S.tmpStd[di]) S.tmpStd[di]={};
       S.tmpStd[di][slotId]=clr;
+      // reset vak wanneer niet meer groen
+      if(clr!=='green'){
+        if(S.tmpStdVak[di]) delete S.tmpStdVak[di][slotId];
+      }
       applyStd(cell,clr);
       _buildStdPicker(cell,clr,di,slotId);
     });
     picker.appendChild(dot);
   });
+  // Vak-dropdown (alleen zichtbaar bij groen)
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  const vakken=stu?getActiveVakken(stu):[];
+  const vakSel=document.createElement('select');
+  vakSel.className='sdc-vak-sel';
+  vakSel.style.display=currentColor==='green'?'':'none';
+  vakSel.title='Vak voor dit lesuur';
+  const optEmpty=document.createElement('option'); optEmpty.value=''; optEmpty.textContent='— Les —';
+  vakSel.appendChild(optEmpty);
+  vakken.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; vakSel.appendChild(o); });
+  const optMA=document.createElement('option'); optMA.value='MA'; optMA.textContent='MA'; vakSel.appendChild(optMA);
+  const curVak=(S.tmpStdVak[di]&&S.tmpStdVak[di][slotId])||'';
+  vakSel.value=curVak;
+  vakSel.addEventListener('change',(e)=>{
+    e.stopPropagation();
+    if(!S.tmpStdVak[di]) S.tmpStdVak[di]={};
+    if(vakSel.value) S.tmpStdVak[di][slotId]=vakSel.value;
+    else delete S.tmpStdVak[di][slotId];
+    lbl.textContent=_stdCellLabel(currentColor,curTime,vakSel.value);
+  });
   // Label below dots
   const lbl=document.createElement('div');
   lbl.className='sdc-lbl';
   const curTime=(S.tmpStdTimes[di]&&S.tmpStdTimes[di][slotId])||'';
-  lbl.textContent=(STD_LBL[currentColor||'null']||'—')+(curTime?' ('+curTime+')':'');
-  // Time input below label
+  lbl.textContent=_stdCellLabel(currentColor,curTime,curVak);
+  // Time input
   const timeInp=document.createElement('input');
   timeInp.type='time'; timeInp.className='sdc-time-inp';
   timeInp.value=curTime;
@@ -6686,16 +6741,22 @@ function _buildStdPicker(cell, currentColor, di, slotId){
     if(!S.tmpStdTimes[di]) S.tmpStdTimes[di]={};
     if(timeInp.value) S.tmpStdTimes[di][slotId]=timeInp.value;
     else delete S.tmpStdTimes[di][slotId];
-    // Update label live
-    lbl.textContent=(STD_LBL[currentColor||'null']||'—')+(timeInp.value?' ('+timeInp.value+')':'');
+    lbl.textContent=_stdCellLabel(currentColor,timeInp.value,(S.tmpStdVak[di]&&S.tmpStdVak[di][slotId])||'');
   });
-  // Remove old picker + label + time input
+  // Remove old elements
   cell.querySelector('.sdc-picker')?.remove();
+  cell.querySelector('.sdc-vak-sel')?.remove();
   cell.querySelector('.sdc-lbl')?.remove();
   cell.querySelector('.sdc-time-inp')?.remove();
   cell.appendChild(picker);
+  cell.appendChild(vakSel);
   cell.appendChild(lbl);
   cell.appendChild(timeInp);
+}
+function _stdCellLabel(clr, time, vak){
+  let base=STD_LBL[clr||'null']||'—';
+  if(clr==='green'&&vak) base='Les: '+vak;
+  return base+(time?' ('+time+')':'');
 }
 
 function renderStdGrid(){
