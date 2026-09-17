@@ -534,6 +534,42 @@ body.dark .student-bar{background:#3D1C00;}
 .leg{display:flex;align-items:center;gap:.35rem;}
 .leg-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
 
+/* ── DISPLAY TAKEN PANEL ─────────────────────────── */
+.display-content-row{display:flex;flex:1;overflow:hidden;align-items:flex-start;}
+.display-taken-panel{
+  width:240px;flex-shrink:0;padding:1rem 0 1rem 1rem;
+  overflow-y:auto;height:100%;
+  align-self:stretch;
+}
+.display-taken-inner{
+  background:var(--surface);border:1.5px solid var(--border-s);
+  border-radius:14px;padding:.9rem .95rem;
+  box-shadow:0 1px 6px rgba(0,0,0,.07);
+  min-height:100px;
+}
+.display-taken-title{
+  font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;
+  color:var(--tx);margin-bottom:.7rem;
+  padding-bottom:.5rem;border-bottom:1.5px solid var(--border);
+}
+.display-taken-vak{margin-bottom:.65rem;}
+.display-taken-vak-name{
+  font-size:.73rem;font-weight:700;color:var(--brand);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:.28rem;
+}
+.display-taken-item{
+  background:var(--surf-2);border:1px solid var(--border);
+  border-radius:8px;padding:.35rem .6rem;
+  font-size:.78rem;color:var(--tx);margin-bottom:.22rem;
+  display:flex;align-items:flex-start;gap:.4rem;
+}
+.display-taken-les{
+  font-weight:700;color:var(--tx2);white-space:nowrap;flex-shrink:0;
+  font-size:.73rem;margin-top:.05rem;
+}
+.display-taken-opm{color:var(--tx);line-height:1.3;word-break:break-word;}
+.display-taken-empty{font-size:.78rem;color:var(--tx3);font-style:italic;}
+
 /* ── SCHEDULE ────────────────────────────────────── */
 .sched-area{flex:1;overflow:auto;padding:1rem 1rem 2.5rem;}
 .sched-sec-title{font-family:'Outfit',sans-serif;font-size:.71rem;font-weight:700;color:var(--tx3);letter-spacing:.12em;text-transform:uppercase;padding:.9rem .2rem .45rem;}
@@ -1269,7 +1305,16 @@ body.dark .display-tile-initial{background:#3A1800;color:#F7941D;}
     </div>
   </div>
 
-  <div class="sched-area" id="sched-area"></div>
+  <div class="display-content-row" id="display-content-row">
+    <!-- Gemaakte Taken panel (alleen display + weekweergave) -->
+    <div class="display-taken-panel" id="display-taken-panel" style="display:none;">
+      <div class="display-taken-inner">
+        <div class="display-taken-title">📖 Gemaakte Taken</div>
+        <div id="display-taken-list"></div>
+      </div>
+    </div>
+    <div class="sched-area" id="sched-area"></div>
+  </div>
 </div>
 
 <!-- ══ STANDAARDROOSTER MODAL ══════════════════════ -->
@@ -6292,9 +6337,61 @@ function setNote(weekKey,di,sid,color,text){
 }
 
 /* ══ RENDER SCHEDULE ════════════════════════════════ */
+function renderDisplayTakenPanel(){
+  const panel=document.getElementById('display-taken-panel');
+  if(!panel) return;
+  const isDisplayWeek=S.role==='display' && S.viewMode==='week';
+  panel.style.display=isDisplayWeek?'':'none';
+  if(!isDisplayWeek) return;
+  const ct=document.getElementById('display-taken-list');
+  if(!ct) return;
+  const key=wk(S.wy.year,S.wy.week);
+  const hw=(S.huiswerk||[]).filter(h=>
+    h.studentId===S.currentStudentId &&
+    h.slotId!==null &&
+    h.weekKey===key
+  );
+  if(!hw.length){
+    ct.innerHTML='<div class="display-taken-empty">Geen gemaakte taken deze week.</div>';
+    return;
+  }
+  // Group by vak
+  const byVak={};
+  hw.forEach(h=>{
+    const v=h.vak||'Overig';
+    if(!byVak[v]) byVak[v]=[];
+    byVak[v].push(h);
+  });
+  // Sort within each vak by les
+  Object.values(byVak).forEach(arr=>arr.sort((a,b)=>(a.les||0)-(b.les||0)));
+  ct.innerHTML='';
+  Object.entries(byVak).sort(([a],[b])=>a.localeCompare(b,'nl')).forEach(([vak,items])=>{
+    const vakEl=document.createElement('div');
+    vakEl.className='display-taken-vak';
+    const vnEl=document.createElement('div');
+    vnEl.className='display-taken-vak-name';
+    vnEl.textContent=vak;
+    vakEl.appendChild(vnEl);
+    items.forEach(h=>{
+      const row=document.createElement('div');
+      row.className='display-taken-item';
+      const lesEl=document.createElement('span');
+      lesEl.className='display-taken-les';
+      lesEl.textContent='Les '+(h.les||'?');
+      const opmEl=document.createElement('span');
+      opmEl.className='display-taken-opm';
+      opmEl.textContent=h.opmerking||'—';
+      row.appendChild(lesEl);
+      row.appendChild(opmEl);
+      vakEl.appendChild(row);
+    });
+    ct.appendChild(vakEl);
+  });
+}
+
 function renderSchedule(){
-  if(S.viewMode==='month'){ renderMonthView(); return; }
-  if(S.viewMode==='4wk'){ render4WkView(); return; }
+  if(S.viewMode==='month'){ renderDisplayTakenPanel(); renderMonthView(); return; }
+  if(S.viewMode==='4wk'){ renderDisplayTakenPanel(); render4WkView(); return; }
   const{week:w,year:y}=S.wy;
   const dates=weekDates(y,w);
   const key=wk(y,w);
@@ -6313,6 +6410,7 @@ function renderSchedule(){
   _setupSchedAreaDrop();
   // Update student bar so vakken chips reflect the period of the viewed week
   updateStudentBar();
+  renderDisplayTakenPanel();
 }
 
 /* ══ 4-WEKEN VIEW ═══════════════════════════════════ */
