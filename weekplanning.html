@@ -720,6 +720,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .sdc-time-inp::placeholder{color:var(--tx3);}
 .sdc-vak-sel{border:1px solid var(--g-bd);border-radius:4px;padding:.18rem .22rem;font-size:.62rem;width:100%;background:var(--g-bg);color:var(--g-tx);font-family:inherit;outline:none;cursor:pointer;margin-top:.25rem;font-weight:600;}
 .sdc-vak-sel:focus{border-color:var(--brand);}
+.estu-assign-chip{border:1.5px solid var(--border-s);border-radius:20px;padding:.2rem .65rem;font-size:.75rem;font-weight:600;color:var(--tx2);background:var(--surf-2);cursor:pointer;transition:background .12s,border-color .12s,color .12s;}
+.estu-assign-chip.on{background:var(--brand-light);border-color:var(--brand);color:var(--brand);}
+.estu-assign-chip:hover{border-color:var(--brand-mid);}
 .la-cell-time{font-size:.58rem;font-weight:400;opacity:.75;margin-left:.18rem;}
 .modal-actions{display:flex;gap:.55rem;margin-top:.9rem;}
 .btn-p.sm{width:auto;padding:.65rem 1.7rem;}
@@ -1167,11 +1170,11 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <span class="hw-form-picto">📖</span>
       <span class="hw-label">Vak:</span>
       <select class="hw-inp-vak" id="hw-vak"></select>
-      <span class="hw-label">Week:</span>
-      <input class="hw-inp-sm" id="hw-week" type="number" min="1" max="53" placeholder="40">
+      <span class="hw-label">Plannerweek:</span>
+      <input class="hw-inp-sm" id="hw-week" type="number" min="1" max="53" placeholder="optioneel">
       <span class="hw-label">Les:</span>
       <input class="hw-inp-sm" id="hw-les" type="number" min="1" max="10" placeholder="1">
-      <input class="hw-inp-opm" id="hw-inp-opm" type="text" maxlength="20" placeholder="Opmerking (max 20 tekens)">
+      <input class="hw-inp-opm" id="hw-inp-opm" type="text" maxlength="20" placeholder="Opmerking (verplicht, max 20 tekens)">
       <button class="hw-save-btn" onclick="saveHwItem()">Opslaan</button>
     </div>
     <div class="hw-form-row" style="padding-top:.1rem;">
@@ -1333,6 +1336,7 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <div class="pws-admin-dots" id="estu-pws-dots"></div>
     </div>
     <div id="estu-period-ct"></div>
+    <div id="estu-assign-ct" style="margin-top:.75rem;"></div>
     <div class="err-msg" id="estu-err"></div>
     <button class="btn-p" onclick="saveEditStu()">Opslaan</button>
     <button class="btn-g" onclick="closeEditStu()">Annuleren</button>
@@ -3194,7 +3198,7 @@ function onClassChange(){
 }
 
 function addStudent(){
-  if(S.students.length>=20){alert('Maximum van 20 leerlingen bereikt.');return;}
+  if(S.students.length>=25){alert('Maximum van 25 leerlingen bereikt.');return;}
   const name=document.getElementById('stu-name-inp').value.trim();
   const klass=document.getElementById('stu-class-inp').value;
   if(!name){alert('Voer een naam in.');return;}
@@ -3216,9 +3220,9 @@ function addStudent(){
 function renderStudentsList(){
   const list=document.getElementById('students-list');
   list.innerHTML='';
-  document.getElementById('stu-cnt').textContent='('+S.students.length+'/20)';
+  document.getElementById('stu-cnt').textContent='('+S.students.length+'/25)';
   const btn=document.getElementById('btn-add-stu');
-  btn.disabled=S.students.length>=20;
+  btn.disabled=S.students.length>=25;
   if(!S.students.length){
     list.innerHTML='<p class="empty-note">Nog geen leerlingen toegevoegd.</p>';
     return;
@@ -3496,6 +3500,8 @@ function openEditStu(id){
   lbl.textContent='Gevolgde vakken per periode';
   ct.appendChild(lbl);
   ct.appendChild(buildPeriodVakGrid(stu.klass, stu.vakken||{}));
+  // Coach / coordinator toewijzing
+  _buildEstuAssignSection(stu);
   document.getElementById('estu-err').style.display='none';
   document.getElementById('modal-edit-stu').classList.add('show');
   setTimeout(()=>document.getElementById('estu-name').focus(),60);
@@ -3522,10 +3528,47 @@ function saveEditStu(){
   document.querySelectorAll('#estu-pws-dots .pws-admin-dot').forEach((el,i)=>{
     pwsDots[i]=parseInt(el.dataset.val||'0');
   });
+  // Collect coach/coordinator assignments
+  const assignedCoaches=[...document.querySelectorAll('#estu-assign-coaches .estu-assign-chip.on')].map(c=>c.dataset.email);
+  const assignedCoords=[...document.querySelectorAll('#estu-assign-coords .estu-assign-chip.on')].map(c=>c.dataset.email);
   const stu=S.students.find(s=>s.id===id);
-  if(stu){ stu.name=name; stu.klass=klass; stu.year=year; stu.vakken=vakken; stu.sport=sport; stu.pws=hasPws; stu.pwsDots=hasPws?pwsDots:[0,0,0,0,0]; }
+  if(stu){ stu.name=name; stu.klass=klass; stu.year=year; stu.vakken=vakken; stu.sport=sport; stu.pws=hasPws; stu.pwsDots=hasPws?pwsDots:[0,0,0,0,0]; stu.coaches=assignedCoaches; stu.coordinators=assignedCoords; }
   persist(); closeEditStu(); renderStudentsList();
   if(S.currentStudentId===id) updateStudentBar();
+}
+
+function _buildEstuAssignSection(stu){
+  const ct=document.getElementById('estu-assign-ct');
+  ct.innerHTML='';
+  // Get all coaches and coordinators from roleMap
+  const coaches=Object.entries(S.roleMap).filter(([,m])=>m.role==='coach').map(([email])=>email);
+  const coords=Object.entries(S.roleMap).filter(([,m])=>m.role==='coordinator').map(([email])=>email);
+  if(!coaches.length && !coords.length) return; // geen accounts aanwezig — sectie verbergen
+  function buildChips(arr, assigned, containerId, label){
+    if(!arr.length) return;
+    const wrap=document.createElement('div'); wrap.style.marginBottom='.65rem';
+    const lbl=document.createElement('label'); lbl.className='flabel';
+    lbl.style.cssText='margin-bottom:.35rem;display:block;';
+    lbl.textContent=label;
+    wrap.appendChild(lbl);
+    const chips=document.createElement('div');
+    chips.id=containerId; chips.style.cssText='display:flex;flex-wrap:wrap;gap:.3rem;';
+    arr.forEach(email=>{
+      const chip=document.createElement('button');
+      chip.type='button'; chip.className='estu-assign-chip'+(assigned.includes(email)?' on':'');
+      chip.dataset.email=email;
+      // show name part of email
+      const name=email.split('@')[0].split('.').map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+      chip.textContent=name;
+      chip.title=email;
+      chip.addEventListener('click',()=>chip.classList.toggle('on'));
+      chips.appendChild(chip);
+    });
+    wrap.appendChild(chips);
+    ct.appendChild(wrap);
+  }
+  buildChips(coaches, stu.coaches||[], 'estu-assign-coaches', '👤 Gekoppelde coaches');
+  buildChips(coords,  stu.coordinators||[], 'estu-assign-coords',  '🎓 Gekoppelde coordinatoren');
 }
 
 /* ══ BESCHIKBAARHEID ════════════════════════════════ */
@@ -5360,6 +5403,14 @@ function visibleStudents(){
   if(S.role==='docent' && S.docentVak){
     return S.students.filter(stu=>getActiveVakken(stu).includes(S.docentVak));
   }
+  // Coach: toon alleen leerlingen waarbij deze coach gekoppeld is (of leerling zonder coaches)
+  if(S.role==='coach' && S.loggedInEmail){
+    return S.students.filter(stu=>!stu.coaches?.length || stu.coaches.includes(S.loggedInEmail));
+  }
+  // Coordinator: toon alleen leerlingen waarbij deze coordinator gekoppeld is (of leerling zonder coordinators)
+  if(S.role==='coordinator' && S.loggedInEmail){
+    return S.students.filter(stu=>!stu.coordinators?.length || stu.coordinators.includes(S.loggedInEmail));
+  }
   return S.students;
 }
 
@@ -6415,10 +6466,10 @@ function _populateHwVakSelect(){
 
 function saveHwItem(){
   const vakVal=(document.getElementById('hw-vak')?.value||'').trim();
-  const weekVal=parseInt(document.getElementById('hw-week')?.value||'',10);
+  const weekRaw=document.getElementById('hw-week')?.value||''; const weekVal=weekRaw?parseInt(weekRaw,10):null;
   const lesVal=parseInt(document.getElementById('hw-les')?.value||'',10);
   const opmVal=(document.getElementById('hw-inp-opm')?.value||'').trim().slice(0,20);
-  if(!vakVal||!weekVal||!lesVal){ alert('Vul vak, week en les in.'); return; }
+  if(!vakVal||!lesVal||!opmVal){ alert('Vul vak, les en opmerking in. Plannerweek is optioneel.'); return; }
   if(!S.currentStudentId){ alert('Geen leerling geselecteerd.'); return; }
   const item={
     id:uid(),
@@ -6494,7 +6545,7 @@ function _openHwPopup(hwId){
     pop.innerHTML=`
       <div class="hw-popup-title">📖 Huiswerk</div>
       <div class="hw-popup-row"><span class="hw-popup-label">Vak:</span><span class="hw-popup-val">${h.vak||'—'}</span></div>
-      <div class="hw-popup-row"><span class="hw-popup-label">Week:</span><span class="hw-popup-val">${h.week}</span></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Plannerweek:</span><span class="hw-popup-val">${h.week||'—'}</span></div>
       <div class="hw-popup-row"><span class="hw-popup-label">Les:</span><span class="hw-popup-val">${h.les}</span></div>
       <div class="hw-popup-row"><span class="hw-popup-label">Opmerking:</span><span class="hw-popup-val">${h.opmerking||'—'}</span></div>
       <div class="hw-popup-actions">
@@ -6514,8 +6565,8 @@ function _openHwPopup(hwId){
       <div class="hw-popup-title">✏️ Huiswerk bewerken</div>
       <div class="hw-popup-row"><span class="hw-popup-label">Vak:</span>
         <select class="hw-popup-edit-inp" id="hpp-vak"><option value="">— vak —</option>${vakOpts}</select></div>
-      <div class="hw-popup-row"><span class="hw-popup-label">Week:</span>
-        <input class="hw-popup-edit-inp" id="hpp-week" type="number" min="1" max="53" value="${h.week}"></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Plannerweek:</span>
+        <input class="hw-popup-edit-inp" id="hpp-week" type="number" min="1" max="53" value="${h.week||''}" placeholder="optioneel"></div>
       <div class="hw-popup-row"><span class="hw-popup-label">Les:</span>
         <input class="hw-popup-edit-inp" id="hpp-les" type="number" min="1" max="10" value="${h.les}"></div>
       <div class="hw-popup-row"><span class="hw-popup-label">Opmerking:</span>
@@ -6530,8 +6581,8 @@ function _openHwPopup(hwId){
       const wv=parseInt(pop.querySelector('#hpp-week')?.value||'',10);
       const lv=parseInt(pop.querySelector('#hpp-les')?.value||'',10);
       const ov2=(pop.querySelector('#hpp-opm')?.value||'').trim().slice(0,20);
-      if(!vv||!wv||!lv){ alert('Vul vak, week en les in.'); return; }
-      h.vak=vv; h.week=wv; h.les=lv; h.opmerking=ov2;
+      if(!vv||!lv||!ov2){ alert('Vul vak, les en opmerking in. Plannerweek is optioneel.'); return; }
+      h.vak=vv; h.week=wv||null; h.les=lv; h.opmerking=ov2;
       persist();
       if(_graphToken) spSyncAll().catch(()=>{});
       renderAllHwPictos();
