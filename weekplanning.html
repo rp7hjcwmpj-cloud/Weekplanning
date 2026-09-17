@@ -447,7 +447,8 @@ body.dark .student-bar{background:#3D1C00;}
 .print-modal-foot{display:flex;gap:.6rem;margin-top:.85rem;justify-content:flex-end;flex-shrink:0;flex-wrap:wrap;}
 
 /* ── WEEK NAV ────────────────────────────────────── */
-.week-nav{background:var(--surface);padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);border-bottom:1px solid var(--border);gap:.5rem;}
+.week-nav-wrap{display:flex;justify-content:center;padding:.3rem 1rem .1rem;}
+.week-nav{background:var(--surface);padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);border:1px solid var(--border);width:50%;min-width:320px;}
 .wk-center{text-align:center;flex:1;}
 .wk-num{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;color:var(--brand);letter-spacing:-.2px;}
 .wk-range{font-size:.71rem;color:var(--tx3);margin-top:.08rem;}
@@ -832,6 +833,8 @@ body.dark .student-bar{background:#3D1C00;}
   .sched-area{padding:.55rem .55rem 2rem;}
   .student-bar-wrap{padding:.4rem .6rem .2rem;}
   .legend-wrap{padding:.2rem .6rem .4rem;}
+  .week-nav-wrap{padding:.25rem .6rem .1rem;}
+  .week-nav{width:100%;min-width:0;}
   .student-bar{padding:.45rem .7rem;}
   .form-row{grid-template-columns:1fr;}
 }
@@ -1140,18 +1143,20 @@ body.dark .student-bar{background:#3D1C00;}
   </div>
   </div>
 
+  <div class="week-nav-wrap">
   <div class="week-nav">
-    <button class="nav-btn" id="nav-prev" onclick="navPrev()">‹ Vorige</button>
+    <button class="nav-btn" id="nav-prev" onclick="navPrev()">‹</button>
     <div class="wk-center">
       <div class="wk-num outfit" id="wk-num">Week —</div>
       <div class="wk-range" id="wk-range">—</div>
-      <div style="display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:.35rem;justify-content:center;flex-wrap:wrap;">
         <button class="nav-today-btn" id="btn-today" onclick="goToToday()">📍 Vandaag</button>
-        <button class="nav-mode-btn" id="btn-4wk" onclick="toggle4WkMode()">🗓 4 weken</button>
-        <button class="nav-mode-btn" id="btn-month" onclick="toggleMonthMode()">📅 Maandweergave</button>
+        <button class="nav-mode-btn" id="btn-4wk" onclick="toggle4WkMode()">🗓 4 wk</button>
+        <button class="nav-mode-btn" id="btn-month" onclick="toggleMonthMode()">📅 Maand</button>
       </div>
     </div>
-    <button class="nav-btn" id="nav-next" onclick="navNext()">Volgende ›</button>
+    <button class="nav-btn" id="nav-next" onclick="navNext()">›</button>
+  </div>
   </div>
 
   <div class="ctrl-bar"></div>
