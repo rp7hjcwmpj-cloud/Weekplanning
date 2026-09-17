@@ -343,6 +343,12 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .stu-nav:disabled{opacity:.3;cursor:not-allowed;}
 .stu-center{flex:1;min-width:0;}
 .stu-name{font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stu-name-btn{font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:rgba(255,255,255,.1);border:1.5px dashed rgba(255,255,255,.35);border-radius:7px;
+  padding:.22rem .65rem;cursor:pointer;text-align:left;transition:background .14s,border-color .14s;
+  max-width:260px;}
+.stu-name-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.6);}
+.stu-name-btn:empty::before{content:'🔍 Zoek leerling';font-weight:500;opacity:.7;}
 .stu-meta{font-size:.7rem;color:rgba(255,255,255,.65);margin-top:.05rem;}
 .stu-counter{font-size:.72rem;color:rgba(255,255,255,.5);white-space:nowrap;font-variant-numeric:tabular-nums;}
 .stu-empty{font-size:.85rem;color:rgba(255,255,255,.55);font-style:italic;}
@@ -460,6 +466,32 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 
 /* ── MONTH GRID ──────────────────────────────────── */
 .month-wrap{overflow-x:auto;}
+/* ── 4-weken view ── */
+.four-wk-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:6px;padding:6px;
+  box-sizing:border-box;
+}
+.four-wk-cell{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.four-wk-hdr{
+  background:var(--brand);color:#fff;
+  padding:.3rem .7rem;font-size:.75rem;font-weight:700;
+  font-family:'Outfit',sans-serif;letter-spacing:.02em;
+  flex-shrink:0;
+}
+.four-wk-body{overflow:auto;flex:1;}
+.four-wk-body .sched-grid{font-size:.72rem;}
+.four-wk-body .dc{min-height:28px;}
+.four-wk-body .th{padding:.18rem .3rem;font-size:.65rem;}
+.four-wk-body .rh{padding:.15rem .3rem;font-size:.63rem;}
+.four-wk-body .cell-lbl{font-size:.44rem;}
+@media(max-width:700px){
+  .four-wk-grid{grid-template-columns:1fr;}
+}
 .month-grid{display:grid;}
 .mgh{background:var(--brand);color:rgba(255,255,255,.9);padding:.5rem .4rem;text-align:center;font-family:'Outfit',sans-serif;font-weight:600;font-size:.75rem;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.08);}
 .mgh.mgh-we{border-left:2px solid rgba(255,255,255,.22);}
@@ -1084,12 +1116,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   <div class="student-bar" id="student-bar">
     <button class="stu-nav" id="stu-prev" onclick="prevStudent()">‹</button>
     <div class="stu-center">
-      <div class="stu-name" id="stu-name-d">—</div>
+      <button class="stu-name-btn" id="stu-name-d" onclick="openStuPickModal()">—</button>
       <div class="stu-meta" id="stu-meta-d">—</div>
       <div class="stu-vakken" id="stu-vakken"></div>
-    </div>
-    <div class="stu-search-wrap" id="stu-search-wrap">
-      <button class="stu-search-btn" onclick="openStuPickModal()">🔍 Zoek leerling</button>
     </div>
     <div class="stu-counter" id="stu-counter">—</div>
     <button class="stu-nav" id="stu-next" onclick="nextStudent()">›</button>
@@ -1107,7 +1136,8 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
       <div class="wk-range" id="wk-range">—</div>
       <div style="display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;">
         <button class="nav-today-btn" id="btn-today" onclick="goToToday()">📍 Vandaag</button>
-        <button class="nav-mode-btn" id="btn-month" onclick="toggleViewMode()">📅 Maandweergave</button>
+        <button class="nav-mode-btn" id="btn-4wk" onclick="toggle4WkMode()">🗓 4 weken</button>
+        <button class="nav-mode-btn" id="btn-month" onclick="toggleMonthMode()">📅 Maandweergave</button>
       </div>
     </div>
     <button class="nav-btn" id="nav-next" onclick="navNext()">Volgende ›</button>
@@ -1431,13 +1461,13 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 
 <!-- ══ LOGOUT CONFIRM MODAL ══════════════════════════ -->
 <div class="overlay" id="modal-logout-confirm">
-  <div class="modal-card logout-modal">
-    <h2 style="font-size:1.05rem;margin-bottom:.6rem;">💾 Uitloggen</h2>
-    <p style="font-size:.88rem;color:var(--tx2);margin:0 0 .4rem;">Wil je de laatste data synchroniseren met de server voordat je uitlogt?</p>
+  <div class="modal-card logout-modal" style="position:relative;">
+    <h2 style="font-size:1.05rem;margin-bottom:.5rem;">💾 Uitloggen</h2>
+    <p style="font-size:.88rem;color:var(--tx2);margin:0 0 .5rem;">Synchroniseer de laatste data met de server voordat je uitlogt.</p>
     <p id="logout-sync-status" style="font-size:.8rem;color:var(--tx3);min-height:1.2rem;"></p>
-    <div class="logout-modal-btns">
-      <button class="btn-ghost" onclick="doLogout()">Uitloggen zonder sync</button>
-      <button class="btn-primary" id="btn-logout-sync" onclick="syncThenLogout()">☁️ Sync &amp; uitloggen</button>
+    <button class="btn-primary" id="btn-logout-sync" onclick="syncThenLogout()" style="width:100%;padding:.85rem;font-size:1.05rem;margin-bottom:.4rem;">☁️ Sync &amp; uitloggen</button>
+    <div style="display:flex;justify-content:flex-end;margin-top:.2rem;">
+      <button class="btn-ghost" onclick="doLogout()" style="font-size:.75rem;padding:.22rem .65rem;opacity:.65;">Uitloggen zonder sync</button>
     </div>
   </div>
 </div>
@@ -1971,7 +2001,7 @@ function beschValLabel(val){
 const S = {
   role:null, pendingRole:null,
   wy:null, showExtra:false, showWeekend:false, editMode:false,
-  viewMode:'week',       // 'week' | 'month'
+  viewMode:'week',       // 'week' | 'month' | '4wk'
   currentMonth:null,     // {year, month}
   // Settings
   schoolName:'Parmant Joris',
@@ -5263,8 +5293,9 @@ function updateStudentBar(){
   prev.style.display=isLocked?'none':'';
   next.style.display=isLocked?'none':'';
   ct.style.display=isLocked?'none':'';
-  const sw=document.getElementById('stu-search-wrap');
-  if(sw) sw.style.display=isLocked?'none':'';
+  // Name button: clickable for coach/coordinator/docent, non-clickable for leerling/ouder
+  if(nd) nd.style.pointerEvents=isLocked?'none':'';
+  if(nd) nd.style.borderStyle=isLocked?'solid':'';
   // Voor leerling/ouder: altijd vastzetten op eigen ID (ook als localStorage iets anders heeft)
   if(isLocked && S.leerlingStudentId){
     S.currentStudentId=S.leerlingStudentId;
@@ -5275,7 +5306,7 @@ function updateStudentBar(){
     S.currentStudentId=vis[0].id;
   }
   if(!vis.length){
-    nd.textContent='Geen leerlingen'; md.textContent='Geen leerlingen voor dit vak';
+    if(nd) nd.textContent='Geen leerlingen'; md.textContent='Geen leerlingen voor dit vak';
     ct.textContent=''; prev.disabled=true; next.disabled=true; return;
   }
   const idx=vis.findIndex(s=>s.id===S.currentStudentId);
@@ -5705,6 +5736,12 @@ function canGoNext(){
     const{year:y,month:m}=S.currentMonth;
     return new Date(y,m,1) < new Date(t.getFullYear(),t.getMonth(),1);
   }
+  // 4wk: check that week+3 doesn't go beyond schoolYear end
+  if(S.viewMode==='4wk'){
+    let{week:w,year:y}=S.wy;
+    for(let i=0;i<3;i++){ w++; if(w>isoWeek(new Date(y,11,28))){w=1;y++;} }
+    return weekDates(y,w)[6] < t;
+  }
   return weekDates(S.wy.year,S.wy.week)[6] < t;
 }
 function updateNavBtns(){
@@ -5712,8 +5749,24 @@ function updateNavBtns(){
   document.getElementById('nav-next').disabled=!canGoNext();
 }
 
-function navPrev(){ if(canGoPrev()) S.viewMode==='month' ? prevMonth() : prevWeek(); }
-function navNext(){ if(canGoNext()) S.viewMode==='month' ? nextMonth() : nextWeek(); }
+function navPrev(){
+  if(!canGoPrev()) return;
+  if(S.viewMode==='month'){ prevMonth(); return; }
+  if(S.viewMode==='4wk'){ _shiftWy(-4); renderWeekNav(); renderSchedule(); return; }
+  prevWeek();
+}
+function navNext(){
+  if(!canGoNext()) return;
+  if(S.viewMode==='month'){ nextMonth(); return; }
+  if(S.viewMode==='4wk'){ _shiftWy(4); renderWeekNav(); renderSchedule(); return; }
+  nextWeek();
+}
+function _shiftWy(delta){
+  let{week:w,year:y}=S.wy;
+  if(delta>0){ for(let i=0;i<delta;i++){ w++; if(w>isoWeek(new Date(y,11,28))){w=1;y++;} } }
+  else { for(let i=0;i<-delta;i++){ w--; if(w<1){y--;w=isoWeek(new Date(y,11,28));} } }
+  S.wy={week:w,year:y};
+}
 
 function goToToday(){
   const now=new Date();
@@ -5742,19 +5795,31 @@ function nextMonth(){
   m++; if(m>11){m=0;y++;} S.currentMonth={year:y,month:m};
   renderWeekNav(); renderSchedule();
 }
-function toggleViewMode(){
-  S.viewMode=S.viewMode==='week'?'month':'week';
+function toggleMonthMode(){
+  S.viewMode=S.viewMode==='month'?'week':'month';
   if(S.viewMode==='month'){
     const dates=weekDates(S.wy.year,S.wy.week);
     const mid=dates[2];
     S.currentMonth={year:mid.getFullYear(),month:mid.getMonth()};
   }
+  _syncViewModeBtns();
+  renderWeekNav(); renderSchedule();
+}
+function toggle4WkMode(){
+  S.viewMode=S.viewMode==='4wk'?'week':'4wk';
+  _syncViewModeBtns();
+  renderWeekNav(); renderSchedule();
+}
+// Keep for backward compat (old onclick references)
+function toggleViewMode(){ toggleMonthMode(); }
+function _syncViewModeBtns(){
   document.getElementById('btn-month').classList.toggle('on',S.viewMode==='month');
+  document.getElementById('btn-4wk').classList.toggle('on',S.viewMode==='4wk');
   const pv=document.getElementById('nav-prev');
   const nx=document.getElementById('nav-next');
-  pv.textContent=S.viewMode==='month'?'‹ Vorige maand':'‹ Vorige';
-  nx.textContent=S.viewMode==='month'?'Volgende maand ›':'Volgende ›';
-  renderWeekNav(); renderSchedule();
+  const isMonth=S.viewMode==='month';
+  pv.textContent=isMonth?'‹ Vorige maand':'‹ Vorige';
+  nx.textContent=isMonth?'Volgende maand ›':'Volgende ›';
 }
 function renderWeekNav(){
   const now=new Date();
@@ -5765,6 +5830,16 @@ function renderWeekNav(){
     document.getElementById('wk-num').textContent=MONTHS_FULL[m]+' '+y;
     document.getElementById('wk-range').textContent=S.schoolYear;
     isToday=(y===now.getFullYear()&&m===now.getMonth());
+  } else if(S.viewMode==='4wk'){
+    const{week:w,year:y}=S.wy;
+    // Compute end of 4th week
+    let ew=w,ey=y;
+    for(let i=0;i<3;i++){ ew++; if(ew>isoWeek(new Date(ey,11,28))){ew=1;ey++;} }
+    const dates0=weekDates(y,w);
+    const dates3=weekDates(ey,ew);
+    document.getElementById('wk-num').textContent='4 weken — week '+w+' t/m '+ew;
+    document.getElementById('wk-range').textContent=fmt(dates0[0])+' t/m '+fmt(dates3[6]);
+    isToday=(w===todayWy.week&&y===todayWy.year);
   } else {
     const{week:w,year:y}=S.wy;
     const dates=weekDates(y,w);
@@ -5774,6 +5849,7 @@ function renderWeekNav(){
   }
   const tb=document.getElementById('btn-today');
   if(tb) tb.classList.toggle('is-today',isToday);
+  _syncViewModeBtns();
   updateNavBtns();
 }
 
@@ -5837,6 +5913,7 @@ function setNote(weekKey,di,sid,color,text){
 /* ══ RENDER SCHEDULE ════════════════════════════════ */
 function renderSchedule(){
   if(S.viewMode==='month'){ renderMonthView(); return; }
+  if(S.viewMode==='4wk'){ render4WkView(); return; }
   const{week:w,year:y}=S.wy;
   const dates=weekDates(y,w);
   const key=wk(y,w);
@@ -5854,6 +5931,46 @@ function renderSchedule(){
   renderAllHwPictos();
   _setupSchedAreaDrop();
   // Update student bar so vakken chips reflect the period of the viewed week
+  updateStudentBar();
+}
+
+/* ══ 4-WEKEN VIEW ═══════════════════════════════════ */
+function render4WkView(){
+  const area=document.getElementById('sched-area');
+  area.innerHTML='';
+  const slots=[];
+  if(S.showExtra) slots.push(...MORNING);
+  slots.push(...SCHOOL);
+  if(S.showExtra) slots.push(...EVENING);
+  const dayIdxs=[0,1,2,3,4];
+  const dayNames=[...DAYS_FULL];
+  if(S.showWeekend){ dayIdxs.push(5,6); dayNames.push('Zaterdag','Zondag'); }
+  const editable=false; // read-only in 4wk view
+  const wrapper=document.createElement('div');
+  wrapper.className='four-wk-grid';
+  // Build 4 consecutive weeks starting from S.wy
+  let{week:w,year:y}=S.wy;
+  for(let i=0;i<4;i++){
+    const dates=weekDates(y,w);
+    const key=wk(y,w);
+    const cell=document.createElement('div');
+    cell.className='four-wk-cell';
+    const hdr=document.createElement('div');
+    hdr.className='four-wk-hdr';
+    const now=new Date(); const todayWy=weekYear(now);
+    const isNow=(w===todayWy.week&&y===todayWy.year);
+    hdr.textContent=(isNow?'📍 ':'')+'Week '+w+' — '+fmt(dates[0])+' t/m '+fmt(dates[4]);
+    const body=document.createElement('div');
+    body.className='four-wk-body';
+    body.appendChild(buildGrid(slots,dates,dayIdxs,dayNames,key,editable));
+    cell.appendChild(hdr);
+    cell.appendChild(body);
+    wrapper.appendChild(cell);
+    // Advance to next week
+    w++; if(w>isoWeek(new Date(y,11,28))){w=1;y++;}
+  }
+  area.appendChild(wrapper);
+  renderAllHwPictos();
   updateStudentBar();
 }
 
