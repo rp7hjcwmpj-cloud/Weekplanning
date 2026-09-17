@@ -6390,11 +6390,26 @@ function toggleHwPanel(){
   }
 }
 
+function _hwVakkenForStudent(stu){
+  if(!stu) return [];
+  // 1. Probeer periode-specifieke vakken (examenjaar vs voorexamenjaar)
+  const active=getActiveVakken(stu);
+  if(active.length) return active;
+  // 2. Fallback: alle vakken uit alle periodes samenvoegen (geen overlap)
+  if(stu.vakken && !Array.isArray(stu.vakken)){
+    const all=new Set();
+    Object.values(stu.vakken).forEach(arr=>{ if(Array.isArray(arr)) arr.forEach(v=>all.add(v)); });
+    if(all.size) return [...all].sort();
+  }
+  // 3. Legacy flat array
+  if(Array.isArray(stu.vakken)) return stu.vakken;
+  return [];
+}
 function _populateHwVakSelect(){
   const sel=document.getElementById('hw-vak');
   if(!sel) return;
   const stu=S.students.find(s=>s.id===S.currentStudentId);
-  const vakken=stu?getActiveVakken(stu):[];
+  const vakken=_hwVakkenForStudent(stu);
   sel.innerHTML='<option value="">— vak —</option>'+vakken.map(v=>`<option value="${v}">${v}</option>`).join('');
 }
 
@@ -6604,12 +6619,12 @@ function _hideHwTip(){
 
 let _hwRefreshing=false;
 function renderAllHwPictos(skipRefresh=false){
-  // Coaches/coordinators/docenten/ouders: stille achtergrond-refresh van wp_huiswerk
+  // Coaches/coordinators/docenten/ouders: stille achtergrond-refresh van wp_huiswerk via volledige spLoad
   if(!skipRefresh && S.role!=='leerling' && _graphToken && !_hwRefreshing){
     _hwRefreshing=true;
-    spLoadKey('wp_huiswerk').then(ok=>{
+    spLoad().then(result=>{
       _hwRefreshing=false;
-      if(ok){
+      if(result.ok){
         const raw=localStorage.getItem('wp_huiswerk');
         if(raw) try{ S.huiswerk=JSON.parse(raw); }catch(e){}
         renderAllHwPictos(true); // hertekenen met verse data
