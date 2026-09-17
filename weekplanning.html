@@ -6763,26 +6763,20 @@ function _buildStdPicker(cell, currentColor, di, slotId){
       e.stopPropagation();
       if(!S.tmpStd[di]) S.tmpStd[di]={};
       S.tmpStd[di][slotId]=clr;
-      // reset vak wanneer niet meer groen
-      if(clr!=='green'){
-        if(S.tmpStdVak[di]) delete S.tmpStdVak[di][slotId];
-      }
+
       applyStd(cell,clr);
       _buildStdPicker(cell,clr,di,slotId);
     });
     picker.appendChild(dot);
   });
-  // Vak-dropdown (alleen zichtbaar bij groen)
-  const stu=S.students.find(s=>s.id===S.currentStudentId);
-  const vakken=stu?getActiveVakken(stu):[];
+  // Vak-dropdown — altijd zichtbaar, vaste lijst ongeacht statuskleur
+  const _STD_VAK_LIST=['NE','EN','DU','FA','AK','GS','EC','BEC','BI','NA','SK','Wi','WiA','WiB','MA'];
   const vakSel=document.createElement('select');
   vakSel.className='sdc-vak-sel';
-  vakSel.style.display=currentColor==='green'?'':'none';
   vakSel.title='Vak voor dit lesuur';
   const optEmpty=document.createElement('option'); optEmpty.value=''; optEmpty.textContent='— Les —';
   vakSel.appendChild(optEmpty);
-  vakken.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; vakSel.appendChild(o); });
-  const optMA=document.createElement('option'); optMA.value='MA'; optMA.textContent='MA'; vakSel.appendChild(optMA);
+  _STD_VAK_LIST.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; vakSel.appendChild(o); });
   const curVak=(S.tmpStdVak[di]&&S.tmpStdVak[di][slotId])||'';
   vakSel.value=curVak;
   vakSel.addEventListener('change',(e)=>{
