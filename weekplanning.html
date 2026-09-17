@@ -575,6 +575,8 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .hw-label{font-size:.72rem;font-weight:700;color:var(--tx2);white-space:nowrap;}
 .hw-inp-sm{width:62px;padding:.32rem .5rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:var(--surf-2);color:var(--tx);outline:none;}
 .hw-inp-sm:focus{border-color:var(--brand);}
+.hw-inp-vak{padding:.32rem .5rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:var(--surf-2);color:var(--tx);outline:none;min-width:80px;}
+.hw-inp-vak:focus{border-color:var(--brand);}
 .hw-inp-opm{flex:1;min-width:140px;max-width:320px;padding:.32rem .6rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:var(--surf-2);color:var(--tx);outline:none;}
 .hw-inp-opm:focus{border-color:var(--brand);}
 .hw-save-btn{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:.36rem .85rem;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s;}
@@ -603,15 +605,46 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 /* ── Huiswerk pictos in cells ── */
 .hw-pictos-wrap{
   position:absolute;top:2px;right:2px;
-  display:flex;flex-direction:column;align-items:flex-end;gap:0;
+  display:flex;flex-direction:column;align-items:flex-end;gap:2px;
   z-index:3;pointer-events:auto;
 }
 .hw-picto-dot{
-  font-size:.85rem;line-height:1;cursor:default;
-  filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
+  display:inline-flex;align-items:center;gap:2px;
+  line-height:1;cursor:default;
 }
-.hw-picto-dot.hw-picto-second{margin-top:-6px;}
+.hw-picto-book{font-size:.78rem;line-height:1;}
+.hw-picto-badge{
+  font-size:.6rem;font-weight:900;line-height:1;
+  background:#111;color:#fff;
+  border-radius:5px;padding:1px 4px;
+  border:1.5px solid #111;
+  white-space:nowrap;letter-spacing:.01em;
+}
 .hw-picto-dot.hw-leerling-own{cursor:pointer;}
+/* Huiswerk detail popup */
+.hw-popup-overlay{
+  position:fixed;inset:0;z-index:8000;
+  background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;
+}
+.hw-popup{
+  background:var(--surface);border-radius:14px;padding:1.2rem 1.4rem;
+  min-width:280px;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.22);
+  display:flex;flex-direction:column;gap:.7rem;
+}
+.hw-popup-title{font-weight:800;font-size:1rem;color:var(--tx);}
+.hw-popup-row{display:flex;align-items:center;gap:.5rem;}
+.hw-popup-label{font-size:.72rem;font-weight:700;color:var(--tx2);min-width:52px;}
+.hw-popup-val{font-size:.82rem;color:var(--tx);}
+.hw-popup-edit-inp{flex:1;padding:.3rem .5rem;font-size:.82rem;border:1.5px solid var(--border);border-radius:7px;background:var(--surf-2);color:var(--tx);outline:none;}
+.hw-popup-edit-inp:focus{border-color:var(--brand);}
+.hw-popup-actions{display:flex;gap:.55rem;justify-content:flex-end;margin-top:.3rem;}
+.hw-popup-del-btn{background:none;border:1.5px solid #C0392B;color:#C0392B;border-radius:8px;padding:.32rem .75rem;font-size:.8rem;font-weight:700;cursor:pointer;}
+.hw-popup-del-btn:hover{background:#C0392B;color:#fff;}
+.hw-popup-save-btn{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:.34rem .85rem;font-size:.8rem;font-weight:700;cursor:pointer;}
+.hw-popup-save-btn:hover{opacity:.82;}
+.hw-popup-cancel-btn{background:none;border:1.5px solid var(--border);color:var(--tx2);border-radius:8px;padding:.32rem .75rem;font-size:.8rem;font-weight:600;cursor:pointer;}
+.hw-popup-edit-btn{background:none;border:1.5px solid var(--border);color:var(--tx2);border-radius:8px;padding:.32rem .6rem;font-size:.8rem;cursor:pointer;}
+.hw-popup-edit-btn:hover{border-color:var(--brand);color:var(--brand);}
 /* Huiswerk tooltip (hergebruikt besch-tip stijl) */
 .hw-tip{
   position:fixed;z-index:9999;
@@ -1102,7 +1135,9 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
   <!-- Huiswerk panel (alleen zichtbaar voor leerling, uitklapbaar) -->
   <div id="hw-panel">
     <div class="hw-form-row">
-      <span class="hw-form-picto">🎯</span>
+      <span class="hw-form-picto">📖</span>
+      <span class="hw-label">Vak:</span>
+      <select class="hw-inp-vak" id="hw-vak"></select>
       <span class="hw-label">Week:</span>
       <input class="hw-inp-sm" id="hw-week" type="number" min="1" max="53" placeholder="40">
       <span class="hw-label">Les:</span>
@@ -6227,18 +6262,34 @@ function toggleHwPanel(){
   if(!panel||!btn) return;
   const open=panel.classList.toggle('open');
   btn.classList.toggle('hw-active',open);
-  if(open) renderHwTray();
+  if(open){
+    _populateHwVakSelect();
+    renderHwTray();
+  } else {
+    // Sync to M365 when closing
+    if(_graphToken) spSyncAll().catch(()=>{});
+  }
+}
+
+function _populateHwVakSelect(){
+  const sel=document.getElementById('hw-vak');
+  if(!sel) return;
+  const stu=S.students.find(s=>s.id===S.currentStudentId);
+  const vakken=stu?getActiveVakken(stu):[];
+  sel.innerHTML='<option value="">— vak —</option>'+vakken.map(v=>`<option value="${v}">${v}</option>`).join('');
 }
 
 function saveHwItem(){
+  const vakVal=(document.getElementById('hw-vak')?.value||'').trim();
   const weekVal=parseInt(document.getElementById('hw-week')?.value||'',10);
   const lesVal=parseInt(document.getElementById('hw-les')?.value||'',10);
   const opmVal=(document.getElementById('hw-inp-opm')?.value||'').trim().slice(0,20);
-  if(!weekVal||!lesVal){ alert('Vul week en les in.'); return; }
+  if(!vakVal||!weekVal||!lesVal){ alert('Vul vak, week en les in.'); return; }
   if(!S.currentStudentId){ alert('Geen leerling geselecteerd.'); return; }
   const item={
     id:uid(),
     studentId:S.currentStudentId,
+    vak:vakVal,
     week:weekVal,
     les:lesVal,
     opmerking:opmVal,
@@ -6249,6 +6300,7 @@ function saveHwItem(){
   };
   S.huiswerk.push(item);
   persist();
+  document.getElementById('hw-vak').value='';
   document.getElementById('hw-week').value='';
   document.getElementById('hw-les').value='';
   document.getElementById('hw-inp-opm').value='';
@@ -6269,7 +6321,8 @@ function renderHwTray(){
     card.className='hw-card';
     card.draggable=true;
     card.dataset.hwId=h.id;
-    card.innerHTML=`<span class="hw-card-icon">🎯</span><span class="hw-card-text">W${h.week} L${h.les}${h.opmerking?' – '+h.opmerking:''}</span><button class="hw-card-del" title="Verwijder" onclick="deleteHwItem('${h.id}')">✕</button>`;
+    const lbl=`${h.vak?'HW '+h.vak:'HW'} W${h.week} L${h.les}${h.opmerking?' – '+h.opmerking:''}`;
+    card.innerHTML=`<span class="hw-card-icon">📖</span><span class="hw-card-text">${lbl}</span><button class="hw-card-del" title="Verwijder" onclick="deleteHwItem('${h.id}')">✕</button>`;
     card.addEventListener('dragstart',e=>{
       card.classList.add('hw-dragging');
       e.dataTransfer.setData('text/hw-id',h.id);
@@ -6285,6 +6338,77 @@ function deleteHwItem(id){
   persist();
   renderHwTray();
   renderAllHwPictos();
+  // Sync after delete
+  if(_graphToken) spSyncAll().catch(()=>{});
+}
+
+// ── HW detail popup (click on placed picto) ──
+function _openHwPopup(hwId){
+  _hideHwTip();
+  const h=(S.huiswerk||[]).find(x=>x.id===hwId);
+  if(!h) return;
+  const isLeerling=S.role==='leerling'&&h.studentId===S.currentStudentId;
+  // Remove any existing popup
+  document.getElementById('hw-popup-overlay')?.remove();
+  const ov=document.createElement('div');
+  ov.className='hw-popup-overlay';
+  ov.id='hw-popup-overlay';
+  const pop=document.createElement('div');
+  pop.className='hw-popup';
+  // View mode (default)
+  function renderView(){
+    pop.innerHTML=`
+      <div class="hw-popup-title">📖 Huiswerk</div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Vak:</span><span class="hw-popup-val">${h.vak||'—'}</span></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Week:</span><span class="hw-popup-val">${h.week}</span></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Les:</span><span class="hw-popup-val">${h.les}</span></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Opmerking:</span><span class="hw-popup-val">${h.opmerking||'—'}</span></div>
+      <div class="hw-popup-actions">
+        ${isLeerling?`<button class="hw-popup-del-btn" id="hw-pop-del">Verwijderen</button><button class="hw-popup-edit-btn" id="hw-pop-edit">✏️ Bewerken</button>`:''}
+        <button class="hw-popup-cancel-btn" id="hw-pop-close">Sluiten</button>
+      </div>`;
+    pop.querySelector('#hw-pop-close')?.addEventListener('click',()=>ov.remove());
+    pop.querySelector('#hw-pop-del')?.addEventListener('click',()=>{ ov.remove(); deleteHwItem(h.id); });
+    pop.querySelector('#hw-pop-edit')?.addEventListener('click',renderEdit);
+  }
+  // Edit mode
+  function renderEdit(){
+    const stu=S.students.find(s=>s.id===S.currentStudentId);
+    const vakken=stu?getActiveVakken(stu):[];
+    const vakOpts=vakken.map(v=>`<option value="${v}"${v===h.vak?' selected':''}>${v}</option>`).join('');
+    pop.innerHTML=`
+      <div class="hw-popup-title">✏️ Huiswerk bewerken</div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Vak:</span>
+        <select class="hw-popup-edit-inp" id="hpp-vak"><option value="">— vak —</option>${vakOpts}</select></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Week:</span>
+        <input class="hw-popup-edit-inp" id="hpp-week" type="number" min="1" max="53" value="${h.week}"></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Les:</span>
+        <input class="hw-popup-edit-inp" id="hpp-les" type="number" min="1" max="10" value="${h.les}"></div>
+      <div class="hw-popup-row"><span class="hw-popup-label">Opmerking:</span>
+        <input class="hw-popup-edit-inp" id="hpp-opm" type="text" maxlength="20" value="${h.opmerking||''}"></div>
+      <div class="hw-popup-actions">
+        <button class="hw-popup-cancel-btn" id="hpp-cancel">Annuleren</button>
+        <button class="hw-popup-save-btn" id="hpp-save">Opslaan</button>
+      </div>`;
+    pop.querySelector('#hpp-cancel')?.addEventListener('click',renderView);
+    pop.querySelector('#hpp-save')?.addEventListener('click',()=>{
+      const vv=(pop.querySelector('#hpp-vak')?.value||'').trim();
+      const wv=parseInt(pop.querySelector('#hpp-week')?.value||'',10);
+      const lv=parseInt(pop.querySelector('#hpp-les')?.value||'',10);
+      const ov2=(pop.querySelector('#hpp-opm')?.value||'').trim().slice(0,20);
+      if(!vv||!wv||!lv){ alert('Vul vak, week en les in.'); return; }
+      h.vak=vv; h.week=wv; h.les=lv; h.opmerking=ov2;
+      persist();
+      if(_graphToken) spSyncAll().catch(()=>{});
+      renderAllHwPictos();
+      renderHwTray();
+      ov.remove();
+    });
+  }
+  renderView();
+  ov.appendChild(pop);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
 }
 
 let _hwDropSetup=false;
@@ -6334,6 +6458,7 @@ function _setupSchedAreaDrop(){
     item.di=parseInt(di,10);
     item.slotId=slotId;
     persist();
+    if(_graphToken) spSyncAll().catch(()=>{});
     renderHwTray();
     renderAllHwPictos();
   });
@@ -6374,27 +6499,30 @@ function renderAllHwPictos(){
   Object.entries(grouped).forEach(([k,items])=>{
     const cell=document.querySelector(`.dc[data-hw-key="${items[0].weekKey}"][data-hw-di="${items[0].di}"][data-hw-slot="${items[0].slotId}"]`);
     if(!cell) return;
-    // Make cell relatively positioned if not already
     if(getComputedStyle(cell).position==='static') cell.style.position='relative';
     const wrap=document.createElement('div');
     wrap.className='hw-pictos-wrap';
-    items.slice(0,2).forEach((h,idx)=>{
+    items.slice(0,2).forEach((h)=>{
       const dot=document.createElement('span');
-      dot.className='hw-picto-dot'+(idx===1?' hw-picto-second':'');
-      dot.textContent='🎯';
-      const tipLines=[`W${h.week} L${h.les}`];
+      dot.className='hw-picto-dot'+(isLeerling?' hw-leerling-own':'');
+      // Book icon + HW [vak] badge
+      const book=document.createElement('span');
+      book.className='hw-picto-book';
+      book.textContent='📖';
+      const badge=document.createElement('span');
+      badge.className='hw-picto-badge';
+      badge.textContent='HW'+(h.vak?' '+h.vak:'');
+      dot.appendChild(book);
+      dot.appendChild(badge);
+      // Tooltip
+      const tipLines=[h.vak?'HW '+h.vak:'HW', `Week ${h.week}, Les ${h.les}`];
       if(h.opmerking) tipLines.push(h.opmerking);
       dot.dataset.tip=tipLines.join('\n');
       dot.addEventListener('mouseenter',_showHwTip);
       dot.addEventListener('mouseleave',_hideHwTip);
-      // Leerling can click to remove placed picto
-      if(isLeerling && h.studentId===S.currentStudentId){
-        dot.classList.add('hw-leerling-own');
-        dot.title='Klik om te verwijderen';
-        dot.addEventListener('click',()=>{
-          if(confirm('Huiswerk item verwijderen?')) deleteHwItem(h.id);
-        });
-      }
+      // Click → detail popup (all roles can view; leerling can also edit/delete)
+      dot.style.cursor='pointer';
+      dot.addEventListener('click',()=>_openHwPopup(h.id));
       wrap.appendChild(dot);
     });
     cell.appendChild(wrap);
