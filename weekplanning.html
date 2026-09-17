@@ -539,29 +539,28 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
 .dc[data-c="orange"]{background:var(--o-bg);}
 .dc[data-c="rose"]  {background:var(--ro-bg);}
 .dc.day-vakantie,.dc.day-studiedag{background:var(--pause-bg)!important;cursor:default!important;}
-.cell-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;letter-spacing:.03em;pointer-events:none;}
-/* In bewerkmodus: label iets lager zodat picker ruimte heeft */
-.dc.editable .cell-lbl{padding-top:20px;}
-.dc[data-c="yellow"] .cell-lbl{padding-right:18px;}
-.dc[data-c="green"]  .cell-lbl{color:var(--g-tx);}
-.dc[data-c="red"]    .cell-lbl{color:var(--r-tx);}
-.dc[data-c="blue"]   .cell-lbl{color:var(--b-tx);}
-.dc[data-c="purple"] .cell-lbl{color:var(--p-tx);}
-.dc[data-c="yellow"] .cell-lbl{color:var(--y-tx);}
-.dc[data-c="orange"] .cell-lbl{color:var(--o-tx);}
-.dc[data-c="rose"]   .cell-lbl{color:var(--ro-tx);}
+/* ── Cel-label: afkorting badge linkerbovenhoek ── */
+.cell-lbl{
+  position:absolute;top:3px;left:3px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.52rem;font-weight:800;letter-spacing:.02em;
+  pointer-events:none;z-index:1;
+  border-radius:5px;padding:1px 4px;min-height:13px;
+  color:#fff;
+}
+.dc[data-c="green"]  .cell-lbl{background:#2D8B50;}
+.dc[data-c="red"]    .cell-lbl{background:#C0392B;}
+.dc[data-c="blue"]   .cell-lbl{background:#2471A3;}
+.dc[data-c="purple"] .cell-lbl{background:#7D3C98;}
+.dc[data-c="yellow"] .cell-lbl{background:#A07800;color:#fff;}
+.dc[data-c="orange"] .cell-lbl{background:#C05818;}
+.dc[data-c="rose"]   .cell-lbl{background:#B01010;}
+/* Verberg label in bewerkmodus zodat color-picker zichtbaar blijft */
+.dc.editable .cell-lbl{display:none;}
 .cell-note{position:absolute;bottom:0;left:0;right:0;font-size:.58rem;font-weight:600;
   color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;
   text-align:center;line-height:1.4;padding:2px 3px 3px;
   background:rgba(255,255,255,.18);}
-/* Cel-label wat hoger zodat nootbalk onderaan ruimte krijgt */
-.dc[data-c="rose"]   .cell-lbl,
-.dc[data-c="purple"] .cell-lbl,
-.dc[data-c="orange"] .cell-lbl,
-.dc[data-c="yellow"] .cell-lbl,
-.dc[data-c="green"]  .cell-lbl,
-.dc[data-c="red"]    .cell-lbl,
-.dc[data-c="blue"]   .cell-lbl { padding-bottom:16px; }
 .pause-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.59rem;color:var(--pause-tx);font-style:italic;letter-spacing:.04em;pointer-events:none;}
 
 /* ── STD SCHEDULE MODAL ──────────────────────────── */
@@ -1035,8 +1034,8 @@ body.dark .student-bar{background:#3D1C00;border-bottom-color:#5A2800;}
     <div class="leg"><div class="leg-sw" style="background:#D8D8D8;border:1px solid #AAAAAA"></div>Vakantie / Studiedag</div>
     <div style="margin-left:auto;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;">
       <span style="font-size:.7rem;font-weight:700;color:var(--tx3);letter-spacing:.04em;text-transform:uppercase;">Docenten:</span>
-      <div class="leg"><div class="besch-circle besch-lokaal-leg" style="height:15px;min-width:20px;font-size:.52rem;padding:0 4px;border-radius:8px;background:rgba(255,255,255,.55);border:1.5px solid rgba(0,0,0,.18);color:rgba(0,0,0,.5);display:inline-flex;align-items:center;justify-content:center;font-weight:700;white-space:nowrap;">NE</div>&nbsp;docent in lokaal</div>
-      <div class="leg"><div class="besch-circle besch-les" style="height:15px;min-width:20px;font-size:.52rem;padding:0 4px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;white-space:nowrap;">NE</div>&nbsp;docent geeft les</div>
+      <div class="leg"><div class="besch-circle besch-lokaal-leg" style="height:15px;width:15px;border-radius:50%;background:rgba(255,255,255,.55);border:1.5px solid rgba(0,0,0,.18);display:inline-flex;"></div>&nbsp;docent in lokaal</div>
+      <div class="leg"><div class="besch-circle besch-les" style="height:15px;width:15px;border-radius:50%;display:inline-flex;"></div>&nbsp;docent geeft les</div>
     </div>
   </div>
 
@@ -1821,7 +1820,7 @@ const WE_NAMES   = ['Zaterdag','Zondag'];
 const MONTHS     = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
 const MONTHS_FULL= ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
 const COLORS     = [null,'green','red','rose','blue','purple','yellow','orange'];
-const COLOR_LBL  = {green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
+const COLOR_LBL  = {green:'A',red:'Tr',rose:'O',blue:'R',purple:'W',yellow:'Toets',orange:'Toe'};
 const STD_LBL    = {null:'—',green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
 const ROLE_NAME  = {coordinator:'Coördinator',coach:'Coach',leerling:'Leerling',ouder:'Ouder',docent:'Docent',admin:'Admin'};
 const NEEDS_YEAR      = ['M4','H5','V6'];
