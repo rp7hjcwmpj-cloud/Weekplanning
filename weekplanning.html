@@ -2937,6 +2937,9 @@ function hydrate(){
     }
     if(!S.currentStudentId && S.students.length) S.currentStudentId=S.students[0].id;
   }catch(e){}
+  // Zorg dat de Display-knop altijd klopt na elke hydrate (ook na spLoad)
+  const _dw=document.getElementById('btn-display-login-wrap');
+  if(_dw) _dw.style.display=S.displayPassword?'':'none';
 }
 
 /* ══ DARK THEME ═════════════════════════════════════ */
@@ -5705,6 +5708,8 @@ function showMain(){
   if(S.role==='coach'){
     setTimeout(checkCoachChanges, 300);
   }
+  // Start achtergrond-refresh voor niet-leerling rollen (eenmalig per sessie)
+  if(S.role!=='leerling') _startHwAutoRefresh();
 }
 
 /* ── Student navigation ── */
@@ -7097,6 +7102,50 @@ function _hideHwTip(){
 }
 
 let _hwRefreshing=false;
+
+/* ── Auto-refresh HW voor niet-leerling rollen ──────────────────────────
+   Elke 60 seconden en bij tab-focus worden huiswerkkaarten herladen vanuit
+   SharePoint, zodat coaches/coordinatoren/docenten altijd actuele data zien
+   ook als een leerling vlak daarvoor een kaart heeft aangemaakt.
+   ─────────────────────────────────────────────────────────────────────── */
+let _hwAutoRefreshInterval=null;
+function _startHwAutoRefresh(){
+  if(_hwAutoRefreshInterval) return; // al gestart
+  _hwAutoRefreshInterval=setInterval(()=>{
+    if(S.role&&S.role!=='leerling'&&_graphToken&&document.getElementById('screen-main')?.classList.contains('show')){
+      _doHwSpRefresh();
+    }
+  },60000);
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden&&S.role&&S.role!=='leerling'&&_graphToken){
+      _doHwSpRefresh();
+    }
+  },{passive:true});
+}
+async function _doHwSpRefresh(){
+  if(_hwRefreshing) return;
+  _hwRefreshing=true;
+  try{
+    const result=await spLoad();
+    if(result.ok){
+      const raw=localStorage.getItem('wp_huiswerk');
+      if(raw){
+        const spHw=JSON.parse(raw);
+        // Bewaar lokale kaarten die nog niet in SharePoint staan (bijv. leerling zonder M365-token)
+        const spIds=new Set(spHw.map(h=>h.id));
+        const localOnly=(S.huiswerk||[]).filter(h=>!spIds.has(h.id));
+        S.huiswerk=[...spHw,...localOnly];
+        if(localOnly.length){
+          // Schrijf samengevoegsde lijst terug naar localStorage zodat volgend spSyncAll ze meeneemt
+          try{ localStorage.setItem('wp_huiswerk',JSON.stringify(S.huiswerk)); }catch(e){}
+        }
+      }
+      renderAllHwPictos(true);
+    }
+  }catch(e){}
+  _hwRefreshing=false;
+}
+
 function renderAllHwPictos(skipRefresh=false){
   // Coaches/coordinators/docenten/ouders: stille achtergrond-refresh van wp_huiswerk via volledige spLoad
   if(!skipRefresh && S.role!=='leerling' && _graphToken && !_hwRefreshing){
@@ -7105,7 +7154,15 @@ function renderAllHwPictos(skipRefresh=false){
       _hwRefreshing=false;
       if(result.ok){
         const raw=localStorage.getItem('wp_huiswerk');
-        if(raw) try{ S.huiswerk=JSON.parse(raw); }catch(e){}
+        if(raw){
+          try{
+            const spHw=JSON.parse(raw);
+            // Bewaar lokale kaarten die nog niet in SharePoint staan
+            const spIds=new Set(spHw.map(h=>h.id));
+            const localOnly=(S.huiswerk||[]).filter(h=>!spIds.has(h.id));
+            S.huiswerk=[...spHw,...localOnly];
+          }catch(e){}
+        }
         renderAllHwPictos(true); // hertekenen met verse data
       }
     }).catch(()=>{ _hwRefreshing=false; });
