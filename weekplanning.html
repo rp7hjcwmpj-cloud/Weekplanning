@@ -6875,19 +6875,10 @@ function toggleHwPanel(){
 }
 
 function _hwVakkenForStudent(stu){
+  // Gebruik dezelfde logica als de leerlingzoeker: alleen de vakken van de actieve periode
+  // (of legacy flat array). Nooit vakken uit andere periodes mengen.
   if(!stu) return [];
-  // 1. Probeer periode-specifieke vakken (examenjaar vs voorexamenjaar)
-  const active=getActiveVakken(stu);
-  if(active.length) return active;
-  // 2. Fallback: alle vakken uit alle periodes samenvoegen (geen overlap)
-  if(stu.vakken && !Array.isArray(stu.vakken)){
-    const all=new Set();
-    Object.values(stu.vakken).forEach(arr=>{ if(Array.isArray(arr)) arr.forEach(v=>all.add(v)); });
-    if(all.size) return [...all].sort();
-  }
-  // 3. Legacy flat array
-  if(Array.isArray(stu.vakken)) return stu.vakken;
-  return [];
+  return getActiveVakken(stu);
 }
 function _populateHwVakSelect(){
   const sel=document.getElementById('hw-vak');
