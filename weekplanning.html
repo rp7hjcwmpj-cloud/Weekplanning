@@ -5708,6 +5708,8 @@ function showMain(){
 }
 
 /* ── Student navigation ── */
+let _stuVakkenCache = []; // vakken van de actief getoonde leerling, bijgehouden door updateStudentBar
+
 function updateStudentBar(){
   const nd=document.getElementById('stu-name-d');
   const md=document.getElementById('stu-meta-d');
@@ -5741,6 +5743,7 @@ function updateStudentBar(){
   md.textContent=stu?stuLabel(stu):'—';
   const vd=document.getElementById('stu-vakken');
   const vakken=getActiveVakken(stu);
+  _stuVakkenCache=vakken; // cache bijhouden zodat hw-panel exact hetzelfde ziet
   const pid=getActivePeriodId(stu);
   const pidLabel=pid ? (() => {
     const all=[...EXAM_PERIODS,...PREEXAM_PERIODS]; const p=all.find(x=>x.id===pid); return p?p.label:'';
@@ -6208,12 +6211,12 @@ function goToToday(){
 function prevWeek(){
   let{week:w,year:y}=S.wy;
   w--; if(w<1){y--;w=isoWeek(new Date(y,11,28));}
-  S.wy={week:w,year:y}; renderWeekNav(); renderSchedule();
+  S.wy={week:w,year:y}; renderWeekNav(); updateStudentBar(); renderSchedule();
 }
 function nextWeek(){
   let{week:w,year:y}=S.wy;
   w++; if(w>isoWeek(new Date(y,11,28))){w=1;y++;}
-  S.wy={week:w,year:y}; renderWeekNav(); renderSchedule();
+  S.wy={week:w,year:y}; renderWeekNav(); updateStudentBar(); renderSchedule();
 }
 function prevMonth(){
   let{year:y,month:m}=S.currentMonth;
@@ -6875,9 +6878,10 @@ function toggleHwPanel(){
 }
 
 function _hwVakkenForStudent(stu){
-  // Gebruik dezelfde logica als de leerlingzoeker: alleen de vakken van de actieve periode
-  // (of legacy flat array). Nooit vakken uit andere periodes mengen.
+  // Gebruik altijd de cache van de student bar (gegarandeerd identiek aan wat de leerlingzoeker toont).
+  // Fallback naar getActiveVakken als de cache nog leeg is (bijv. bij eerste load).
   if(!stu) return [];
+  if(_stuVakkenCache && _stuVakkenCache.length) return _stuVakkenCache;
   return getActiveVakken(stu);
 }
 function _populateHwVakSelect(){
