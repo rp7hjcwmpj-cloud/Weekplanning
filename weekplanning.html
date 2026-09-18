@@ -5853,6 +5853,7 @@ function confirmLogout(){
 function doLogout(){
   document.getElementById('modal-logout-confirm').classList.remove('show');
   S.role=null; S.editMode=false; S.docentVak=null; S.leerlingStudentId=null;
+  _hwAutoRefreshInterval=null; // reset zodat volgende login opnieuw kan starten
   document.getElementById('screen-roles').style.display='';
   document.getElementById('screen-main').classList.remove('show');
   document.getElementById('screen-admin').classList.remove('show');
@@ -7111,11 +7112,8 @@ let _hwRefreshing=false;
 let _hwAutoRefreshInterval=null;
 function _startHwAutoRefresh(){
   if(_hwAutoRefreshInterval) return; // al gestart
-  _hwAutoRefreshInterval=setInterval(()=>{
-    if(S.role&&S.role!=='leerling'&&_graphToken&&document.getElementById('screen-main')?.classList.contains('show')){
-      _doHwSpRefresh();
-    }
-  },60000);
+  _hwAutoRefreshInterval=true; // markeer als gestart (geen interval meer — voorkomt 60s-race)
+  // Ververs bij terugkeer naar tabblad (veilig: altijd na idle netwerk)
   document.addEventListener('visibilitychange',()=>{
     if(!document.hidden&&S.role&&S.role!=='leerling'&&_graphToken){
       _doHwSpRefresh();
@@ -7124,19 +7122,30 @@ function _startHwAutoRefresh(){
 }
 async function _doHwSpRefresh(){
   if(_hwRefreshing) return;
+  // Extra guard: nooit uitvoeren voor leerling-rol (veiligheidsnet)
+  if(!S.role||S.role==='leerling') return;
   _hwRefreshing=true;
+  // Snapshot VOOR de async spLoad — zodat kaarten die tijdens het laden geplaatst worden niet verloren gaan
+  const localSnapshot=[...(S.huiswerk||[])];
   try{
     const result=await spLoad();
-    if(result.ok){
+    // Rol kan zijn veranderd tijdens het laden (bijv. uitgelogd) — skip als nu leerling
+    if(result.ok && S.role && S.role!=='leerling'){
       const raw=localStorage.getItem('wp_huiswerk');
       if(raw){
         const spHw=JSON.parse(raw);
-        // Bewaar lokale kaarten die nog niet in SharePoint staan (bijv. leerling zonder M365-token)
         const spIds=new Set(spHw.map(h=>h.id));
-        const localOnly=(S.huiswerk||[]).filter(h=>!spIds.has(h.id));
-        S.huiswerk=[...spHw,...localOnly];
-        if(localOnly.length){
-          // Schrijf samengevoegsde lijst terug naar localStorage zodat volgend spSyncAll ze meeneemt
+        const localMap=new Map(localSnapshot.map(h=>[h.id,h]));
+        // Merge: neem SP-versie, maar behoud lokale versie als die al geplaatst is en SP nog niet
+        // (race condition: spSyncAll nog onderweg — 3s debounce — maar interval al afgelopen)
+        const merged=spHw.map(spItem=>{
+          const loc=localMap.get(spItem.id);
+          if(loc && loc.slotId && !spItem.slotId) return loc; // lokaal geplaatst, SP nog niet bijgewerkt
+          return spItem;
+        });
+        const localOnly=localSnapshot.filter(h=>!spIds.has(h.id));
+        S.huiswerk=[...merged,...localOnly];
+        if(localOnly.length||merged.some((m,i)=>m!==spHw[i])){
           try{ localStorage.setItem('wp_huiswerk',JSON.stringify(S.huiswerk)); }catch(e){}
         }
       }
@@ -7150,6 +7159,7 @@ function renderAllHwPictos(skipRefresh=false){
   // Coaches/coordinators/docenten/ouders: stille achtergrond-refresh van wp_huiswerk via volledige spLoad
   if(!skipRefresh && S.role!=='leerling' && _graphToken && !_hwRefreshing){
     _hwRefreshing=true;
+    const _localSnap=[...(S.huiswerk||[])]; // snapshot vóór async spLoad
     spLoad().then(result=>{
       _hwRefreshing=false;
       if(result.ok){
@@ -7157,10 +7167,16 @@ function renderAllHwPictos(skipRefresh=false){
         if(raw){
           try{
             const spHw=JSON.parse(raw);
-            // Bewaar lokale kaarten die nog niet in SharePoint staan
             const spIds=new Set(spHw.map(h=>h.id));
-            const localOnly=(S.huiswerk||[]).filter(h=>!spIds.has(h.id));
-            S.huiswerk=[...spHw,...localOnly];
+            const localMap=new Map(_localSnap.map(h=>[h.id,h]));
+            // Merge: neem SP-versie, maar behoud lokale geplaatste kaart als SP nog niet bijgewerkt is
+            const merged=spHw.map(spItem=>{
+              const loc=localMap.get(spItem.id);
+              if(loc && loc.slotId && !spItem.slotId) return loc;
+              return spItem;
+            });
+            const localOnly=_localSnap.filter(h=>!spIds.has(h.id));
+            S.huiswerk=[...merged,...localOnly];
           }catch(e){}
         }
         renderAllHwPictos(true); // hertekenen met verse data
