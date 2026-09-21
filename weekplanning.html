@@ -6135,23 +6135,33 @@ function executePrint(){
     </div>`;
   });
 
-  // Schrijf print-HTML in het verborgen #sched-print-area div (geen popup nodig)
+  // Schrijf print-HTML in het verborgen #sched-print-area div
   const printArea=document.getElementById('sched-print-area');
-  printArea.innerHTML=`
-    <style>
-      @page{size:A4 landscape;margin:0;}
-      #sched-print-area *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;}
-      #sched-print-area{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-      #sched-print-area table{border-collapse:collapse;}
-      #sched-print-area td,#sched-print-area th{vertical-align:middle;}
-    </style>
-    <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</div>`;
-  // Geef browser even de tijd om te renderen, dan printen
+  printArea.innerHTML=`<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</div>`;
+
+  // Voeg @page landscape tijdelijk toe aan <head> (zelfde principe als vergadering-print)
+  let _schedPageStyle=document.getElementById('sched-page-style');
+  if(_schedPageStyle) _schedPageStyle.remove();
+  _schedPageStyle=document.createElement('style');
+  _schedPageStyle.id='sched-page-style';
+  _schedPageStyle.textContent='@page{size:A4 landscape;margin:10mm 12mm;}'+
+    '#sched-print-area *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}'+
+    '#sched-print-area table{border-collapse:collapse;}'+
+    '#sched-print-area td,#sched-print-area th{vertical-align:middle;}';
+  document.head.appendChild(_schedPageStyle);
+
+  // Zet display:block direct op element (zoals printVergadering doet) én geef browser tijd om te renderen
+  printArea.style.display='block';
   setTimeout(()=>{
     window.print();
-    // Na printen: print-area leegmaken
-    setTimeout(()=>{ printArea.innerHTML=''; },1000);
-  },300);
+    // Na printen: alles herstellen
+    setTimeout(()=>{
+      printArea.innerHTML='';
+      printArea.style.display='none';
+      const ps=document.getElementById('sched-page-style');
+      if(ps) ps.remove();
+    },1000);
+  },600);
 }
 
 /* ── Week / month navigation ── */
