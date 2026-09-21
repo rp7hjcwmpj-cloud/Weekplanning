@@ -1042,7 +1042,9 @@ body.dark .student-bar{background:#3D1C00;}
   body>*{display:none!important;}
   #gesprek-print-area{display:block!important;}
   #verg-print-area{display:block!important;}
+  #sched-print-area{display:block!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 }
+#sched-print-area{display:none;}
 #verg-print-area{display:none;}
 .vp-page{font-family:'Outfit',system-ui,sans-serif;font-size:10.5pt;color:#111;padding:16mm 14mm;max-width:190mm;margin:0 auto;}
 .vp-title{font-size:15pt;font-weight:800;color:#C85A00;margin-bottom:1.5mm;}
@@ -1644,6 +1646,7 @@ body.dark .display-tile-initial{background:#3A1800;color:#F7941D;}
 <!-- Print output (hidden, shown only via @media print) -->
 <div id="gesprek-print-area"></div>
 <div id="verg-print-area"></div>
+<div id="sched-print-area"></div>
 
 <!-- ══ VERGADERING 2.0 SCREEN ══════════════════════════ -->
 <div id="screen-verg">
@@ -6132,30 +6135,23 @@ function executePrint(){
     </div>`;
   });
 
-  const css=`
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#222;}
-    @page{size:A4 landscape;margin:0;}
-    table{border-collapse:collapse;}
-    td,th{vertical-align:middle;}
-    -webkit-print-color-adjust:exact;
-    @media print{
-      html,body{width:297mm;height:210mm;}
-      div[style*="page-break-after"]{page-break-after:always;}
-      div[style*="page-break-after"]:last-child{page-break-after:avoid;}
-    }`;
-
-  const html=`<!DOCTYPE html><html><head><meta charset="utf-8">
-    <title>Weekplanning — Week ${week} ${year}</title>
-    <style>${css}</style>
-  </head><body style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</body></html>`;
-
-  const w=window.open('','_blank','width=900,height=750,menubar=yes,toolbar=yes');
-  w.document.write(html);
-  w.document.close();
-  w.focus();
-  // Small delay so browser renders before print dialog
-  setTimeout(()=>{ try{w.print();}catch(e){} },800);
+  // Schrijf print-HTML in het verborgen #sched-print-area div (geen popup nodig)
+  const printArea=document.getElementById('sched-print-area');
+  printArea.innerHTML=`
+    <style>
+      @page{size:A4 landscape;margin:0;}
+      #sched-print-area *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;}
+      #sched-print-area{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      #sched-print-area table{border-collapse:collapse;}
+      #sched-print-area td,#sched-print-area th{vertical-align:middle;}
+    </style>
+    <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</div>`;
+  // Geef browser even de tijd om te renderen, dan printen
+  setTimeout(()=>{
+    window.print();
+    // Na printen: print-area leegmaken
+    setTimeout(()=>{ printArea.innerHTML=''; },1000);
+  },300);
 }
 
 /* ── Week / month navigation ── */
