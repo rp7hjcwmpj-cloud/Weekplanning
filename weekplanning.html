@@ -6173,12 +6173,9 @@ td,th{vertical-align:middle;}
 </div>
 ${pages.join('')}
 <script>
-window.addEventListener('load',function(){
-  setTimeout(function(){ window.print(); },800);
-});
 window.addEventListener('afterprint',function(){
   var h=document.getElementById('hint-box');
-  if(h) h.innerHTML='✓ Printopdracht verstuurd naar de printer.<br><b>Je kunt dit venster nu sluiten.</b>';
+  if(h) h.innerHTML='✓ Printopdracht verstuurd.<br><b>Je kunt dit venster nu sluiten.</b>';
 });
 <\/script>
 </body>
