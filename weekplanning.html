@@ -6135,44 +6135,65 @@ function executePrint(){
     </div>`;
   });
 
-  // Bouw een volledig zelfstandig HTML-document (zelfde patroon als printGesprek)
-  // De popup print zichzelf via window.addEventListener('load',...) — werkt betrouwbaarder
-  // dan w.print() vanuit het hoofdvenster aanroepen.
+  // Controleer of er daadwerkelijk pagina-inhoud is gegenereerd
+  const nonEmpty=pages.filter(p=>p.trim()!=='');
+  if(!nonEmpty.length){
+    alert('Geen roosterdata gevonden voor de geselecteerde leerlingen.');
+    return;
+  }
+
+  // Bouw volledig zelfstandig HTML-document
+  // @page margin=0: de page-divs zelf hebben al margin:10mm 12mm ingebakken,
+  // zodat div+marges precies A4 landscape (297×210mm) vullen.
   const fullHtml=`<!DOCTYPE html>
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<title>Weekplanning — Week ${week} / ${year}</title>
+<title>Weekplanning ${nonEmpty.length} leerlingen — Week ${week} / ${year}</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-@page{size:A4 landscape;margin:10mm 12mm;}
+*{box-sizing:border-box;}
+body{margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+@page{size:A4 landscape;margin:0;}
 table{border-collapse:collapse;}
 td,th{vertical-align:middle;}
-.hint{text-align:center;font-size:9pt;color:#888;padding:6mm;border:1pt dashed #ddd;
-      border-radius:4pt;margin:6mm auto;max-width:200mm;}
+.hint{font-family:system-ui,sans-serif;text-align:center;font-size:9pt;color:#555;
+      padding:8mm;border:1pt dashed #aaa;border-radius:4pt;margin:8mm auto;max-width:240mm;}
 @media print{.hint{display:none;}}
 </style>
 </head>
 <body>
-<div class="hint">✓ Druk op <strong>Ctrl+P</strong> (of Cmd+P) om af te drukken — sluit dit venster daarna.</div>
-<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</div>
+<div class="hint">
+  ✓ <strong>${nonEmpty.length} weekplanningen</strong> geladen —
+  druk op <strong>Ctrl+P</strong> om af te drukken of wacht op het printvenster.
+</div>
+${pages.join('')}
 <script>
-window.addEventListener('load',()=>{
-  setTimeout(()=>{ window.print(); },500);
+window.addEventListener('load',function(){
+  setTimeout(function(){ window.print(); },600);
 });
-window.addEventListener('afterprint',()=>{ setTimeout(()=>window.close(),300); });
+window.addEventListener('afterprint',function(){ setTimeout(function(){window.close();},300); });
 <\/script>
 </body>
 </html>`;
 
-  const pw=window.open('','_blank','width=1100,height=800,menubar=no,toolbar=yes,location=no,scrollbars=yes');
-  if(!pw){
-    alert('Pop-up blokkering actief. Sta pop-ups toe voor deze pagina en probeer opnieuw.');
-    return;
+  // Blob URL aanpak: robuuster dan document.write in popup
+  try{
+    const blob=new Blob([fullHtml],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const pw=window.open(url,'_blank');
+    setTimeout(()=>URL.revokeObjectURL(url),120000);
+    if(!pw){
+      URL.revokeObjectURL(url);
+      alert('Pop-up blokkering actief. Sta pop-ups toe voor deze pagina en probeer opnieuw.');
+    }
+  }catch(e){
+    // Fallback: document.write
+    const pw=window.open('','_blank','width=1200,height=850,scrollbars=yes,toolbar=yes');
+    if(!pw){ alert('Pop-up blokkering actief. Sta pop-ups toe voor deze pagina.'); return; }
+    pw.document.open();
+    pw.document.write(fullHtml);
+    pw.document.close();
   }
-  pw.document.write(fullHtml);
-  pw.document.close();
 }
 
 /* ── Week / month navigation ── */
