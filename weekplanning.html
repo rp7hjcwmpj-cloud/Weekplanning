@@ -6156,22 +6156,30 @@ body{margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-c
 @page{size:A4 landscape;margin:0;}
 table{border-collapse:collapse;}
 td,th{vertical-align:middle;}
-.hint{font-family:system-ui,sans-serif;text-align:center;font-size:9pt;color:#555;
-      padding:8mm;border:1pt dashed #aaa;border-radius:4pt;margin:8mm auto;max-width:240mm;}
+.hint{font-family:system-ui,sans-serif;font-size:10pt;color:#333;
+      padding:8mm 12mm;border:1.5pt solid #C85A00;border-radius:6pt;
+      margin:8mm auto;max-width:260mm;background:#FEF0E2;line-height:1.6;}
+.hint b{color:#C85A00;}
 @media print{.hint{display:none;}}
 </style>
 </head>
 <body>
-<div class="hint">
-  ✓ <strong>${nonEmpty.length} weekplanningen</strong> geladen —
-  druk op <strong>Ctrl+P</strong> om af te drukken of wacht op het printvenster.
+<div class="hint" id="hint-box">
+  ✓ <b>${nonEmpty.length} weekplanningen</b> geladen.<br>
+  Het printvenster opent automatisch. Let op:<br>
+  &nbsp;① Stel <b>Richting → Liggend</b> in (Safari doet dit niet automatisch)<br>
+  &nbsp;② Zet <b>Druk achtergronden af</b> aan (voor kleur in cellen)<br>
+  &nbsp;③ Klik <b>Druk af</b> — sluit dit venster daarna zelf.
 </div>
 ${pages.join('')}
 <script>
 window.addEventListener('load',function(){
-  setTimeout(function(){ window.print(); },600);
+  setTimeout(function(){ window.print(); },800);
 });
-window.addEventListener('afterprint',function(){ setTimeout(function(){window.close();},300); });
+window.addEventListener('afterprint',function(){
+  var h=document.getElementById('hint-box');
+  if(h) h.innerHTML='✓ Printopdracht verstuurd naar de printer.<br><b>Je kunt dit venster nu sluiten.</b>';
+});
 <\/script>
 </body>
 </html>`;
