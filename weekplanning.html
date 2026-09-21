@@ -6135,33 +6135,44 @@ function executePrint(){
     </div>`;
   });
 
-  // Schrijf print-HTML in het verborgen #sched-print-area div
-  const printArea=document.getElementById('sched-print-area');
-  printArea.innerHTML=`<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</div>`;
+  // Bouw een volledig zelfstandig HTML-document (zelfde patroon als printGesprek)
+  // De popup print zichzelf via window.addEventListener('load',...) — werkt betrouwbaarder
+  // dan w.print() vanuit het hoofdvenster aanroepen.
+  const fullHtml=`<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Weekplanning — Week ${week} / ${year}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+@page{size:A4 landscape;margin:10mm 12mm;}
+table{border-collapse:collapse;}
+td,th{vertical-align:middle;}
+.hint{text-align:center;font-size:9pt;color:#888;padding:6mm;border:1pt dashed #ddd;
+      border-radius:4pt;margin:6mm auto;max-width:200mm;}
+@media print{.hint{display:none;}}
+</style>
+</head>
+<body>
+<div class="hint">✓ Druk op <strong>Ctrl+P</strong> (of Cmd+P) om af te drukken — sluit dit venster daarna.</div>
+<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">${pages.join('')}</div>
+<script>
+window.addEventListener('load',()=>{
+  setTimeout(()=>{ window.print(); },500);
+});
+window.addEventListener('afterprint',()=>{ setTimeout(()=>window.close(),300); });
+<\/script>
+</body>
+</html>`;
 
-  // Voeg @page landscape tijdelijk toe aan <head> (zelfde principe als vergadering-print)
-  let _schedPageStyle=document.getElementById('sched-page-style');
-  if(_schedPageStyle) _schedPageStyle.remove();
-  _schedPageStyle=document.createElement('style');
-  _schedPageStyle.id='sched-page-style';
-  _schedPageStyle.textContent='@page{size:A4 landscape;margin:10mm 12mm;}'+
-    '#sched-print-area *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}'+
-    '#sched-print-area table{border-collapse:collapse;}'+
-    '#sched-print-area td,#sched-print-area th{vertical-align:middle;}';
-  document.head.appendChild(_schedPageStyle);
-
-  // Zet display:block direct op element (zoals printVergadering doet) én geef browser tijd om te renderen
-  printArea.style.display='block';
-  setTimeout(()=>{
-    window.print();
-    // Na printen: alles herstellen
-    setTimeout(()=>{
-      printArea.innerHTML='';
-      printArea.style.display='none';
-      const ps=document.getElementById('sched-page-style');
-      if(ps) ps.remove();
-    },1000);
-  },600);
+  const pw=window.open('','_blank','width=1100,height=800,menubar=no,toolbar=yes,location=no,scrollbars=yes');
+  if(!pw){
+    alert('Pop-up blokkering actief. Sta pop-ups toe voor deze pagina en probeer opnieuw.');
+    return;
+  }
+  pw.document.write(fullHtml);
+  pw.document.close();
 }
 
 /* ── Week / month navigation ── */
