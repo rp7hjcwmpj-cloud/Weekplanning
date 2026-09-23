@@ -6884,13 +6884,13 @@ function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
 function _refreshNoteUI(cell, c, key, di, slot, editable){
   const oldInp=cell.querySelector('.cell-note-input'); if(oldInp) oldInp.remove();
   const oldTxt=cell.querySelector('.cell-note'); if(oldTxt) oldTxt.remove();
-  if(c!=='rose'&&c!=='purple'&&c!=='orange') return;
+  if(!c) return;
   if(editable){
     // Inline text input — saves automatically on blur/debounce
     const inp=document.createElement('input');
     inp.type='text';
     inp.className='cell-note-input';
-    const placeholder={rose:'Overig afwezig…',purple:'Opmerking…',orange:'Opmerking…'};
+    const placeholder={green:'Opmerking…',red:'Opmerking…',rose:'Overig afwezig…',blue:'Opmerking…',purple:'Opmerking…',yellow:'Opmerking…',orange:'Opmerking…'};
     inp.placeholder=placeholder[c]||'Opmerking…';
     inp.value=getNote(key,di,slot.id,c);
     inp.addEventListener('click',e=>e.stopPropagation());
