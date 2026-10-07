@@ -608,7 +608,9 @@ body.dark .student-bar{background:#3D1C00;}
 .dc[data-c="yellow"]{background:var(--y-bg);}
 .dc[data-c="orange"]{background:var(--o-bg);}
 .dc[data-c="rose"]  {background:var(--ro-bg);}
-.dc.day-vakantie,.dc.day-studiedag{background:var(--pause-bg)!important;cursor:default!important;}
+.dc.day-vakantie:not([data-c]),.dc.day-studiedag:not([data-c]){background:var(--pause-bg)!important;}
+.dc.day-vakantie:not(.editable),.dc.day-studiedag:not(.editable){cursor:default;}
+.vak-badge{position:absolute;top:2px;right:3px;font-size:.65rem;line-height:1;opacity:.6;pointer-events:none;z-index:1;}
 /* ── Cel-label: afkorting badge linkerbovenhoek ── */
 .cell-lbl{
   position:absolute;top:3px;left:3px;
@@ -6682,13 +6684,29 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
       cell.className='dc'+(pause?' pause-dc':'')+(spec?' day-'+spec:'');
       if(weekendStart>=0 && i===weekendStart) cell.style.borderLeft='2px solid var(--border-s)';
       if(spec){
-        /* Vacation / studiedag: fill entire cell gray, show label (lesson rows only) */
+        /* Vacation / studiedag cell */
         if(!pause){
-          const lbl=document.createElement('div');
-          lbl.className='pause-lbl';
-          lbl.style.color='var(--pause-tx)';
-          lbl.textContent=spec==='vakantie'?'🏖 Vakantie':'📚 Studiedag';
-          cell.appendChild(lbl);
+          if(editable){
+            /* Edit mode: allow status override on vacation/studiedag days */
+            cell.dataset.spec=spec;
+            const c=getColor(key,di,slot.id);
+            const _cellTime=curData().std?.times?.[di]?.[slot.id]||null;
+            const _cellVak=curData().std?.vakken?.[di]?.[slot.id]||'';
+            applyCell(cell,c,_cellTime,_cellVak);
+            cell.dataset.hwKey=key;
+            cell.dataset.hwDi=String(di);
+            cell.dataset.hwSlot=slot.id;
+            cell.dataset.hwDate=toDS(dates[di]);
+            _refreshNoteUI(cell,c,key,di,slot,editable);
+            cell.classList.add('editable');
+            _buildCellPicker(cell,c,key,di,slot,slots,dates);
+          } else {
+            const lbl=document.createElement('div');
+            lbl.className='pause-lbl';
+            lbl.style.color='var(--pause-tx)';
+            lbl.textContent=spec==='vakantie'?'🏖 Vakantie':'📚 Studiedag';
+            cell.appendChild(lbl);
+          }
         }
       } else if(pause){
         // Check if this pause is covered by a toets (in extended list)
@@ -6853,14 +6871,29 @@ function applyCell(cell,c,time,vak){
   cell.style.removeProperty('--toets-fill');
   cell.style.removeProperty('--toets-late-offset');
   cell.style.removeProperty('--toets-late-height');
-  ['.cell-lbl','.toets-icon-btn','.cell-note','.cell-note-input'].forEach(sel=>{
+  ['.cell-lbl','.toets-icon-btn','.cell-note','.cell-note-input','.vak-badge','.pause-lbl'].forEach(sel=>{
     const old=cell.querySelector(sel); if(old) old.remove();
   });
+  const cellSpec=cell.dataset.spec;
   if(c){
     const lbl=document.createElement('div'); lbl.className='cell-lbl';
     // Don't show standaardrooster time on yellow (toets) cells
     let lblTxt = (c==='green'&&vak) ? 'Les: '+vak : (COLOR_LBL[c]||'');
     lbl.textContent=lblTxt + (time && c!=='yellow' ? ' ('+time+')' : '');
+    cell.appendChild(lbl);
+    // Small vacation/studiedag badge in corner when color overrides a spec-day cell
+    if(cellSpec){
+      const badge=document.createElement('div');
+      badge.className='vak-badge';
+      badge.textContent=cellSpec==='vakantie'?'🏖':'📚';
+      cell.appendChild(badge);
+    }
+  } else if(cellSpec){
+    // No color on a spec-day cell: restore the vacation label
+    const lbl=document.createElement('div');
+    lbl.className='pause-lbl';
+    lbl.style.color='var(--pause-tx)';
+    lbl.textContent=cellSpec==='vakantie'?'🏖 Vakantie':'📚 Studiedag';
     cell.appendChild(lbl);
   }
 }
