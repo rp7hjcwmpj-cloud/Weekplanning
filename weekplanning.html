@@ -6701,11 +6701,23 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
             cell.classList.add('editable');
             _buildCellPicker(cell,c,key,di,slot,slots,dates);
           } else {
-            const lbl=document.createElement('div');
-            lbl.className='pause-lbl';
-            lbl.style.color='var(--pause-tx)';
-            lbl.textContent=spec==='vakantie'?'🏖 Vakantie':'📚 Studiedag';
-            cell.appendChild(lbl);
+            /* View mode: check if a color was set on this spec-day cell */
+            const c=getColor(key,di,slot.id);
+            if(c){
+              /* Color set: show it (with a small spec-day badge) */
+              cell.dataset.spec=spec;
+              const _cellTime=curData().std?.times?.[di]?.[slot.id]||null;
+              const _cellVak=curData().std?.vakken?.[di]?.[slot.id]||'';
+              applyCell(cell,c,_cellTime,_cellVak);
+              _refreshNoteUI(cell,c,key,di,slot,false);
+            } else {
+              /* No color: show vacation label as usual */
+              const lbl=document.createElement('div');
+              lbl.className='pause-lbl';
+              lbl.style.color='var(--pause-tx)';
+              lbl.textContent=spec==='vakantie'?'🏖 Vakantie':'📚 Studiedag';
+              cell.appendChild(lbl);
+            }
           }
         }
       } else if(pause){
