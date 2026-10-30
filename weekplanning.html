@@ -1663,7 +1663,6 @@ body.dark .stu-sport-chip {
         <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;">📝 Coachgesprek</button>
         <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
         <button class="hb" onclick="showCijfersScreen()">📊 Cijfers</button>
-        <button class="hb" id="btn-print-week" onclick="openPrintModal()">🖨️ Printen</button>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openBeschModal()">📅 Beschikbaarheid</button>
@@ -1731,25 +1730,6 @@ body.dark .stu-sport-chip {
 
   <div class="ctrl-bar"></div>
 
-  <div class="legend-wrap">
-  <div class="legend">
-    <span style="font-size:.7rem;font-weight:700;color:var(--tx3);letter-spacing:.04em;text-transform:uppercase;">Status:</span>
-    <div class="leg"><div class="leg-sw" style="background:#2D8B50"></div>Aanwezig</div>
-    <div class="leg"><div class="leg-sw" style="background:#C0392B"></div>Training</div>
-    <div class="leg"><div class="leg-sw" style="background:#B01010"></div>Overig</div>
-    <div class="leg"><div class="leg-sw" style="background:#2471A3"></div>Rust</div>
-    <div class="leg"><div class="leg-sw" style="background:#7D3C98"></div>Wedstrijd</div>
-    <div class="leg"><div class="leg-sw" style="background:#C8A000"></div>Toets</div>
-    <div class="leg"><div class="leg-sw" style="background:#C05818"></div>Toernooi</div>
-    <div class="leg"><div class="leg-sw" style="background:#D8D8D8;border:1px solid #AAAAAA"></div>Vakantie / Studiedag</div>
-    <div style="margin-left:auto;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;">
-      <span style="font-size:.7rem;font-weight:700;color:var(--tx3);letter-spacing:.04em;text-transform:uppercase;">Docenten:</span>
-      <div class="leg"><div class="besch-circle besch-lokaal-leg" style="height:15px;width:15px;border-radius:50%;background:rgba(255,255,255,.55);border:1.5px solid rgba(0,0,0,.18);display:inline-flex;"></div>&nbsp;docent in lokaal</div>
-      <div class="leg"><div class="besch-circle besch-les" style="height:15px;width:15px;border-radius:50%;display:inline-flex;"></div>&nbsp;docent geeft les</div>
-    </div>
-  </div>
-  </div>
-
   <!-- Huiswerk panel (alleen zichtbaar voor leerling, uitklapbaar) -->
   <div class="display-content-row" id="display-content-row">
     <!-- Gemaakte Taken panel (alleen display + weekweergave) -->
@@ -1793,8 +1773,7 @@ body.dark .stu-sport-chip {
       <div class="csb-dot-row" title="Toernooi"><div class="csb-dot csb-orange">Tn</div></div>
       <div class="csb-dot-row" title="Overig"><div class="csb-dot csb-rose">O</div></div>
       <div class="csb-sep"></div>
-      <div class="csb-dot-row" title="Notities tonen" onclick="toggleNotesSidebar?.()"><div class="csb-icon">📝</div></div>
-      <div class="csb-dot-row" title="Printen" onclick="window.print()"><div class="csb-icon">🖨️</div></div>
+      <div class="csb-dot-row" title="Printen" onclick="openPrintModal()"><div class="csb-icon">🖨️</div></div>
     </div>
   </div>
 </div>
