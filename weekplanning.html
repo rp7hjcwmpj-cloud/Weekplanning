@@ -1261,6 +1261,219 @@ body.dark {
 /* ── Dag-kolom header border vandaag ── */
 .dag-dc { border-bottom: 2px solid var(--border-s); }
 
+/* ── Studentenbalk: 2Scool witte kaart stijl ── */
+.student-bar-wrap { padding: .55rem 1rem .25rem; }
+.student-bar {
+  background: var(--surface) !important;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.07);
+  padding: .55rem .9rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+body.dark .student-bar {
+  background: var(--surface) !important;
+  border-color: var(--border);
+}
+/* Naam: donker, vet */
+.stu-name {
+  font-size: .97rem !important;
+  font-weight: 700 !important;
+  color: var(--tx) !important;
+  white-space: normal;
+}
+/* Meta (klas/sport info): grijs */
+.stu-meta {
+  font-size: .74rem !important;
+  color: var(--tx2) !important;
+  margin-top: .06rem;
+  font-weight: 500;
+}
+/* Sport chip naast de naam */
+.stu-sport-chip {
+  display: inline-block;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: .15rem .55rem;
+  border-radius: 20px;
+  border: 1.5px solid #2471A3;
+  color: #2471A3;
+  background: rgba(36,113,163,.07);
+  vertical-align: middle;
+  margin-left: .25rem;
+  letter-spacing: .01em;
+}
+body.dark .stu-sport-chip {
+  border-color: #7AAEEE;
+  color: #7AAEEE;
+  background: rgba(122,174,238,.1);
+}
+/* Vakken chips: blauw-grijs pills */
+.stu-vchip {
+  font-size: .67rem !important;
+  font-weight: 700 !important;
+  padding: .18rem .48rem !important;
+  border-radius: 20px !important;
+  background: var(--surf-2) !important;
+  color: var(--tx2) !important;
+  border: 1.5px solid var(--border-s) !important;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+/* Pijl-navigatie knoppen: grijs cirkels */
+.stu-nav {
+  background: var(--surf-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 50% !important;
+  color: var(--tx2) !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  font-size: 1.1rem;
+  transition: background .13s, border-color .13s;
+}
+.stu-nav:hover:not(:disabled) {
+  background: var(--brand-light) !important;
+  border-color: var(--brand) !important;
+  color: var(--brand) !important;
+}
+.stu-nav:disabled { opacity: .3; }
+/* Zoek-knop */
+.stu-search-btn {
+  background: var(--surf-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 20px !important;
+  color: var(--tx2) !important;
+  font-size: .76rem !important;
+  padding: .3rem .8rem !important;
+  transition: background .13s, border-color .13s;
+}
+.stu-search-btn:hover {
+  background: var(--brand-light) !important;
+  border-color: var(--brand) !important;
+  color: var(--brand) !important;
+}
+/* Icon knoppen (Standaard + Aanpassen) */
+.stu-hb-icon {
+  background: var(--surf-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 9px !important;
+  color: var(--tx2) !important;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0 !important;
+  font-size: .95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .13s, border-color .13s;
+}
+.stu-hb-icon:hover {
+  background: var(--brand-light) !important;
+  border-color: var(--brand) !important;
+}
+.stu-hb-icon.stu-hb-edit.on {
+  background: rgba(36,113,163,.12) !important;
+  border-color: #2471A3 !important;
+  color: #2471A3 !important;
+}
+
+/* ── Week-navigatie: 2Scool stijl ── */
+.week-nav-wrap {
+  padding: .55rem 1rem .3rem;
+}
+.week-nav {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  padding: .65rem 1rem;
+  width: auto;
+  min-width: 320px;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+/* Weeknummer: klein, caps, blauw — bovenaan */
+.wk-num {
+  font-size: .65rem !important;
+  font-weight: 700 !important;
+  color: #2471A3 !important;
+  letter-spacing: .1em !important;
+  text-transform: uppercase;
+  margin-bottom: .1rem;
+}
+/* Datumbereik: groot, vet, donker — hoofdtekst */
+.wk-range {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: var(--tx) !important;
+  margin-top: 0 !important;
+  letter-spacing: -.2px;
+}
+/* Pijlknoppen: rond, lichtgrijs */
+.nav-btn {
+  background: var(--surf-2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tx2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .14s, border-color .14s;
+}
+.nav-btn:hover {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+/* Vandaag/Maand/Week pills */
+.nav-today-btn, .nav-mode-btn {
+  border-radius: 20px;
+  padding: .28rem .85rem;
+  font-size: .72rem;
+  font-weight: 600;
+  margin-top: .25rem;
+  border-width: 1.5px;
+}
+.nav-today-btn {
+  background: #2471A3;
+  border-color: #2471A3;
+  color: #fff;
+}
+.nav-today-btn:hover {
+  background: #1A5A8C;
+  color: #fff;
+}
+.nav-today-btn.is-today {
+  background: #2471A3;
+  border-color: #2471A3;
+}
+.nav-mode-btn {
+  background: transparent;
+  border-color: var(--border-s);
+  color: var(--tx2);
+}
+.nav-mode-btn:hover {
+  background: var(--surf-2);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.nav-mode-btn.on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
 </style>
 
 
@@ -1339,6 +1552,7 @@ body.dark {
       <div id="hdr-edit-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openLeerlingBeschModal()">👨‍🏫 Docenten</button>
         <button class="hb" onclick="showVergaderingScreen()">📒 Vergadering 2.0</button>
+        <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;">📝 Coachgesprek</button>
         <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
         <button class="hb" onclick="showCijfersScreen()">📊 Cijfers</button>
         <button class="hb" id="btn-print-week" onclick="openPrintModal()">🖨️ Printen</button>
@@ -1385,9 +1599,8 @@ body.dark {
     <button class="stu-search-btn" id="btn-stu-search" onclick="openStuPickModal()">🔍 Zoek leerling</button>
     <!-- Edit zone (coach/coordinator) -->
     <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
-      <button class="stu-hb" id="btn-std-rooster" onclick="openStdModal()">📋 Standaard</button>
-      <button class="stu-hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;">📝 Coachgesprek</button>
-      <button class="stu-hb stu-hb-edit" id="btn-edit" onclick="toggleEdit()">✏️ Aanpassen</button>
+      <button class="stu-hb stu-hb-icon" id="btn-std-rooster" onclick="openStdModal()" title="Standaardrooster">📋</button>
+      <button class="stu-hb stu-hb-icon stu-hb-edit" id="btn-edit" onclick="toggleEdit()" title="Rooster aanpassen">✏️</button>
     </div>
   </div>
   </div>
@@ -5888,7 +6101,8 @@ function updateStudentBar(){
   if(prevBtn) prevBtn.disabled=idx<=0;
   if(nextBtn) nextBtn.disabled=idx>=vis.length-1;
   const stu=vis[idx];
-  nd.textContent=stu ? stu.name + (stu.sport ? ' · ' + stu.sport : '') : '—';
+  if(stu){ nd.innerHTML=stu.name+(stu.sport?` <span class="stu-sport-chip">${stu.sport}</span>`:''); }
+  else { nd.textContent='—'; }
   md.textContent=stu?stuLabel(stu):'—';
   const vd=document.getElementById('stu-vakken');
   const vakken=getActiveVakken(stu);
