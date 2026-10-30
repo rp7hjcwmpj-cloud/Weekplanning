@@ -1262,10 +1262,14 @@ body.dark {
 .dag-dc { border-bottom: 2px solid var(--border-s); }
 
 /* ── Studentenbalk: 2Scool witte kaart stijl ── */
-.student-bar-wrap { padding: .3rem 1rem .15rem; }
+.student-bar-wrap {
+  padding: .3rem 1rem .15rem;
+  display: flex;
+  justify-content: center;
+}
 .student-bar {
-  background: var(--surface) !important;
-  border: 1px solid var(--border);
+  background: #FEF0E2 !important;
+  border: 1px solid #F5C89A;
   border-radius: 12px;
   box-shadow: 0 1px 6px rgba(0,0,0,.06);
   padding: .3rem .75rem;
@@ -1273,10 +1277,13 @@ body.dark {
   align-items: center;
   gap: .5rem;
   flex-wrap: wrap;
+  width: 50%;
+  min-width: 420px;
+  max-width: 780px;
 }
 body.dark .student-bar {
-  background: var(--surface) !important;
-  border-color: var(--border);
+  background: #3A1800 !important;
+  border-color: #6B3010 !important;
 }
 /* Naam: donker, vet */
 .stu-name {
