@@ -2116,13 +2116,9 @@ body.dark .stu-sport-chip {
       <div class="fw" style="margin-bottom:0">
         <label class="flabel">Klas</label>
         <select class="field-inp" id="estu-class" onchange="onEstuClassChange()" style="margin-bottom:0">
-          <option value="H2">H2</option><option value="H3">H3</option>
-          <option value="M3">M3</option>
-          <option value="V2">V2</option><option value="V3">V3</option>
-          <option value="M4">M4</option>
-          <option value="H4">H4</option><option value="H5">H5</option>
-          <option value="V4">V4</option><option value="V5">V5</option>
-          <option value="V6">V6</option>
+          <option value="JXT3">JXT3</option><option value="JXT4">JXT4</option>
+          <option value="JXH3">JXH3</option><option value="JXH4">JXH4</option><option value="JXH5">JXH5</option>
+          <option value="JXV3">JXV3</option><option value="JXV4">JXV4</option><option value="JXV5">JXV5</option><option value="JXV6">JXV6</option>
         </select>
       </div>
       <div class="fw" id="estu-year-wrap" style="display:none;margin-bottom:0">
@@ -2574,11 +2570,11 @@ body.dark .stu-sport-chip {
         <h3>📅 Schoolperiodes</h3>
         <p class="card-note" style="margin-bottom:1rem;">Stel de datumgrenzen per periode in. Deze worden automatisch overgenomen bij het kiezen van vakken per leerling.</p>
         <div class="sp-section">
-          <div class="sp-section-lbl">Examenleerlingen (M4, H5, V6)</div>
+          <div class="sp-section-lbl">Examenleerlingen (JXH5, JXV6)</div>
           <div id="period-exam-list"></div>
         </div>
         <div class="sp-section" style="margin-bottom:.2rem;">
-          <div class="sp-section-lbl">Voorexamenleerlingen (H2, H3, M3, V2, V3, H4, V4, V5)</div>
+          <div class="sp-section-lbl">Voorexamenleerlingen (JXT3, JXT4, JXH3, JXH4, JXV3, JXV4, JXV5)</div>
           <div id="period-preexam-list"></div>
         </div>
         <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.75rem;">
@@ -2684,17 +2680,15 @@ body.dark .stu-sport-chip {
             <div class="fw" style="margin-bottom:0">
               <label class="flabel">Klas</label>
               <select class="field-inp" id="stu-class-inp" onchange="onClassChange()" style="margin-bottom:0">
-                <option value="H2">H2</option>
-                <option value="H3">H3</option>
-                <option value="M3">M3</option>
-                <option value="V2">V2</option>
-                <option value="V3">V3</option>
-                <option value="M4">M4</option>
-                <option value="H4">H4</option>
-                <option value="H5">H5</option>
-                <option value="V4">V4</option>
-                <option value="V5">V5</option>
-                <option value="V6">V6</option>
+                <option value="JXT3">JXT3</option>
+                <option value="JXT4">JXT4</option>
+                <option value="JXH3">JXH3</option>
+                <option value="JXH4">JXH4</option>
+                <option value="JXH5">JXH5</option>
+                <option value="JXV3">JXV3</option>
+                <option value="JXV4">JXV4</option>
+                <option value="JXV5">JXV5</option>
+                <option value="JXV6">JXV6</option>
               </select>
             </div>
             <div class="fw" id="stu-year-wrap" style="display:none;margin-bottom:0">
@@ -2908,9 +2902,9 @@ const COLORS     = [null,'green','red','rose','blue','purple','yellow','orange']
 const COLOR_LBL  = {green:'A',red:'Tr',rose:'O',blue:'R',purple:'W',yellow:'Toets',orange:'Toe'};
 const STD_LBL    = {null:'—',green:'Aanwezig',red:'Training',rose:'Overig',blue:'Rust',purple:'Wedstrijd',yellow:'Toets',orange:'Toernooi'};
 const ROLE_NAME  = {coordinator:'Coördinator',coach:'Coach',leerling:'Leerling',ouder:'Ouder',docent:'Docent',admin:'Admin'};
-const NEEDS_YEAR      = ['M4','H5','V6'];
-const EXAM_CLASSES    = ['M4','H5','V6'];
-const PREEXAM_CLASSES = ['H2','H3','M3','V2','V3','H4','V4','V5'];
+const NEEDS_YEAR      = ['JXH5','JXV6'];
+const EXAM_CLASSES    = ['JXH5','JXV6'];
+const PREEXAM_CLASSES = ['JXT3','JXT4','JXH3','JXH4','JXV3','JXV4','JXV5'];
 const EXAM_PERIODS    = [
   {id:'E1',label:'Periode 1'},
   {id:'E2',label:'Periode 2'},
@@ -2923,7 +2917,7 @@ const PREEXAM_PERIODS = [
 ];
 const PW_DEFAULT      = 'AdminAdmin';
 const SUBJECTS   = ['NE','EN','DU','FA','EC','BEC','BI','NA','SK','GS','AK','WiA','WiB'];
-const BESCH_KLASSEN = ['H2','H3','M3','V2','V3','M4','H4','H5','V4','V5','V6'];
+const BESCH_KLASSEN = ['JXT3','JXT4','JXH3','JXH4','JXH5','JXV3','JXV4','JXV5','JXV6'];
 function beschValLabel(val){
   if(!val || val==='afwezig') return '—';
   if(val==='lokaal107') return 'Lokaal 107'; // backward compat
