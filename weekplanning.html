@@ -1664,6 +1664,138 @@ body.dark .stu-sport-chip {
   display: none;
 }
 
+/* ── Toetsen badge (knipperend) ── */
+.toets-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #C0392B;
+  color: #fff;
+  border-radius: 50%;
+  font-size: .58rem;
+  font-weight: 800;
+  min-width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+  animation: badge-blink 1.4s ease-in-out infinite;
+  box-shadow: 0 1px 4px rgba(192,57,43,.4);
+}
+@keyframes badge-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .45; transform: scale(.88); }
+}
+
+/* ── Toetsen import modal ── */
+.toetsen-drop-zone {
+  display: block;
+  border: 2px dashed var(--border-s);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  background: var(--surf-2);
+}
+.toetsen-drop-zone:hover,
+.toetsen-drop-zone.drag-over {
+  border-color: var(--brand);
+  background: var(--brand-light);
+}
+.toetsen-drop-icon {
+  font-size: 2rem;
+  margin-bottom: .4rem;
+}
+
+/* Toets kaarten */
+.toets-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .7rem .85rem;
+  margin-bottom: .5rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  transition: box-shadow .12s;
+}
+.toets-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+.toets-card.gepland { opacity: .6; }
+.toets-card.gepland .toets-card-status { color: #2D8B50; font-weight: 700; }
+.toets-card-vak {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--y-bg);
+  border: 2px solid #C8A000;
+  color: #7A6000;
+  font-size: .68rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-align: center;
+  line-height: 1.1;
+}
+.toets-card-info { flex: 1; min-width: 0; }
+.toets-card-naam { font-size: .84rem; font-weight: 700; color: var(--tx); }
+.toets-card-meta { font-size: .7rem; color: var(--tx2); margin-top: .12rem; }
+.toets-card-status { font-size: .7rem; color: var(--tx3); }
+.toets-card-actions { display: flex; gap: .4rem; flex-shrink: 0; }
+.toets-card-actions button {
+  font-size: .72rem;
+  padding: .28rem .65rem;
+  border-radius: 7px;
+  border: 1.5px solid;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s;
+}
+.btn-plan-toets {
+  background: rgba(45,139,80,.08);
+  border-color: #2D8B50;
+  color: #2D8B50;
+}
+.btn-plan-toets:hover { background: rgba(45,139,80,.18); }
+.btn-herplan-toets {
+  background: var(--surf-2);
+  border-color: var(--border-s);
+  color: var(--tx2);
+}
+.btn-herplan-toets:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
+.btn-unplan-toets {
+  background: rgba(192,57,43,.07);
+  border-color: #C0392B;
+  color: #C0392B;
+}
+.btn-unplan-toets:hover { background: rgba(192,57,43,.16); }
+
+/* Kolom-mapping select */
+.col-map-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .4rem;
+  font-size: .76rem;
+}
+.col-map-row label { width: 90px; color: var(--tx2); font-weight: 600; flex-shrink: 0; }
+.col-map-row select { flex: 1; }
+
+/* Leerling groepshoofd */
+.toets-group-hdr {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--tx3);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  margin: .9rem 0 .35rem;
+}
+
 </style>
 
 
@@ -1747,6 +1879,10 @@ body.dark .stu-sport-chip {
         <button class="hb" onclick="showVergaderingScreen()"><span class="hb-ico">🖥</span> Vergadering</button>
         <button class="hb" onclick="openAanwModal()"><span class="hb-ico">📋</span> Aanwezigheid</button>
         <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico">📊</span> Cijfers</button>
+        <div class="hb-toets-wrap" style="position:relative;display:inline-flex;">
+          <button class="hb" onclick="openToetsenModal()"><span class="hb-ico">📝</span> Toetsen</button>
+          <span class="toets-badge" id="toets-badge" style="display:none;"></span>
+        </div>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openBeschModal()"><span class="hb-ico">📅</span> Beschikbaarheid</button>
@@ -2179,6 +2315,67 @@ body.dark .stu-sport-chip {
     <div style="display:flex;gap:.6rem;align-items:center;margin-top:.85rem;flex-shrink:0;padding-top:.75rem;border-top:1px solid var(--border);">
       <button class="btn-save" onclick="saveGesprek()" style="flex:1;">💾 Opslaan</button>
       <span class="ok-msg" id="gesprek-ok" style="display:none;font-size:.82rem;">✓ Opgeslagen</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOETSEN IMPORT MODAL ═══════════════════════════ -->
+<div class="overlay" id="modal-toetsen-import" style="display:none;">
+  <div class="modal-card" style="max-width:780px;width:94vw;max-height:88vh;display:flex;flex-direction:column;padding:1.4rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-shrink:0;">
+      <div>
+        <h2 style="margin:0;font-size:1.1rem;">📝 Toetsen importeren</h2>
+        <div style="font-size:.72rem;color:var(--tx2);margin-top:.2rem;">Importeer het Excel-overzicht van toetsweken om toetsen te plannen per leerling</div>
+      </div>
+      <button class="btn-g sm" onclick="closeToetsenModal()" style="width:auto;padding:.38rem .8rem;font-size:.82rem;">✕ Sluiten</button>
+    </div>
+
+    <!-- Upload zone -->
+    <div id="toetsen-upload-zone" style="flex-shrink:0;">
+      <label class="toetsen-drop-zone" id="toetsen-drop-zone">
+        <div class="toetsen-drop-icon">📂</div>
+        <div style="font-weight:700;font-size:.9rem;color:var(--tx);margin-bottom:.25rem;">Sleep een Excel-bestand hierheen</div>
+        <div style="font-size:.75rem;color:var(--tx2);">of klik om te bladeren &nbsp;·&nbsp; .xlsx of .xls</div>
+        <input type="file" id="toetsen-file-inp" accept=".xlsx,.xls" style="display:none;" onchange="handleToetsenFile(this.files[0])">
+      </label>
+      <div id="toetsen-col-map-zone" style="display:none;margin-top:.85rem;padding:1rem;background:var(--surf-2);border-radius:10px;border:1px solid var(--border);">
+        <div style="font-size:.78rem;font-weight:700;color:var(--tx2);margin-bottom:.65rem;letter-spacing:.04em;text-transform:uppercase;">Kolommen koppelen</div>
+        <div id="toetsen-col-map-rows"></div>
+        <div style="display:flex;gap:.6rem;margin-top:.8rem;">
+          <button class="btn-save" onclick="confirmToetsenImport()" style="flex:1;">✓ Importeren</button>
+          <button class="btn-g sm" onclick="resetToetsenUpload()" style="width:auto;padding:.38rem .8rem;">✗ Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div id="toetsen-status-bar" style="display:none;flex-shrink:0;margin:.6rem 0;padding:.5rem .75rem;border-radius:8px;background:var(--surf-2);border:1px solid var(--border);font-size:.78rem;color:var(--tx2);display:flex;align-items:center;gap:.5rem;"></div>
+
+    <!-- Filter + cards -->
+    <div id="toetsen-list-zone" style="display:none;flex:1;min-height:0;overflow-y:auto;padding-right:.25rem;">
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem;flex-shrink:0;">
+        <select id="toetsen-filter-status" class="inp" style="font-size:.75rem;padding:.25rem .5rem;" onchange="renderToetsenCards()">
+          <option value="all">Alle toetsen</option>
+          <option value="open">Nog te plannen</option>
+          <option value="gepland">Gepland</option>
+        </select>
+        <input id="toetsen-filter-naam" class="inp" placeholder="Zoek leerling…" style="font-size:.75rem;padding:.25rem .5rem;flex:1;min-width:120px;" oninput="renderToetsenCards()">
+        <button class="btn-g sm" onclick="if(confirm('Alle importdata wissen?')){S.toetsenImport=[];persist();renderToetsenCards();updateToetsBadge();document.getElementById('toetsen-list-zone').style.display='none';document.getElementById('toetsen-upload-zone').style.display='';}" style="width:auto;padding:.25rem .6rem;font-size:.72rem;">🗑 Alles wissen</button>
+      </div>
+      <div id="toetsen-cards-ct"></div>
+    </div>
+
+    <!-- Herplan picker (hidden inline) -->
+    <div id="toetsen-herplan-zone" style="display:none;position:fixed;z-index:1300;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);padding:1rem;min-width:260px;">
+      <div style="font-weight:700;font-size:.88rem;margin-bottom:.65rem;">📅 Toets herplannen</div>
+      <div style="font-size:.75rem;color:var(--tx2);margin-bottom:.4rem;">Datum</div>
+      <input type="date" id="herplan-date" class="inp" style="width:100%;margin-bottom:.6rem;">
+      <div style="font-size:.75rem;color:var(--tx2);margin-bottom:.4rem;">Lesuur</div>
+      <select id="herplan-slot" class="inp" style="width:100%;margin-bottom:.75rem;"></select>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn-save" onclick="confirmHerplan()" style="flex:1;font-size:.8rem;padding:.4rem;">✓ Bevestigen</button>
+        <button class="btn-g sm" onclick="document.getElementById('toetsen-herplan-zone').style.display='none'" style="width:auto;padding:.4rem .7rem;font-size:.8rem;">✗</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2782,6 +2979,7 @@ const S = {
              'P2.1':{from:'',to:''},'P2.2':{from:'',to:''},'P2.3':{from:'',to:''},
              'P3.1':{from:'',to:''},'P3.2':{from:'',to:''},'P3.3':{from:'',to:''}},
   },
+  toetsenImport:[],      // [{id,studentNaam,klas,vak,datum,tijdstip,lokaal,status:'open'|'gepland',matchedStudentId,geplandWeekKey,geplandDi,geplandSlot}]
 };
 
 /* ══ HELPERS ════════════════════════════════════════ */
@@ -3436,6 +3634,7 @@ function persist(){
     localStorage.setItem('wp_huiswerk', JSON.stringify(S.huiswerk));
     localStorage.setItem('wp_superadmins', JSON.stringify(S.superadmins));
     localStorage.setItem('wp_displayPw', S.displayPassword||'');
+    localStorage.setItem('wp_toetsenImport', JSON.stringify(S.toetsenImport));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -3472,6 +3671,7 @@ function hydrate(){
     const hwk=localStorage.getItem('wp_huiswerk'); if(hwk) S.huiswerk=JSON.parse(hwk);
     const sadm=localStorage.getItem('wp_superadmins'); if(sadm) S.superadmins=JSON.parse(sadm);
     const dpw=localStorage.getItem('wp_displayPw'); if(dpw!==null) S.displayPassword=dpw;
+    const tsi=localStorage.getItem('wp_toetsenImport'); if(tsi) S.toetsenImport=JSON.parse(tsi);
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -6122,6 +6322,387 @@ function _saveAanwData(weekKey, di, stuId, status, note){
     S.aanw[weekKey][di][stuId] = {status, note: note || ''};
   }
   persist();
+}
+
+/* ══ TOETSEN IMPORT ════════════════════════════════════════ */
+
+let _toetsenRawRows = [];      // ruwe rijen uit Excel
+let _toetsenHeaders = [];      // kolomnamen uit Excel
+let _herplanToetsId = null;    // id van de toets die herplanned wordt
+
+const TOETS_COL_ALIASES = {
+  naam:     ['naam','leerlingnaam','student','leerling','name','achternaam','leerling naam'],
+  klas:     ['klas','groep','class','leerjaar','klas/groep','klasgroep'],
+  vak:      ['vak','vakcode','subject','vak code','vak/onderdeel','onderdeel','vakken'],
+  datum:    ['datum','date','dag','toetsdatum','datum toets'],
+  tijdstip: ['tijdstip','tijd','time','van','starttijd','aanvangstijd','uur'],
+  lokaal:   ['lokaal','zaal','ruimte','room','locatie'],
+};
+
+function _detectCol(headers, field){
+  const aliases = TOETS_COL_ALIASES[field];
+  for(const h of headers){
+    const norm = h.toLowerCase().trim();
+    if(aliases.some(a => norm.includes(a))) return h;
+  }
+  return '';
+}
+
+function openToetsenModal(){
+  document.getElementById('modal-toetsen-import').style.display='flex';
+  if(S.toetsenImport.length){
+    document.getElementById('toetsen-upload-zone').style.display='';
+    document.getElementById('toetsen-list-zone').style.display='';
+    renderToetsenCards();
+  }
+  updateToetsBadge();
+}
+function closeToetsenModal(){
+  document.getElementById('modal-toetsen-import').style.display='none';
+  document.getElementById('toetsen-herplan-zone').style.display='none';
+}
+
+// Drag-and-drop support
+(function setupToetsenDrop(){
+  document.addEventListener('DOMContentLoaded',()=>{
+    const zone = document.getElementById('toetsen-drop-zone');
+    if(!zone) return;
+    zone.addEventListener('click',()=>document.getElementById('toetsen-file-inp').click());
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+    zone.addEventListener('drop',e=>{
+      e.preventDefault(); zone.classList.remove('drag-over');
+      const f=e.dataTransfer.files[0]; if(f) handleToetsenFile(f);
+    });
+  });
+})();
+
+function handleToetsenFile(file){
+  if(!file) return;
+  const load = () => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try{
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        if(!rows.length){ alert('Leeg bestand.'); return; }
+        _toetsenHeaders = rows[0].map(String);
+        _toetsenRawRows = rows.slice(1);
+        showToetsenColMap();
+      }catch(err){ alert('Fout bij lezen: '+err.message); }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  if(window.XLSX){ load(); return; }
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=load;
+  s.onerror=()=>alert('Kon Excel-bibliotheek niet laden.');
+  document.head.appendChild(s);
+}
+
+function showToetsenColMap(){
+  const zone = document.getElementById('toetsen-col-map-zone');
+  const rows = document.getElementById('toetsen-col-map-rows');
+  const fields = ['naam','klas','vak','datum','tijdstip','lokaal'];
+  const labels = {naam:'Leerlingnaam',klas:'Klas',vak:'Vak',datum:'Datum',tijdstip:'Tijdstip',lokaal:'Lokaal (optioneel)'};
+  rows.innerHTML = fields.map(f=>{
+    const detected = _detectCol(_toetsenHeaders, f);
+    const opts = ['<option value="">— niet aanwezig —</option>',
+      ..._toetsenHeaders.map(h=>`<option value="${h}"${h===detected?' selected':''}>${h}</option>`)
+    ].join('');
+    return `<div class="col-map-row">
+      <label>${labels[f]}</label>
+      <select class="inp" id="colmap-${f}" style="font-size:.74rem;padding:.22rem .4rem;">${opts}</select>
+    </div>`;
+  }).join('');
+  zone.style.display='';
+}
+
+function resetToetsenUpload(){
+  _toetsenRawRows=[]; _toetsenHeaders=[];
+  document.getElementById('toetsen-col-map-zone').style.display='none';
+  document.getElementById('toetsen-file-inp').value='';
+}
+
+function _parseToetsDate(raw){
+  if(!raw) return '';
+  // Excel date serial number (number)
+  if(typeof raw === 'number'){
+    const d = new Date(Math.round((raw - 25569) * 864e5));
+    return toDS(d);
+  }
+  // Already a JS Date (cellDates:true)
+  if(raw instanceof Date) return toDS(raw);
+  const s = String(raw).trim();
+  // DD-MM-YYYY or D-M-YYYY
+  if(/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(s)){
+    const [d,m,y] = s.split(/[-\/]/);
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  // YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return s;
+}
+
+function _parseToetsTime(raw){
+  if(!raw) return '';
+  if(typeof raw === 'number' && raw < 1){
+    // Fraction of day
+    const totalMin = Math.round(raw * 1440);
+    const h = Math.floor(totalMin/60), m = totalMin%60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+  const s = String(raw).trim();
+  // H:MM or HH:MM
+  const m = s.match(/^(\d{1,2}):(\d{2})/);
+  if(m) return `${String(parseInt(m[1])).padStart(2,'0')}:${m[2]}`;
+  return s;
+}
+
+function _findSlotByTime(timeStr){
+  if(!timeStr) return null;
+  const parts = timeStr.split(':');
+  if(parts.length<2) return null;
+  const minutes = parseInt(parts[0])*60 + parseInt(parts[1]);
+  let best=null, bestDiff=Infinity;
+  for(const slot of SCHOOL){
+    if(slot.kind!=='lesson') continue;
+    const startStr = slot.time.split('–')[0].trim();
+    const sp = startStr.split(':');
+    const slotMin = parseInt(sp[0])*60+parseInt(sp[1]);
+    const diff = Math.abs(slotMin-minutes);
+    if(diff<bestDiff){ bestDiff=diff; best=slot; }
+  }
+  return best;
+}
+
+function _dateToWeekDi(dateStr){
+  if(!dateStr) return null;
+  const d = new Date(dateStr+'T12:00:00');
+  if(isNaN(d)) return null;
+  const wy = weekYear(d);
+  const di = (d.getDay()+6)%7; // 0=Mon
+  return { weekKey: wk(wy.year, wy.week), di };
+}
+
+function _matchStudent(naam){
+  const norm = n => n.toLowerCase().replace(/[^a-z0-9]/g,' ').replace(/\s+/g,' ').trim();
+  const n = norm(naam);
+  // Exact match
+  let stu = S.students.find(s=>norm(s.name)===n);
+  if(stu) return stu.id;
+  // Partial: check if student name contains all words from Excel name
+  const words = n.split(' ').filter(Boolean);
+  stu = S.students.find(s=>{
+    const sn=norm(s.name);
+    return words.every(w=>sn.includes(w));
+  });
+  return stu ? stu.id : null;
+}
+
+function confirmToetsenImport(){
+  const get = f => {
+    const sel=document.getElementById('colmap-'+f); return sel?sel.value:'';
+  };
+  const colNaam=get('naam'), colKlas=get('klas'), colVak=get('vak'),
+        colDatum=get('datum'), colTijd=get('tijdstip'), colLokaal=get('lokaal');
+  if(!colNaam||!colVak){ alert('Kies minimaal de kolommen Leerlingnaam en Vak.'); return; }
+  const idx = f => _toetsenHeaders.indexOf(f);
+  const iNaam=idx(colNaam), iKlas=idx(colKlas), iVak=idx(colVak),
+        iDatum=idx(colDatum), iTijd=idx(colTijd), iLokaal=idx(colLokaal);
+
+  const imported = [];
+  for(const row of _toetsenRawRows){
+    const naam = String(row[iNaam]||'').trim();
+    const vak  = String(row[iVak]||'').trim();
+    if(!naam||!vak) continue;
+    const datum = _parseToetsDate(iDatum>=0?row[iDatum]:'');
+    const toets = {
+      id: uid(),
+      studentNaam: naam,
+      klas: iKlas>=0?String(row[iKlas]||'').trim():'',
+      vak,
+      datum,
+      tijdstip: iTijd>=0?_parseToetsTime(row[iTijd]):'',
+      lokaal: iLokaal>=0?String(row[iLokaal]||'').trim():'',
+      status: 'open',
+      matchedStudentId: _matchStudent(naam),
+      geplandWeekKey: null, geplandDi: null, geplandSlot: null,
+    };
+    imported.push(toets);
+  }
+  if(!imported.length){ alert('Geen geldige rijen gevonden. Controleer de kolomkeuze.'); return; }
+
+  // Merge: keep existing gepland entries for same student+vak+datum
+  const keep = S.toetsenImport.filter(t=>t.status==='gepland');
+  S.toetsenImport = [...keep.filter(k=>!imported.find(i=>i.studentNaam===k.studentNaam&&i.vak===k.vak&&i.datum===k.datum)), ...imported];
+  persist();
+  resetToetsenUpload();
+  document.getElementById('toetsen-list-zone').style.display='';
+  renderToetsenCards();
+  updateToetsBadge();
+}
+
+function renderToetsenCards(){
+  const ct = document.getElementById('toetsen-cards-ct');
+  if(!ct) return;
+  const filterStatus = document.getElementById('toetsen-filter-status')?.value||'all';
+  const filterNaam   = (document.getElementById('toetsen-filter-naam')?.value||'').toLowerCase().trim();
+
+  let items = S.toetsenImport.filter(t=>{
+    if(filterStatus==='open' && t.status!=='open') return false;
+    if(filterStatus==='gepland' && t.status!=='gepland') return false;
+    if(filterNaam && !t.studentNaam.toLowerCase().includes(filterNaam)) return false;
+    return true;
+  });
+
+  if(!items.length){
+    ct.innerHTML=`<div style="font-size:.82rem;color:var(--tx3);text-align:center;padding:2rem;">Geen toetsen gevonden.</div>`;
+    return;
+  }
+
+  // Group by student name (alphabetical)
+  const byStudent = {};
+  items.forEach(t=>{
+    if(!byStudent[t.studentNaam]) byStudent[t.studentNaam]=[];
+    byStudent[t.studentNaam].push(t);
+  });
+
+  const names = Object.keys(byStudent).sort((a,b)=>a.localeCompare(b,'nl'));
+  let html='';
+  for(const naam of names){
+    const toetsen = byStudent[naam];
+    const matchId = toetsen[0].matchedStudentId;
+    const matchStu = matchId ? S.students.find(s=>s.id===matchId) : null;
+    const matchLabel = matchStu
+      ? `<span style="font-size:.65rem;color:#2D8B50;font-weight:700;">✓ ${matchStu.name}</span>`
+      : `<span style="font-size:.65rem;color:#C0392B;font-weight:600;">⚠ niet gevonden in app</span>`;
+    html += `<div class="toets-group-hdr">${naam} <span style="font-weight:400;text-transform:none;letter-spacing:0;">(${toetsen[0].klas})</span> ${matchLabel}</div>`;
+    for(const t of toetsen){
+      const datumLabel = t.datum ? fmtDate(t.datum) : '—';
+      const tijdLabel  = t.tijdstip || '—';
+      const slot       = t.datum && t.tijdstip ? _findSlotByTime(t.tijdstip) : null;
+      const slotLabel  = slot ? slot.label : '';
+      const geplandInfo = t.status==='gepland'
+        ? `✓ Gepland${t.geplandWeekKey?' — week '+t.geplandWeekKey.split('-')[1]+' '+t.geplandSlot:''}`
+        : '';
+      const canPlan = !!matchId && !!t.datum && !!slot;
+      const actBtns = t.status==='open'
+        ? `${canPlan?`<button class="toets-card-actions btn-plan-toets" onclick="planToets('${t.id}')">📅 Toevoegen</button>`:''}
+           <button class="toets-card-actions btn-herplan-toets" onclick="openHerplan('${t.id}',this)">🔄 Herplannen</button>`
+        : `<button class="toets-card-actions btn-unplan-toets" onclick="unplanToets('${t.id}')">✗ Ongedaan</button>
+           <button class="toets-card-actions btn-herplan-toets" onclick="openHerplan('${t.id}',this)">🔄 Verplaatsen</button>`;
+      html += `<div class="toets-card${t.status==='gepland'?' gepland':''}">
+        <div class="toets-card-vak">${t.vak}</div>
+        <div class="toets-card-info">
+          <div class="toets-card-naam">${t.vak}${t.lokaal?' &nbsp;·&nbsp; 🏫 '+t.lokaal:''}</div>
+          <div class="toets-card-meta">📅 ${datumLabel} &nbsp;·&nbsp; 🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</div>
+          <div class="toets-card-status">${geplandInfo}</div>
+        </div>
+        <div class="toets-card-actions">${actBtns}</div>
+      </div>`;
+    }
+  }
+  ct.innerHTML=html;
+
+  // Also update status bar
+  const open = S.toetsenImport.filter(t=>t.status==='open').length;
+  const total = S.toetsenImport.length;
+  const bar = document.getElementById('toetsen-status-bar');
+  if(bar){
+    bar.style.display='flex';
+    bar.innerHTML = open>0
+      ? `<span style="color:#C0392B;font-weight:700;">⚠ ${open} toets${open===1?'':'en'} nog te plannen</span><span style="color:var(--tx3);margin-left:.5rem;">van ${total} totaal</span>`
+      : `<span style="color:#2D8B50;font-weight:700;">✓ Alle ${total} toetsen zijn gepland!</span>`;
+  }
+}
+
+function planToets(id){
+  const t = S.toetsenImport.find(x=>x.id===id);
+  if(!t||!t.matchedStudentId) return;
+  const wd = _dateToWeekDi(t.datum);
+  if(!wd) return;
+  const slot = _findSlotByTime(t.tijdstip);
+  if(!slot){ alert('Kon geen lesuur bepalen. Gebruik Herplannen.'); return; }
+  _setToetsInPlanner(t.matchedStudentId, wd.weekKey, wd.di, slot.id, t);
+  t.status='gepland'; t.geplandWeekKey=wd.weekKey; t.geplandDi=wd.di; t.geplandSlot=slot.id;
+  persist(); renderToetsenCards(); updateToetsBadge();
+}
+
+function unplanToets(id){
+  const t = S.toetsenImport.find(x=>x.id===id);
+  if(!t) return;
+  // Remove yellow from planner cell if it was set by us
+  if(t.matchedStudentId && t.geplandWeekKey!=null && t.geplandDi!=null && t.geplandSlot){
+    const stuData = S.studentData[t.matchedStudentId];
+    if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow'){
+      stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+    }
+  }
+  t.status='open'; t.geplandWeekKey=null; t.geplandDi=null; t.geplandSlot=null;
+  persist(); renderToetsenCards(); updateToetsBadge();
+}
+
+function openHerplan(id, btn){
+  _herplanToetsId=id;
+  const t=S.toetsenImport.find(x=>x.id===id);
+  // Fill slot select
+  const sel=document.getElementById('herplan-slot');
+  sel.innerHTML=SCHOOL.filter(s=>s.kind==='lesson').map(s=>`<option value="${s.id}">${s.label} (${s.time})</option>`).join('');
+  // Pre-fill
+  document.getElementById('herplan-date').value=t.datum||'';
+  const bestSlot=t.geplandSlot||(t.datum&&t.tijdstip?(_findSlotByTime(t.tijdstip)||{}).id:null);
+  if(bestSlot) sel.value=bestSlot;
+  // Position
+  const zone=document.getElementById('toetsen-herplan-zone');
+  const r=btn.getBoundingClientRect();
+  zone.style.top=(r.bottom+6)+'px';
+  zone.style.left=Math.min(r.left, window.innerWidth-280)+'px';
+  zone.style.display='';
+}
+
+function confirmHerplan(){
+  const t=S.toetsenImport.find(x=>x.id===_herplanToetsId);
+  if(!t) return;
+  const datum=document.getElementById('herplan-date').value;
+  const slotId=document.getElementById('herplan-slot').value;
+  if(!datum||!slotId){ alert('Kies een datum en lesuur.'); return; }
+  if(!t.matchedStudentId){ alert('Leerling niet gevonden in app.'); return; }
+  const wd=_dateToWeekDi(datum);
+  if(!wd){ alert('Ongeldige datum.'); return; }
+  // Remove old
+  if(t.geplandWeekKey){
+    const stuData=S.studentData[t.matchedStudentId];
+    if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow')
+      stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+  }
+  _setToetsInPlanner(t.matchedStudentId, wd.weekKey, wd.di, slotId, t);
+  t.datum=datum; t.status='gepland'; t.geplandWeekKey=wd.weekKey; t.geplandDi=wd.di; t.geplandSlot=slotId;
+  document.getElementById('toetsen-herplan-zone').style.display='none';
+  persist(); renderToetsenCards(); updateToetsBadge();
+}
+
+function _setToetsInPlanner(studentId, weekKey, di, slotId, toets){
+  if(!S.studentData[studentId]) S.studentData[studentId]={std:{},ovr:{}};
+  const {ovr}=S.studentData[studentId];
+  if(!ovr[weekKey]) ovr[weekKey]={};
+  if(!ovr[weekKey][di]) ovr[weekKey][di]={};
+  ovr[weekKey][di][slotId]='yellow';
+  // Also store the subject in toets notes
+  if(!S.studentData[studentId].toets) S.studentData[studentId].toets={};
+  if(!S.studentData[studentId].toets[weekKey]) S.studentData[studentId].toets[weekKey]={};
+  if(!S.studentData[studentId].toets[weekKey][di]) S.studentData[studentId].toets[weekKey][di]={};
+  S.studentData[studentId].toets[weekKey][di][slotId]={subject:toets.vak, lokaal:toets.lokaal||''};
+}
+
+function updateToetsBadge(){
+  const badge=document.getElementById('toets-badge');
+  if(!badge) return;
+  const open=S.toetsenImport.filter(t=>t.status==='open').length;
+  if(open>0){ badge.textContent=open; badge.style.display='flex'; }
+  else { badge.style.display='none'; }
 }
 
 /* Excel export — laad SheetJS dynamisch */
