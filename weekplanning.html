@@ -539,7 +539,7 @@ body.dark .student-bar{background:#3D1C00;}
 .leg-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
 
 /* ── DISPLAY TAKEN PANEL ─────────────────────────── */
-.display-content-row{display:flex;flex:1;overflow:hidden;align-items:flex-start;}
+.display-content-row{display:flex;flex:1;overflow:hidden;align-items:flex-start;position:relative;}
 .display-taken-panel{
   width:240px;flex-shrink:0;padding:1rem 0 1rem 1rem;
   overflow-y:auto;height:100%;
@@ -1481,6 +1481,107 @@ body.dark .stu-sport-chip {
   color: #fff;
 }
 
+/* ── Afgeronde cellen: kaart-effect ── */
+.sched-wrap {
+  background: var(--ground) !important;
+}
+.sched-grid {
+  gap: 3px !important;
+  background: transparent !important;
+}
+.dc {
+  border-radius: 8px !important;
+  border: none !important;
+}
+.dc.pause-dc {
+  border-radius: 5px !important;
+}
+.tc {
+  border-radius: 7px !important;
+  border: none !important;
+}
+.gh {
+  border-radius: 7px !important;
+  border: none !important;
+}
+/* Vandaag kolom: blauwe outline ipv border */
+.gh.today-gh {
+  box-shadow: inset 0 0 0 2.5px #2471A3 !important;
+}
+
+/* ── Kleurenlegenda zijpaneel ── */
+.color-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem .35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  margin: .3rem .5rem .3rem 0;
+  align-self: flex-start;
+  position: sticky;
+  top: .5rem;
+  flex-shrink: 0;
+}
+.csb-dot-row {
+  cursor: default;
+}
+.csb-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .6rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .01em;
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  cursor: default;
+  user-select: none;
+}
+.csb-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+  background: var(--surf-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .12s;
+}
+.csb-icon:hover {
+  background: var(--brand-light);
+  border-color: var(--brand);
+}
+.csb-sep {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--border);
+  margin: .2rem 0;
+}
+/* Dot kleuren */
+.csb-green  { background: #2D8B50; }
+.csb-red    { background: #C0392B; }
+.csb-blue   { background: #2471A3; }
+.csb-purple { background: #7D3C98; }
+.csb-yellow { background: #C8A000; }
+.csb-orange { background: #C05818; }
+.csb-rose   { background: #B01010; }
+
+/* Verberg sidebar in 4-weken en maandweergave */
+.four-wk-grid ~ .color-sidebar,
+.month-wrap ~ .color-sidebar {
+  display: none;
+}
+
 </style>
 
 
@@ -1681,6 +1782,20 @@ body.dark .stu-sport-chip {
       </div>
     </div>
     <div class="sched-area" id="sched-area"></div>
+
+    <!-- ══ KLEURENLEGENDA RECHTSZIJPANEEL ══ -->
+    <div class="color-sidebar" id="color-sidebar">
+      <div class="csb-dot-row" title="Aanwezig"><div class="csb-dot csb-green">A</div></div>
+      <div class="csb-dot-row" title="Training"><div class="csb-dot csb-red">Tr</div></div>
+      <div class="csb-dot-row" title="Rust"><div class="csb-dot csb-blue">R</div></div>
+      <div class="csb-dot-row" title="Wedstrijd"><div class="csb-dot csb-purple">W</div></div>
+      <div class="csb-dot-row" title="Toets"><div class="csb-dot csb-yellow">To</div></div>
+      <div class="csb-dot-row" title="Toernooi"><div class="csb-dot csb-orange">Tn</div></div>
+      <div class="csb-dot-row" title="Overig"><div class="csb-dot csb-rose">O</div></div>
+      <div class="csb-sep"></div>
+      <div class="csb-dot-row" title="Notities tonen" onclick="toggleNotesSidebar?.()"><div class="csb-icon">📝</div></div>
+      <div class="csb-dot-row" title="Printen" onclick="window.print()"><div class="csb-icon">🖨️</div></div>
+    </div>
   </div>
 </div>
 
