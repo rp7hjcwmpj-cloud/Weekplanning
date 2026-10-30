@@ -1134,6 +1134,133 @@ body.dark .display-tile-initial{background:#3A1800;color:#F7941D;}
   transition:background .15s,border-color .15s;
 }
 .display-back-btn:hover{background:var(--surf-2);border-color:var(--border-s);}
+
+/* ══ 2SCOOL VISUELE STIJL OVERRIDE ══════════════════ */
+
+/* Warme achtergrond tonen als basiskleur */
+:root {
+  --ground:   #F0EDE8;
+  --surf-2:   #F7F4EF;
+  --border:   #E0DAD2;
+  --border-s: #C8C2B8;
+  --pause-bg: #EDE9E3;
+  --pause-tx: #B8B0A6;
+}
+body.dark {
+  --ground:   #0E1520;
+  --surf-2:   #1A2236;
+  --border:   #2A3850;
+  --border-s: #3A4E6A;
+  --pause-bg: #131C2C;
+  --pause-tx: #3A4A62;
+}
+
+/* ── Dag-headers: wit met grijze dagnaam + oranje datum ── */
+.gh {
+  background: var(--surface);
+  color: var(--tx2);
+  border-bottom: 2px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.gh .dn {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--tx3);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.gh .dd {
+  font-size: .88rem;
+  font-weight: 800;
+  opacity: 1;
+  color: var(--accent);
+  margin-top: .08rem;
+}
+/* Vandaag-kolom: blauwe nadruk */
+.gh.today-gh {
+  background: var(--surface);
+  box-shadow: none;
+  border-bottom: 3px solid #2471A3;
+}
+.gh.today-gh .dn { color: #2471A3; }
+.gh.today-gh .dd { color: #2471A3; }
+
+/* Tijdcel linksboven */
+.gh.time-gh {
+  background: var(--surf-2);
+  color: var(--tx3);
+  border-bottom: 2px solid var(--border);
+  border-right: 2px solid var(--border-s);
+}
+/* Vakantie/studiedag headers: neutraal ipv grijs blok */
+.gh.vak-gh,.gh.std-gh {
+  background: var(--surf-2) !important;
+  border-bottom: 2px solid var(--border) !important;
+}
+.gh.vak-gh .dn,.gh.std-gh .dn { color: var(--tx3) !important; }
+.gh.vak-gh .dd,.gh.std-gh .dd { color: var(--tx3) !important; opacity:.6; }
+
+/* ── Tijdrij ── */
+.tc {
+  background: var(--surf-2);
+  border-right: 2px solid var(--border-s);
+  border-bottom: 1px solid var(--border);
+}
+.tc .sn { color: var(--tx); font-size: .72rem; }
+.tc .st { color: var(--tx3); font-size: .62rem; }
+
+/* ── Raster-omhulsel ── */
+.sched-wrap {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.07);
+}
+
+/* ── Celbadge: ronde pill stijl zoals 2Scool ── */
+.cell-lbl {
+  top: 5px;
+  left: 5px;
+  border-radius: 20px;
+  padding: 2px 7px 2px 6px;
+  font-size: .6rem;
+  font-weight: 800;
+  min-height: 17px;
+  min-width: 17px;
+  letter-spacing: .01em;
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+}
+
+/* ── Pauzerij iets warmer ── */
+.dc.pause-dc { background: var(--pause-bg); }
+.tc.pause-tc  { background: var(--pause-bg); }
+
+/* ── Cel basisstijl: iets grotere minimum hoogte ── */
+.dc { min-height: 40px; }
+
+/* ── Week-navigatie ── */
+.week-nav {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+}
+.nav-btn {
+  background: var(--surf-2);
+  border-color: var(--border);
+}
+
+/* ── App-header: iets warmere tint ── */
+.app-hdr {
+  background: #C85A00;
+}
+
+/* ── Studentenbalk ── */
+.student-bar {
+  background: #8B4000;
+}
+
+/* ── Dag-kolom header border vandaag ── */
+.dag-dc { border-bottom: 2px solid var(--border-s); }
+
 </style>
 
 
