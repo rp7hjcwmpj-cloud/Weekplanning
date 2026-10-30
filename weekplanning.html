@@ -1248,14 +1248,88 @@ body.dark {
   border-color: var(--border);
 }
 
-/* ── App-header: iets warmere tint ── */
+/* ── App-header: minimalistisch wit ── */
 .app-hdr {
-  background: #C85A00;
+  background: #FFFFFF !important;
+  box-shadow: 0 1px 0 var(--border) !important;
+  padding: .5rem 1.2rem !important;
 }
-
-/* ── Studentenbalk ── */
-.student-bar {
-  background: #8B4000;
+.hdr-left {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+.hdr-left h1 {
+  font-size: .95rem !important;
+  font-weight: 700 !important;
+  color: var(--tx) !important;
+  letter-spacing: -.2px;
+}
+.hdr-logo {
+  height: 1.8rem;
+  width: auto;
+  object-fit: contain;
+}
+/* Nav-knoppen: minimalistisch grijs */
+.hb {
+  background: transparent !important;
+  border: none !important;
+  color: var(--tx2) !important;
+  font-size: .78rem !important;
+  font-weight: 500 !important;
+  padding: .35rem .6rem !important;
+  border-radius: 8px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  transition: background .12s, color .12s !important;
+}
+.hb:hover {
+  background: var(--surf-2) !important;
+  color: var(--tx) !important;
+}
+.hb.on {
+  background: rgba(36,113,163,.1) !important;
+  color: #2471A3 !important;
+}
+.hb-ico {
+  font-size: .82rem;
+  line-height: 1;
+}
+/* Icon-only knoppen */
+.hb.hb-icon {
+  padding: .3rem .4rem !important;
+  font-size: .95rem !important;
+}
+/* Logout knop */
+.hb.hb-logout {
+  color: #C0392B !important;
+  font-size: 1.05rem !important;
+}
+.hb.hb-logout:hover {
+  background: rgba(192,57,43,.08) !important;
+  color: #C0392B !important;
+}
+/* Scheidingslijn tussen nav en acties */
+.hdr-sep {
+  width: 1px;
+  height: 1.2rem;
+  background: var(--border);
+  margin: 0 .15rem;
+  flex-shrink: 0;
+}
+/* Sync chip aanpassen voor lichte balk */
+.sync-chip.idle { background: var(--surf-2) !important; color: var(--tx3) !important; }
+.sync-chip.syncing { background: rgba(200,160,0,.15) !important; color: #A07800 !important; }
+.sync-chip.ok { background: rgba(45,139,80,.12) !important; color: #1E7040 !important; }
+.sync-chip.err { background: rgba(192,57,43,.12) !important; color: #C0392B !important; }
+/* Rol-pill */
+.role-pill {
+  background: var(--surf-2) !important;
+  color: var(--tx3) !important;
+  border: 1px solid var(--border) !important;
+  font-size: .65rem !important;
+  padding: .15rem .5rem !important;
 }
 
 /* ── Dag-kolom header border vandaag ── */
@@ -1661,35 +1735,38 @@ body.dark .stu-sport-chip {
 
   <div class="app-hdr">
     <div class="hdr-left">
-      <h1>Weekplanning</h1>
-      <div class="school" id="hdr-schoolname">Parmant Joris</div>
+      <img id="hdr-logo-img" src="" alt="" class="hdr-logo" style="display:none;">
+      <h1>Planner</h1>
     </div>
+    <!-- Verborgen: schoolnaam blijft beschikbaar voor applySchoolName() -->
+    <div id="hdr-schoolname" style="display:none;">Parmant Joris</div>
     <div class="hdr-right">
-      <div id="hdr-edit-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
-        <button class="hb" onclick="openLeerlingBeschModal()">👨‍🏫 Docenten</button>
-        <button class="hb" onclick="showVergaderingScreen()">📒 Vergadering 2.0</button>
-        <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;">📝 Coachgesprek</button>
-        <button class="hb" onclick="openAanwModal()">📋 Aanwezigheid</button>
-        <button class="hb" onclick="showCijfersScreen()">📊 Cijfers</button>
+      <div id="hdr-edit-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
+        <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico">👨‍🏫</span> Docenten</button>
+        <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;"><span class="hb-ico">💬</span> Coachgesprek</button>
+        <button class="hb" onclick="showVergaderingScreen()"><span class="hb-ico">🖥</span> Vergadering</button>
+        <button class="hb" onclick="openAanwModal()"><span class="hb-ico">📋</span> Aanwezigheid</button>
+        <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico">📊</span> Cijfers</button>
       </div>
-      <div id="hdr-docent-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
-        <button class="hb" onclick="openBeschModal()">📅 Beschikbaarheid</button>
-        <button class="hb" onclick="openLaModal()">👥 Leerling aanwezigheid</button>
-        <button class="hb" onclick="showCijfersScreen()">📊 Cijfers</button>
+      <div id="hdr-docent-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
+        <button class="hb" onclick="openBeschModal()"><span class="hb-ico">📅</span> Beschikbaarheid</button>
+        <button class="hb" onclick="openLaModal()"><span class="hb-ico">👥</span> Leerlingen</button>
+        <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico">📊</span> Cijfers</button>
       </div>
-      <div id="hdr-leerling-zone" style="display:none;gap:.45rem;flex-wrap:wrap;align-items:center;">
-        <button class="hb" onclick="openLeerlingBeschModal()">👁 Beschikbaarheid docenten</button>
-        <button class="hb" id="btn-hw-toggle" onclick="toggleHwPanel()">👁 Huiswerk</button>
+      <div id="hdr-leerling-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
+        <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico">👁</span> Docenten</button>
+        <button class="hb" id="btn-hw-toggle" onclick="toggleHwPanel()"><span class="hb-ico">📖</span> Huiswerk</button>
       </div>
+      <div class="hdr-sep" id="hdr-sep-nav"></div>
       <span id="sync-chip" class="sync-chip" style="display:none;"></span>
-      <button id="btn-m365-login" class="hb" style="display:none;" onclick="m365SignIn()">🔑 Aanmelden M365</button>
+      <button id="btn-m365-login" class="hb" style="display:none;" onclick="m365SignIn()"><span class="hb-ico">🔑</span> Aanmelden</button>
       <span class="role-pill" id="role-pill"></span>
-      <button class="hb" id="btn-admin-header" style="display:none;" onclick="showAdmin()">⚙️ Admin</button>
-      <div id="hdr-display-zone" style="display:none;gap:.45rem;align-items:center;">
-        <button class="hb" onclick="displayBack()">← Alle leerlingen</button>
-        <button class="hb logout" onclick="displayLogout()">Uitloggen</button>
+      <button class="hb hb-icon" id="btn-admin-header" style="display:none;" onclick="showAdmin()" title="Instellingen">⚙️</button>
+      <div id="hdr-display-zone" style="display:none;gap:.2rem;align-items:center;">
+        <button class="hb" onclick="displayBack()"><span class="hb-ico">←</span> Leerlingen</button>
+        <button class="hb hb-icon hb-logout" onclick="displayLogout()" title="Uitloggen">⇥</button>
       </div>
-      <button class="hb logout" id="btn-main-logout" onclick="logout()">Uitloggen</button>
+      <button class="hb hb-icon hb-logout" id="btn-main-logout" onclick="logout()" title="Uitloggen">⇥</button>
     </div>
   </div>
 
@@ -2758,6 +2835,9 @@ function applySchoolLogo(){
     loginImg.style.display='none';
     bgLogo.style.display='none';
   }
+  // Header logo
+  const hdrLogo=document.getElementById('hdr-logo-img');
+  if(hdrLogo){ if(logo){ hdrLogo.src=logo; hdrLogo.style.display=''; } else { hdrLogo.style.display='none'; } }
   // Admin preview
   const prev=document.getElementById('adm-logo-img');
   const placeholder=document.getElementById('adm-logo-placeholder');
