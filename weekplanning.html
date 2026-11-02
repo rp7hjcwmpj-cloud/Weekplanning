@@ -7139,7 +7139,7 @@ function _tipRenderGrid(){
 
   const stuId=S.currentStudentId;
   const sd=S.studentData[stuId]||{};
-  const weekKey=`${year}-W${String(week).padStart(2,'0')}`;
+  const weekKey=wk(year,week);
   const dates=weekDates(year,week);
   const DAYS_S=['Ma','Di','Wo','Do','Vr'];
 
@@ -7202,7 +7202,7 @@ function confirmToetsInplan(){
   const stuId=S.currentStudentId;
   if(!stuId) return;
   const {week,year}=_tipWy;
-  const weekKey=`${year}-W${String(week).padStart(2,'0')}`;
+  const weekKey=wk(year,week);
   const dates=weekDates(year,week);
   const dt=dates[_tipSelectedDi];
   const datum=dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`:'';
