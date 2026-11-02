@@ -6524,6 +6524,20 @@ function _stuVolgtVak(stu, vakNorm){
   );
 }
 
+function _stuVolgtVakExcel(stu, excelVak){
+  // Splitst "Wi A / Wi B" in ["Wi A","Wi B"] en checkt op elk onderdeel
+  const parts = String(excelVak||'').split(/[\/,&]|(?:\s+en\s+)/i)
+    .map(p=>p.trim()).filter(Boolean);
+  return parts.some(p => _stuVolgtVak(stu, _normVak(p)));
+}
+
+function _toetsMatchesVak(toetsVak, stuVak){
+  // Checkt of een toets-vak (bijv. "Wi A / Wi B") dit studentvak (bijv. "WiA") bevat
+  const norm = _normVak(stuVak);
+  return String(toetsVak||'').split(/[\/,&]|(?:\s+en\s+)/i)
+    .map(p=>_normVak(p.trim())).some(p => p === norm);
+}
+
 function confirmToetsenImport(){
   const get = f => {
     const sel=document.getElementById('colmap-'+f); return sel?sel.value:'';
@@ -6543,10 +6557,8 @@ function confirmToetsenImport(){
     const datum    = _parseToetsDate(iDatum>=0  ? row[iDatum]  : '');
     const tijdstip = iTijd>=0    ? _parseToetsTime(row[iTijd])          : '';
     const lokaal   = iLokaal>=0  ? String(row[iLokaal]||'').trim()      : '';
-    const vakNorm  = _normVak(vak);
-
-    // Zoek alle leerlingen in deze klas die dit vak volgen
-    const matches = S.students.filter(s => s.klass===klas && _stuVolgtVak(s, vakNorm));
+    // Zoek alle leerlingen in deze klas die dit vak (of één van de onderdelen) volgen
+    const matches = S.students.filter(s => s.klass===klas && _stuVolgtVakExcel(s, vak));
 
     if(matches.length === 0){
       // Toch toevoegen zodat het zichtbaar is (geen match)
@@ -6580,91 +6592,95 @@ function renderToetsenCards(){
   const filterStatus = document.getElementById('toetsen-filter-status')?.value||'all';
   const filterQ      = (document.getElementById('toetsen-filter-naam')?.value||'').toLowerCase().trim();
 
-  let items = S.toetsenImport.filter(t=>{
-    if(filterStatus==='open'    && t.status!=='open')    return false;
-    if(filterStatus==='gepland' && t.status!=='gepland') return false;
-    if(filterQ && !t.studentNaam.toLowerCase().includes(filterQ)
-               && !t.vak.toLowerCase().includes(filterQ)
-               && !(t.klas||'').toLowerCase().includes(filterQ)) return false;
-    return true;
-  });
+  // Alle leerlingen die minstens één toets hebben in de import
+  const stuIdsInImport = new Set(S.toetsenImport.map(t=>t.matchedStudentId).filter(Boolean));
+  let studenten = S.students.filter(s => stuIdsInImport.has(s.id));
 
-  if(!items.length){
-    ct.innerHTML=`<div style="font-size:.82rem;color:var(--tx3);text-align:center;padding:2rem;">Geen toetsen gevonden.</div>`;
-    _updateToetsStatusBar();
-    return;
+  // Zoekfilter op naam of klas
+  if(filterQ) studenten = studenten.filter(s =>
+    s.name.toLowerCase().includes(filterQ) || (s.klass||'').toLowerCase().includes(filterQ)
+  );
+
+  // Statusfilter: alleen studenten waarbij minstens één toets matcht
+  if(filterStatus==='open')    studenten = studenten.filter(s => S.toetsenImport.some(t=>t.matchedStudentId===s.id&&t.status==='open'));
+  if(filterStatus==='gepland') studenten = studenten.filter(s => S.toetsenImport.some(t=>t.matchedStudentId===s.id&&t.status==='gepland'));
+
+  studenten = [...studenten].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
+
+  if(!studenten.length){
+    ct.innerHTML=`<div style="font-size:.82rem;color:var(--tx3);text-align:center;padding:2rem;">Geen leerlingen met toetsen gevonden.</div>`;
+    _updateToetsStatusBar(); return;
   }
 
-  // Groepeer per unieke toets: vak + datum + tijdstip + klas
-  const byToets = {};
-  items.forEach(t=>{
-    const key = [t.vak, t.datum||'', t.tijdstip||'', t.klas||''].join('||');
-    if(!byToets[key]) byToets[key]=[];
-    byToets[key].push(t);
-  });
-
-  // Sorteer op datum → tijdstip → vak
-  const sortedKeys = Object.keys(byToets).sort((a,b)=>{
-    const [,dA,tA]=a.split('||');
-    const [,dB,tB]=b.split('||');
-    if(dA!==dB) return (dA||'').localeCompare(dB||'');
-    return (tA||'').localeCompare(tB||'');
-  });
-
   let html='';
-  for(const key of sortedKeys){
-    const groep  = byToets[key];
-    const rep    = groep[0];
-    const datumLabel = rep.datum   ? fmtDate(rep.datum) : '—';
-    const tijdLabel  = rep.tijdstip|| '—';
-    const slot       = rep.datum && rep.tijdstip ? _findSlotByTime(rep.tijdstip) : null;
-    const slotLabel  = slot ? slot.label : '';
-    const openCount    = groep.filter(t=>t.status==='open').length;
-    const geplandCount = groep.filter(t=>t.status==='gepland').length;
+  for(const stu of studenten){
+    const stuToetsen = S.toetsenImport.filter(t=>t.matchedStudentId===stu.id);
+
+    // Unieke vakken van deze leerling (over alle periodes)
+    const allVakken = [...new Set(Object.values(stu.vakken||{}).flat())].sort((a,b)=>a.localeCompare(b,'nl'));
+
+    const openCount    = stuToetsen.filter(t=>t.status==='open').length;
+    const geplandCount = stuToetsen.filter(t=>t.status==='gepland').length;
     const badge = openCount===0
-      ? `<span class="toets-grp-badge gepland">✓ Alle ${geplandCount} gepland</span>`
+      ? `<span class="toets-grp-badge gepland">✓ ${geplandCount} gepland</span>`
       : `<span class="toets-grp-badge open">${openCount} open</span>`;
-    const klassen = [...new Set(groep.map(t=>t.klas).filter(Boolean))].join(', ');
 
     html += `<div class="toets-groep">
       <div class="toets-groep-hdr">
-        <div class="toets-groep-vak">${rep.vak}</div>
+        <div class="toets-groep-vak" style="font-size:.95rem;">${stu.name}</div>
         <div class="toets-groep-meta">
-          ${klassen?`<span class="toets-grp-klas">${klassen}</span>`:''}
-          <span>📅 ${datumLabel}</span>
-          <span>🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</span>
-          ${rep.lokaal?`<span>🏫 ${rep.lokaal}</span>`:''}
+          <span class="toets-grp-klas">${stu.klass||''}</span>
+          ${stu.sport?`<span style="font-size:.7rem;color:var(--tx3);">⚽ ${stu.sport}</span>`:''}
         </div>
         ${badge}
       </div>
       <div class="toets-groep-leerlingen">`;
 
-    const sortedGroep = [...groep].sort((a,b)=>a.studentNaam.localeCompare(b.studentNaam,'nl'));
-    for(const t of sortedGroep){
-      const matchStu = t.matchedStudentId ? S.students.find(s=>s.id===t.matchedStudentId) : null;
-      const matchLabel = matchStu
-        ? `<span class="toets-match-ok">✓ ${matchStu.name}</span>`
-        : `<span class="toets-match-err">⚠ niet in app</span>`;
-      const canPlan = !!t.matchedStudentId && !!t.datum && !!slot;
-      const statusEl = t.status==='gepland'
-        ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland${t.geplandWeekKey?' · week '+t.geplandWeekKey.split('-W')[1]:''}</span>`
-        : `<span class="toets-stu-status toets-stu-open">○ Te plannen</span>`;
-      const actBtns = t.status==='open'
-        ? `${canPlan?`<button class="toets-stu-btn plan" onclick="planToets('${t.id}')">📅 Inplannen</button>`:''}
-           <button class="toets-stu-btn herplan" onclick="openHerplan('${t.id}',this)">🔄 Herplannen</button>
-           <button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${t.id}')">✕</button>`
-        : `<button class="toets-stu-btn unplan" onclick="unplanToets('${t.id}')">✗ Ongedaan</button>
-           <button class="toets-stu-btn herplan" onclick="openHerplan('${t.id}',this)">🔄 Verplaatsen</button>
-           <button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${t.id}')">✕</button>`;
-      html += `<div class="toets-stu-row${t.status==='gepland'?' gepland':''}">
-        <div class="toets-stu-naam">${t.studentNaam} ${matchLabel}</div>
+    for(const vak of allVakken){
+      // Koppel dit vak aan een toets-entry
+      const toets = stuToetsen.find(t=>_toetsMatchesVak(t.vak, vak));
+
+      if(!toets){
+        // Vak wel gevolgd, maar geen toets in het Excel
+        if(filterStatus!=='all') continue;
+        html += `<div class="toets-stu-row" style="opacity:.38;">
+          <div class="toets-stu-naam" style="font-size:.76rem;">${vak}</div>
+          <div class="toets-stu-status" style="font-size:.68rem;color:var(--tx3);">— geen toets</div>
+        </div>`;
+        continue;
+      }
+
+      // Statusfilter op rijniveau
+      if(filterStatus==='open'    && toets.status!=='open')    continue;
+      if(filterStatus==='gepland' && toets.status!=='gepland') continue;
+
+      const datumLabel = toets.datum    ? fmtDate(toets.datum) : '—';
+      const tijdLabel  = toets.tijdstip || '—';
+      const slot       = toets.datum && toets.tijdstip ? _findSlotByTime(toets.tijdstip) : null;
+      const slotLabel  = slot ? slot.label : '';
+      const canPlan    = !!toets.datum && !!slot;
+
+      const statusEl = toets.status==='gepland'
+        ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland · week ${toets.geplandWeekKey?.split('-W')[1]||''}</span>`
+        : `<span class="toets-stu-status toets-stu-open">📅 ${datumLabel} · 🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</span>`;
+
+      const actBtns = toets.status==='open'
+        ? `${canPlan?`<button class="toets-stu-btn plan" onclick="planToets('${toets.id}')">📅 Inplannen</button>`:''}
+           <button class="toets-stu-btn herplan" onclick="openHerplan('${toets.id}',this)">🔄 Herplannen</button>
+           <button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${toets.id}')">✕</button>`
+        : `<button class="toets-stu-btn unplan" onclick="unplanToets('${toets.id}')">✗ Ongedaan</button>
+           <button class="toets-stu-btn herplan" onclick="openHerplan('${toets.id}',this)">🔄 Verplaatsen</button>
+           <button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${toets.id}')">✕</button>`;
+
+      html += `<div class="toets-stu-row${toets.status==='gepland'?' gepland':''}">
+        <div class="toets-stu-naam">${vak}${toets.lokaal?` <span style="font-size:.65rem;color:var(--tx3);">🏫 ${toets.lokaal}</span>`:''}</div>
         ${statusEl}
         <div class="toets-stu-actions">${actBtns}</div>
       </div>`;
     }
     html += `</div></div>`;
   }
-  ct.innerHTML=html;
+  ct.innerHTML = html || `<div style="font-size:.82rem;color:var(--tx3);text-align:center;padding:2rem;">Geen toetsen gevonden.</div>`;
   _updateToetsStatusBar();
 }
 
