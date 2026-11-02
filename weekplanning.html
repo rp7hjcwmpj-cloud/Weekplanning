@@ -174,7 +174,7 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .dc.toets-partial::before{content:'';position:absolute;top:0;left:0;right:0;height:var(--toets-fill,0%);background:var(--y-bg);z-index:0;pointer-events:none;}
 /* Gesplitst uur: alleen kleuren zichtbaar, geen tekst */
 .dc.toets-partial .cell-lbl,
-.dc.toets-partial .cell-note,
+.dc.toets-partial .cell-note:not(.toets-time-note),
 .dc.toets-partial .cell-note-input { display:none!important; }
 /* Late-start toets — yellow strip from offset down in origin slot */
 .dc.toets-late-start{overflow:hidden;}
@@ -182,6 +182,11 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
 .dc.toets-late-start .cell-lbl,
 .dc.toets-late-start .cell-note,
 .dc.toets-late-start .cell-note-input{position:relative;z-index:1;}
+/* Exacte toetstijd in de cel */
+.cell-note.toets-time-note{white-space:normal;z-index:1;font-weight:700;color:#5D4000;background:rgba(255,236,150,.92);line-height:1.2;}
+.dc.editable:has(.toets-time-note) .cell-note-input{display:none;}
+.pause-dc .cell-note.toets-time-note{padding:1px 3px;}
+.toets-time-del{pointer-events:auto;cursor:pointer;border:none;background:none;color:inherit;font-size:.7rem;padding:0 0 0 .3rem;line-height:1;}
 /* Pauze cel geel tijdens toets */
 .dc.pause-dc[data-c="yellow"]{background:var(--y-bg)!important;}
 /* ── Beschikbaarheid circles ────────────────────── */
@@ -2371,7 +2376,7 @@ body.dark .stu-sport-chip {
           <div class="tip-panel-title" style="margin-top:.4rem;">📧 Agenda-uitnodiging sturen</div>
           <div style="position:relative;">
             <input id="tip-collega-search" class="tip-form-inp" type="text" placeholder="Naam collega zoeken…" autocomplete="off" oninput="_tipCollegaSearch(this.value)">
-            <div id="tip-collega-results" style="display:none;position:absolute;left:0;right:0;top:100%;background:var(--surf-1);border:1.5px solid var(--brand);border-radius:7px;z-index:200;max-height:130px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);"></div>
+            <div id="tip-collega-results" style="display:none;margin-top:.2rem;background:var(--surface);border:1.5px solid var(--brand);border-radius:7px;max-height:130px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);"></div>
           </div>
           <div id="tip-collega-selected" style="display:none;font-size:.76rem;color:var(--brand);padding:.22rem .5rem;background:var(--brand-light);border-radius:6px;margin-top:.25rem;align-items:center;gap:.4rem;flex-wrap:wrap;"></div>
           <div style="font-size:.68rem;color:var(--tx3);margin-top:.18rem;">Stuur een agenda-uitnodiging (ICS) naar een collega.</div>
@@ -2410,10 +2415,11 @@ body.dark .stu-sport-chip {
       </div>
       <div class="tip-confirm-actions">
         <button class="btn-p" onclick="confirmToetsInplan()">✓ Inplannen in rooster</button>
-        <button class="btn-g" onclick="downloadToetsICS()">📅 Download Outlook ICS</button>
         <button class="btn-ghost" onclick="_tipClearSelection()">✕ Deselecteer</button>
       </div>
     </div>
+    <!-- Succesmelding -->
+    <div class="tip-confirm-bar" id="tip-success-bar" style="display:none;"></div>
   </div>
 </div>
 
@@ -6898,7 +6904,8 @@ function planToets(id){
   if(!t||!t.matchedStudentId) return;
   const wd = _dateToWeekDi(t.datum);
   if(!wd) return;
-  const slot = _findSlotByTime(t.tijdstip);
+  // Met bekende duur telt de exacte begintijd (die ook in een pauze kan vallen)
+  const slot = t._dur ? SCHOOL.find(s=>s.id===_tipFindSlotForTime(t.tijdstip)) : _findSlotByTime(t.tijdstip);
   if(!slot){ alert('Kon geen lesuur bepalen. Gebruik Herplannen.'); return; }
   _setToetsInPlanner(t.matchedStudentId, wd.weekKey, wd.di, slot.id, t);
   t.status='gepland'; t.geplandWeekKey=wd.weekKey; t.geplandDi=wd.di; t.geplandSlot=slot.id;
@@ -6910,13 +6917,11 @@ function unplanToets(id){
   if(!t) return;
   // Remove yellow from planner cell if it was set by us
   if(t.matchedStudentId && t.geplandWeekKey!=null && t.geplandDi!=null && t.geplandSlot){
-    const stuData = S.studentData[t.matchedStudentId];
-    if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow'){
-      stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
-    }
+    _clearToetsInPlanner(t.matchedStudentId, t.geplandWeekKey, t.geplandDi, t.geplandSlot);
   }
   t.status='open'; t.geplandWeekKey=null; t.geplandDi=null; t.geplandSlot=null;
   persist(); renderToetsenCards(); updateToetsBadge();
+  if(S.currentStudentId) renderSchedule();
 }
 
 function removeToets(id){
@@ -6924,12 +6929,11 @@ function removeToets(id){
   if(!t) return;
   // Verwijder ook de gele cel uit de planner indien gepland
   if(t.matchedStudentId && t.geplandWeekKey && t.geplandDi!=null && t.geplandSlot){
-    const stuData=S.studentData[t.matchedStudentId];
-    if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow')
-      stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+    _clearToetsInPlanner(t.matchedStudentId, t.geplandWeekKey, t.geplandDi, t.geplandSlot);
   }
   S.toetsenImport=S.toetsenImport.filter(x=>x.id!==id);
   persist(); renderToetsenCards(); updateToetsBadge();
+  if(S.currentStudentId) renderSchedule();
 }
 
 function openHerplan(id, btn){
@@ -6961,10 +6965,10 @@ function confirmHerplan(){
   if(!wd){ alert('Ongeldige datum.'); return; }
   // Remove old
   if(t.geplandWeekKey){
-    const stuData=S.studentData[t.matchedStudentId];
-    if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow')
-      stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+    _clearToetsInPlanner(t.matchedStudentId, t.geplandWeekKey, t.geplandDi, t.geplandSlot);
   }
+  // Herplannen op een lesuur: de toets start aan het begin van dat uur
+  if(t._dur) t.tijdstip=SCHOOL.find(s=>s.id===slotId).time.split('–')[0].trim();
   _setToetsInPlanner(t.matchedStudentId, wd.weekKey, wd.di, slotId, t);
   t.datum=datum; t.status='gepland'; t.geplandWeekKey=wd.weekKey; t.geplandDi=wd.di; t.geplandSlot=slotId;
   document.getElementById('toetsen-herplan-zone').style.display='none';
@@ -6981,7 +6985,58 @@ function _setToetsInPlanner(studentId, weekKey, di, slotId, toets){
   if(!S.studentData[studentId].toets) S.studentData[studentId].toets={};
   if(!S.studentData[studentId].toets[weekKey]) S.studentData[studentId].toets[weekKey]={};
   if(!S.studentData[studentId].toets[weekKey][di]) S.studentData[studentId].toets[weekKey][di]={};
-  S.studentData[studentId].toets[weekKey][di][slotId]={subject:toets.vak, lokaal:toets.lokaal||''};
+  const rec={subject:toets.vak, lokaal:toets.lokaal||''};
+  S.studentData[studentId].toets[weekKey][di][slotId]=rec;
+  // Zonder bekende duur (bijv. import): heel lesuur, zoals hierboven gezet
+  const slot=SCHOOL.find(s=>s.id===slotId);
+  if(!toets._dur||!slot) return;
+  delete ovr[weekKey][di][slotId];
+  const startStr=toets.tijdstip||slot.time.split('–')[0].trim();
+  const startMin=_parseTime(startStr);
+  const coverage=_toetsCoverage(slot,SCHOOL,toets._dur,startStr);
+  Object.assign(rec,{duration:toets._dur,startTime:_fmtMin(startMin),endTime:_fmtMin(startMin+toets._dur),lateStart:0,extended:[],partial:null});
+  rec.labelSlot=(coverage.find(c=>c.slot.kind==='lesson')||coverage[0]||{slot}).slot.id;
+  coverage.forEach(({slot:covSlot,fraction,lateStart},i)=>{
+    if(i===0){
+      rec.lateStart=lateStart;
+      if(fraction<1||lateStart>0) return; // deels gevuld: gele strook in buildGrid
+    } else if(fraction<1){
+      rec.partial={slotId:covSlot.id,fraction};
+      return;
+    }
+    if(covSlot.kind==='lesson') ovr[weekKey][di][covSlot.id]='yellow';
+    if(i>0||covSlot.kind==='pause') rec.extended.push(covSlot.id);
+  });
+}
+
+// Haalt een toets met alle bijbehorende uren uit de planner; standaardrooster komt terug
+function _clearToetsInPlanner(studentId, weekKey, di, slotId){
+  const sd=S.studentData[studentId];
+  if(!sd) return;
+  const dayOvr=sd.ovr?.[weekKey]?.[di];
+  const rec=sd.toets?.[weekKey]?.[di]?.[slotId];
+  [slotId,...(rec?.extended||[])].forEach(sid=>{
+    if(dayOvr?.[sid]==='yellow') delete dayOvr[sid];
+  });
+  if(rec) delete sd.toets[weekKey][di][slotId];
+}
+
+function _removeToetsAt(studentId, weekKey, di, slotId){
+  _clearToetsInPlanner(studentId, weekKey, di, slotId);
+  const t=S.toetsenImport.find(x=>x.matchedStudentId===studentId&&x.geplandWeekKey===weekKey&&x.geplandDi===di&&x.geplandSlot===slotId);
+  if(t){
+    if(t._handmatig) S.toetsenImport=S.toetsenImport.filter(x=>x!==t);
+    else { t.status='open'; t.geplandWeekKey=null; t.geplandDi=null; t.geplandSlot=null; }
+  }
+  persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
+}
+
+// Het lesuur/de pauze waar een toets begint, gezocht vanaf een uur dat de toets geel maakt
+function _toetsOriginAt(weekKey, di, sid){
+  const day=curData().toets?.[weekKey]?.[di];
+  if(!day) return null;
+  if(day[sid]) return sid;
+  return Object.keys(day).find(id=>day[id].extended?.includes(sid))||null;
 }
 
 function updateToetsBadge(){
@@ -7051,6 +7106,7 @@ function openToetsInplanModal(){
   _tipRenderToetsen();
   _tipRenderGrid();
   document.getElementById('tip-confirm-bar').style.display='none';
+  document.getElementById('tip-success-bar').style.display='none';
   document.getElementById('modal-toets-inplan').classList.add('show');
 }
 
@@ -7151,6 +7207,8 @@ function _tipFormChange(){
   _tipAutoSelectFromForm();
   // Herbereken confirm bar als slot handmatig geselecteerd (geen auto)
   if(_tipSelectedDi!==null && _tipSelectedSlotId && _tipSelectedDag===null) _tipUpdateConfirmBar();
+  document.getElementById('tip-success-bar').style.display='none';
+  _tipRenderGrid();
 }
 
 function _tipCalcTime(slot){
@@ -7214,8 +7272,8 @@ function _tipFindSlotForTime(timeStr){
   if(!timeStr) return null;
   const [h,m]=timeStr.split(':').map(Number);
   const tMin=h*60+m;
+  // Pauzes tellen mee: een toets kan bijv. om 13:15 in de pauze starten
   for(const slot of SCHOOL){
-    if(slot.kind==='pause') continue;
     const parts=slot.time.split('–');
     if(parts.length<2) continue;
     const [sh,sm]=parts[0].trim().split(':').map(Number);
@@ -7276,24 +7334,42 @@ function _tipDirectPlan(){
 }
 
 /* Collega zoeken */
-async function _tipCollegaSearch(q){
+let _tipCollegaTimer = null;
+let _tipCollegaSeq = 0;
+function _tipCollegaSearch(q){
   const res=document.getElementById('tip-collega-results');
   if(!res) return;
+  clearTimeout(_tipCollegaTimer);
+  const seq=++_tipCollegaSeq;
   if(!q||q.length<2||!_graphToken){ res.style.display='none'; return; }
-  try{
-    const r=await fetch(
-      `https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName,'${encodeURIComponent(q)}')&$select=id,displayName,mail&$top=8`,
-      {headers:{Authorization:'Bearer '+_graphToken}});
-    const d=await r.json();
-    if(!d.value?.length){ res.style.display='none'; return; }
+  _tipCollegaTimer=setTimeout(async()=>{
+    const _msg=txt=>{
+      res.innerHTML='';
+      const d=document.createElement('div');
+      d.className='tip-collega-result'; d.style.cursor='default'; d.textContent=txt;
+      res.appendChild(d); res.style.display='';
+    };
+    const data=await graphFetch('GET',
+      `/users?$search="displayName:${encodeURIComponent(q)}"&$select=displayName,mail,userPrincipalName&$top=10&$count=true`,
+      null,{'ConsistencyLevel':'eventual'});
+    if(seq!==_tipCollegaSeq) return; // inmiddels verder getypt
+    if(!data){ _msg('Zoeken mislukt. Controleer de M365-verbinding.'); return; }
+    const users=(data.value||[]).filter(u=>u.mail||u.userPrincipalName);
+    if(!users.length){ _msg('Geen collega gevonden.'); return; }
+    res.innerHTML='';
+    users.forEach(u=>{
+      const email=u.mail||u.userPrincipalName;
+      const item=document.createElement('div');
+      item.className='tip-collega-result';
+      const naam=document.createElement('strong'); naam.textContent=u.displayName||email;
+      const mail=document.createElement('div'); mail.style.cssText='font-size:.7rem;color:var(--tx3);'; mail.textContent=email;
+      item.append(naam,mail);
+      item.addEventListener('click',()=>_tipSelectCollega(email,u.displayName||email));
+      res.appendChild(item);
+    });
     res.style.display='';
-    res.innerHTML=d.value.map(u=>
-      `<div class="tip-collega-result" onclick="_tipSelectCollega(${JSON.stringify(u.mail||'')},${JSON.stringify(u.displayName||'')})">
-        <strong>${u.displayName||'?'}</strong><br>
-        <span style="font-size:.7rem;color:var(--tx3);">${u.mail||'geen mail'}</span>
-      </div>`
-    ).join('');
-  }catch(e){ res.style.display='none'; }
+    res.scrollIntoView({block:'nearest'});
+  },300);
 }
 
 function _tipSelectCollega(email, naam){
@@ -7303,7 +7379,12 @@ function _tipSelectCollega(email, naam){
   const inp=document.getElementById('tip-collega-search');
   if(inp) inp.value='';
   const sel=document.getElementById('tip-collega-selected');
-  if(sel){ sel.style.display='flex'; sel.innerHTML=`<span>📧 <strong>${naam}</strong> <span style="opacity:.7;">${email}</span></span><button onclick="_tipClearCollega()" style="margin-left:auto;border:none;background:none;cursor:pointer;font-size:.85rem;padding:0 .2rem;">✕</button>`; }
+  if(sel){
+    sel.style.display='flex';
+    sel.innerHTML=`<span>📧 <strong></strong> <span style="opacity:.7;"></span></span><button onclick="_tipClearCollega()" style="margin-left:auto;border:none;background:none;cursor:pointer;font-size:.85rem;padding:0 .2rem;">✕</button>`;
+    sel.querySelector('strong').textContent=naam;
+    sel.querySelector('span span').textContent=email;
+  }
 }
 
 function _tipClearCollega(){
@@ -7315,9 +7396,9 @@ function _tipClearCollega(){
 }
 
 async function _sendCollegaCalendarInvite(toets, dt, slotId){
-  if(!_graphToken||!_tipCollegaEmail||!dt) return;
+  if(!_graphToken||!_tipCollegaEmail||!dt) return false;
   const slot=SCHOOL.find(s=>s.id===slotId);
-  if(!slot) return;
+  if(!slot) return false;
   const [startH,startM]=slot.time.split('–')[0].trim().split(':').map(Number);
   let evStartH=startH, evStartM=startM;
   if(toets.tijdstip){ const [h,m]=toets.tijdstip.split(':').map(Number); if(!isNaN(h)&&!isNaN(m)){evStartH=h;evStartM=m;} }
@@ -7346,7 +7427,7 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId){
   ].join('\r\n');
   const icsB64=btoa(unescape(encodeURIComponent(ics)));
   try{
-    await fetch('https://graph.microsoft.com/v1.0/me/sendMail',{
+    const r=await fetch('https://graph.microsoft.com/v1.0/me/sendMail',{
       method:'POST',
       headers:{'Authorization':'Bearer '+_graphToken,'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -7359,7 +7440,9 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId){
         saveToSentItems:false
       })
     });
-  }catch(e){ console.warn('Collega invite fout:',e); }
+    if(!r.ok) console.warn('Collega invite fout:',r.status,await r.text());
+    return r.ok;
+  }catch(e){ console.warn('Collega invite fout:',e); return false; }
 }
 
 function _tipRenderGrid(){
@@ -7381,6 +7464,25 @@ function _tipRenderGrid(){
             purple:'#4A1A72',yellow:'#5D4000',orange:'#6B2800'};
   const LBL={green:'A',red:'Tr',rose:'O',blue:'R',purple:'W',yellow:'Toets',orange:'Toe'};
 
+  // Voorbeeld van de gekozen toets: exact van begin- tot eindtijd
+  const previewSegs={};
+  const selSlot=SCHOOL.find(s=>s.id===_tipSelectedSlotId);
+  if(_tipSelectedDi!==null&&selSlot){
+    const {dur,begintijd}=_tipGetFormData();
+    _toetsCoverage(selSlot,SCHOOL,dur,begintijd||selSlot.time.split('–')[0].trim()).forEach(({slot,fraction,lateStart})=>{
+      previewSegs[slot.id]={top:lateStart*100,height:(fraction-lateStart)*100};
+    });
+  }
+  const _segBg=(seg,clr)=>{
+    if(!seg) return '';
+    const a=seg.top.toFixed(1), b=(seg.top+seg.height).toFixed(1);
+    return `background-image:linear-gradient(to bottom,transparent ${a}%,${clr} ${a}%,${clr} ${b}%,transparent ${b}%);`;
+  };
+  const _cellSegBg=(di,slot)=>{
+    if(_tipSelectedDi===di&&previewSegs[slot.id]) return _segBg(previewSegs[slot.id],'#FFC107');
+    return _segBg(_toetsSegment(sd.toets?.[weekKey]?.[di],slot),BG.yellow);
+  };
+
   let html=`<table class="tip-grid-table">
     <thead><tr>
       <th class="tip-th-time">Tijd</th>
@@ -7393,7 +7495,10 @@ function _tipRenderGrid(){
 
   for(const slot of SCHOOL){
     if(slot.kind==='pause'){
-      html+=`<tr><td class="tip-pause" style="font-size:.6rem;color:var(--tx3);">${slot.time}</td>${[0,1,2,3,4].map(()=>`<td class="tip-pause">pauze</td>`).join('')}</tr>`;
+      html+=`<tr><td class="tip-pause" style="font-size:.6rem;color:var(--tx3);">${slot.time}</td>${[0,1,2,3,4].map(di=>{
+        const seg=_cellSegBg(di,slot);
+        return `<td class="tip-pause" style="${seg}">${_tipSelectedDi===di&&_tipSelectedSlotId===slot.id?'📝':(seg?'':'pauze')}</td>`;
+      }).join('')}</tr>`;
       continue;
     }
     const cells=[0,1,2,3,4].map(di=>{
@@ -7406,11 +7511,11 @@ function _tipRenderGrid(){
       // Pickable als er een toets geselecteerd is OF als vak ingevuld is in het formulier
       const vakIngevuld=!!(document.getElementById('tip-vak')||{}).value;
       const canPick=!!_tipSelectedToetsId||vakIngevuld;
+      const segBg=_cellSegBg(di,slot);
       let cls='';
-      if(isSel) cls='tip-slot-selected';
-      else if(!c) cls='tip-slot-empty'+(canPick?' tip-pickable':'');
+      if(!c) cls='tip-slot-empty'+(canPick?' tip-pickable':'');
       const onclick=canPick?`onclick="_tipClickSlot(${di},'${slot.id}',this)"`:'' ;
-      return `<td class="${cls}" style="${bg?'background:'+bg+';color:'+TX[c]+';':''}" ${onclick}>${isSel?'📝':lbl}</td>`;
+      return `<td class="${cls}" style="${bg?'background-color:'+bg+';color:'+TX[c]+';':''}${segBg}" ${onclick}>${isSel?'📝':lbl}</td>`;
     }).join('');
     html+=`<tr>
       <td style="background:var(--surf-2);color:var(--tx3);font-size:.6rem;padding:0 3px;white-space:nowrap;text-align:left;">
@@ -7424,7 +7529,10 @@ function _tipRenderGrid(){
 function _tipClickSlot(di, slotId, el){
   const {vak}=_tipGetFormData();
   if(!_tipSelectedToetsId && !vak) return;
-  _tipSelectedDi=di; _tipSelectedSlotId=slotId;
+  // Een ingevulde begintijd is leidend; de klik kiest dan alleen de dag
+  const {begintijd}=_tipGetFormData();
+  _tipSelectedDi=di; _tipSelectedSlotId=(begintijd&&_tipFindSlotForTime(begintijd))||slotId;
+  document.getElementById('tip-success-bar').style.display='none';
   _tipRenderGrid();
   _tipUpdateConfirmBar();
 }
@@ -7440,6 +7548,14 @@ function confirmToetsInplan(){
   const datum=dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`:'';
   const slot=SCHOOL.find(s=>s.id===_tipSelectedSlotId);
   const {vak,onderwerp,dur,begintijd}=_tipGetFormData();
+  let planned=null;
+
+  if(begintijd){
+    const dagStart=_parseTime(SCHOOL[0].time.split('–')[0]);
+    const dagEind=_parseTime(SCHOOL[SCHOOL.length-1].time.split('–')[1]);
+    const tMin=_parseTime(begintijd);
+    if(tMin<dagStart||tMin>=dagEind){ alert('De begintijd valt buiten de schooldag (8:25 – 16:30).'); return; }
+  }
 
   // Bepaal effectieve begintijd
   let effectiefTijdstip=begintijd;
@@ -7452,9 +7568,7 @@ function confirmToetsInplan(){
     const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
     if(!t) return;
     if(t.geplandWeekKey && t.matchedStudentId){
-      const stuData=S.studentData[t.matchedStudentId];
-      if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow')
-        stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+      _clearToetsInPlanner(t.matchedStudentId, t.geplandWeekKey, t.geplandDi, t.geplandSlot);
     }
     // Override form fields indien aangepast
     if(vak) t.vak=vak;
@@ -7463,7 +7577,7 @@ function confirmToetsInplan(){
     t._dur=dur;
     _setToetsInPlanner(t.matchedStudentId, weekKey, _tipSelectedDi, _tipSelectedSlotId, t);
     t.datum=datum; t.status='gepland'; t.geplandWeekKey=weekKey; t.geplandDi=_tipSelectedDi; t.geplandSlot=_tipSelectedSlotId;
-    _tipLastPlannedToets={toets:t, dt, slotId:_tipSelectedSlotId};
+    planned=t;
   } else {
     // Handmatige invoer: maak tijdelijk toets-object
     if(!vak){ alert('Kies eerst een vak.'); return; }
@@ -7487,15 +7601,14 @@ function confirmToetsInplan(){
     };
     S.toetsenImport.push(newT);
     _setToetsInPlanner(stuId, weekKey, _tipSelectedDi, _tipSelectedSlotId, newT);
-    _tipLastPlannedToets={toets:newT, dt, slotId:_tipSelectedSlotId};
+    planned=newT;
   }
 
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 
   // Collega-uitnodiging versturen indien geselecteerd
-  if(_tipCollegaEmail && _tipLastPlannedToets){
-    _sendCollegaCalendarInvite(_tipLastPlannedToets.toets, _tipLastPlannedToets.dt, _tipLastPlannedToets.slotId);
-  }
+  const collegaNaam=_tipCollegaEmail?(_tipCollegaNaam||_tipCollegaEmail):'';
+  const invite=_tipCollegaEmail?_sendCollegaCalendarInvite(planned, dt, _tipSelectedSlotId):null;
 
   // Reset modal state
   _tipSelectedDi=null; _tipSelectedSlotId=null; _tipSelectedToetsId=null;
@@ -7505,74 +7618,23 @@ function confirmToetsInplan(){
   _tipRenderToetsen(); _tipRenderGrid(); _tipRenderDagBtns();
 
   // Succesmelding
-  const bar=document.getElementById('tip-confirm-bar');
+  document.getElementById('tip-confirm-bar').style.display='none';
+  const bar=document.getElementById('tip-success-bar');
   bar.style.display='';
-  const collegaBevestiging=_tipCollegaEmail?`<div style="font-size:.8rem;color:#2D8B50;margin-top:.3rem;">📧 Agendauitnodiging verstuurd naar ${_tipCollegaNaam||_tipCollegaEmail}</div>`:'';
-  bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ingepland in het rooster!</div>
-    ${collegaBevestiging}
+  bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ingepland in het rooster: ${planned.tijdstip} – ${_fmtMin(_parseTime(planned.tijdstip)+planned._dur)} (${planned._dur} min)</div>
+    <div id="tip-invite-status" style="font-size:.8rem;"></div>
     <div class="tip-confirm-actions">
-      <button class="btn-g" onclick="downloadToetsICS_last()">📅 Download Outlook ICS</button>
       <button class="btn-p" onclick="closeToetsInplanModal()">Klaar</button>
     </div>`;
-}
-
-let _tipLastPlannedToets = null; // opslaan voor ICS download na bevestiging
-
-function downloadToetsICS(){
-  const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
-  if(!t||_tipSelectedDi===null||!_tipSelectedSlotId) return;
-  const {week,year}=_tipWy;
-  const dates=weekDates(year,week);
-  _generateAndDownloadICS(t, dates[_tipSelectedDi], _tipSelectedSlotId);
-}
-
-function downloadToetsICS_last(){
-  if(!_tipLastPlannedToets) return;
-  const {toets,dt,slotId}=_tipLastPlannedToets;
-  _generateAndDownloadICS(toets,dt,slotId);
-}
-
-function _generateAndDownloadICS(t, dt, slotId){
-  const slot=SCHOOL.find(s=>s.id===slotId);
-  if(!slot||!dt) { alert('Geen datum/slot beschikbaar voor ICS.'); return; }
-  // Parse start time from slot
-  const [startH,startM]=slot.time.split('–')[0].trim().split(':').map(Number);
-  // Gebruik toets tijdstip of slot start
-  let evStartH=startH, evStartM=startM;
-  if(t.tijdstip){
-    const [h,m]=t.tijdstip.split(':').map(Number);
-    if(!isNaN(h)&&!isNaN(m)){ evStartH=h; evStartM=m; }
+  if(invite){
+    const st=document.getElementById('tip-invite-status');
+    st.textContent=`📧 Uitnodiging versturen naar ${collegaNaam}…`;
+    invite.then(ok=>{
+      st.style.color=ok?'#2D8B50':'#C0392B';
+      st.textContent=ok?`📧 Agenda-uitnodiging verstuurd naar ${collegaNaam}`:`⚠ Uitnodiging naar ${collegaNaam} kon niet worden verstuurd. Controleer de M365-verbinding.`;
+    });
+    _tipClearCollega();
   }
-  // Gebruik opgeslagen duur (van formulier) of standaard 50 min
-  const dur=t._dur||50;
-  const evEndTotalM=evStartH*60+evStartM+dur;
-  const evEndH=Math.floor(evEndTotalM/60), evEndM=evEndTotalM%60;
-
-  const pad=n=>String(n).padStart(2,'0');
-  const yyyymmdd=`${dt.getFullYear()}${pad(dt.getMonth()+1)}${pad(dt.getDate())}`;
-  const dtStart=`${yyyymmdd}T${pad(evStartH)}${pad(evStartM)}00`;
-  const dtEnd  =`${yyyymmdd}T${pad(evEndH)}${pad(evEndM)}00`;
-
-  const stu=S.students.find(s=>s.id===t.matchedStudentId);
-  const stuNaam=stu?stu.name:'leerling';
-  const onderwerp=t.onderwerp||'';
-  const summary=`Toets ${t.vak}${onderwerp?' – '+onderwerp:''} — ${stuNaam}`;
-  const desc=`Leerling: ${stuNaam}\\nKlas: ${t.klas||''}\\nVak: ${t.vak}${onderwerp?'\\nOnderwerp: '+onderwerp:''}\\nDuur: ${dur} min${t.lokaal?'\\nLokaal: '+t.lokaal:''}`;
-  const loc=t.lokaal||'';
-
-  const uid_str=`toets-${t.id}-${Date.now()}@parmantscholen.nl`;
-  const now=new Date();
-  const dtStamp=`${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
-
-  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Parmant Planner 2.0//NL\r\nCALSCALE:GREGORIAN\r\nMETHOD:REQUEST\r\nBEGIN:VEVENT\r\nUID:${uid_str}\r\nDTSTAMP:${dtStamp}\r\nDTSTART;TZID=Europe/Amsterdam:${dtStart}\r\nDTEND;TZID=Europe/Amsterdam:${dtEnd}\r\nSUMMARY:${summary}\r\nDESCRIPTION:${desc}\r\n${loc?'LOCATION:'+loc+'\r\n':''}END:VEVENT\r\nEND:VCALENDAR`;
-
-  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=`toets_${t.vak.replace(/[^a-zA-Z0-9]/g,'_')}_${stuNaam.replace(/\s+/g,'_')}.ics`;
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },1000);
-  _tipLastPlannedToets={toets:t,dt,slotId};
 }
 
 /* Excel export — laad SheetJS dynamisch */
@@ -8714,7 +8776,8 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
           }
         }
         if(pauseIsToets){ cell.setAttribute('data-c','yellow'); }
-        else { cell.innerHTML='<div class="pause-lbl">pauze</div>'; }
+        else if(!_applyToetsStrips(cell,key,di,slot)){ cell.innerHTML='<div class="pause-lbl">pauze</div>'; }
+        _refreshToetsBtn(cell,null,key,di,slot,slots,dates,editable);
       } else {
         const c=getColor(key,di,slot.id);
         const _cellTime=curData().std?.times?.[di]?.[slot.id]||null;
@@ -8786,29 +8849,7 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
           }
         }
         // Apply toets visual effects
-        const _dayToets = curData().toets?.[key]?.[di];
-        if(_dayToets){
-          // Late-start: this slot is the toets origin with a delayed start
-          const _toetsOriginData = _dayToets[slot.id];
-          if(_toetsOriginData && _toetsOriginData.lateStart > 0){
-            cell.classList.add('toets-late-start');
-            const slotDur = _slotDuration(slot);
-            const lateOffset = _toetsOriginData.lateStart * 100;
-            const remainingInSlot = slotDur * (1 - _toetsOriginData.lateStart);
-            const yellowMin = Math.min(_toetsOriginData.duration || 45, remainingInSlot);
-            const lateHeight = (yellowMin / slotDur) * 100;
-            cell.style.setProperty('--toets-late-offset', lateOffset.toFixed(1)+'%');
-            cell.style.setProperty('--toets-late-height', lateHeight.toFixed(1)+'%');
-          }
-          // Partial overflow: this slot is partially covered by a toets from a previous slot
-          for(const toetsData of Object.values(_dayToets)){
-            if(toetsData.partial && toetsData.partial.slotId === slot.id){
-              cell.classList.add('toets-partial');
-              cell.style.setProperty('--toets-fill', (toetsData.partial.fraction*100).toFixed(1)+'%');
-              break;
-            }
-          }
-        }
+        _applyToetsStrips(cell,key,di,slot);
         if(editable){
           cell.classList.add('editable');
           _buildCellPicker(cell, c, key, di, slot, slots, dates);
@@ -8818,6 +8859,31 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
     });
   });
   return wrap;
+}
+
+// Gele stroken voor uren die maar deels onder een toets vallen. Geeft true als er een strook is.
+function _applyToetsStrips(cell,key,di,slot){
+  const day=curData().toets?.[key]?.[di];
+  if(!day) return false;
+  let any=false;
+  // Late start of korte toets: strook in het uur waar de toets begint
+  const origin=_toetsOriginStrip(day[slot.id],slot);
+  if(origin){
+    cell.classList.add('toets-late-start');
+    cell.style.setProperty('--toets-late-offset', origin.top.toFixed(1)+'%');
+    cell.style.setProperty('--toets-late-height', origin.height.toFixed(1)+'%');
+    any=true;
+  }
+  // Partial overflow: this slot is partially covered by a toets from a previous slot
+  for(const toetsData of Object.values(day)){
+    if(toetsData.partial && toetsData.partial.slotId === slot.id){
+      cell.classList.add('toets-partial');
+      cell.style.setProperty('--toets-fill', (toetsData.partial.fraction*100).toFixed(1)+'%');
+      any=true;
+      break;
+    }
+  }
+  return any;
 }
 
 // Kleurkiezer: 6 gekleurde rondjes bovenin de cel in bewerkmodus
@@ -8845,12 +8911,18 @@ function _buildCellPicker(cell, currentColor, key, di, slot, slots, dates){
       e.stopPropagation();
       const prev=getColor(key,di,slot.id);
       if(prev==='yellow' && clr!=='yellow'){
-        const old=getToets(key,di,slot.id);
-        if(old.extended && old.extended.length) old.extended.forEach(sid=>setOvr(key,di,sid,null));
-        _clearToetsData(key,di,slot.id);
+        // Een geel uur wijzigen haalt de hele toets weg, ook de uren eromheen
+        const originId=_toetsOriginAt(key,di,slot.id);
+        if(originId){
+          _removeToetsAt(S.currentStudentId,key,di,originId);
+          setOvr(key,di,slot.id,clr);
+          renderSchedule();
+          return;
+        }
       }
       setOvr(key,di,slot.id,clr);
       applyCell(cell,clr,curData().std?.times?.[di]?.[slot.id]||null,curData().std?.vakken?.[di]?.[slot.id]||'');
+      _applyToetsStrips(cell,key,di,slot);
       _buildCellPicker(cell,clr,key,di,slot,slots,dates); // rebuild picker with new active dot
       _refreshNoteUI(cell,clr,key,di,slot,true);
       _refreshToetsBtn(cell,clr,key,di,slot,slots,dates,true);
@@ -8897,11 +8969,29 @@ function applyCell(cell,c,time,vak){
 
 function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
   const old=cell.querySelector('.toets-icon-btn'); if(old) old.remove();
-  const oldNote=cell.querySelector('.cell-note.toets-subject-note'); if(oldNote) oldNote.remove();
+  cell.querySelectorAll('.cell-note.toets-subject-note,.cell-note.toets-time-note').forEach(n=>n.remove());
+  // Exacte tijd in het eerste lesuur van de toets
+  const dayToetsen=curData().toets?.[key]?.[di]||{};
+  const labelId=Object.keys(dayToetsen).find(id=>dayToetsen[id].labelSlot===slot.id);
+  if(labelId){
+    const t=dayToetsen[labelId];
+    const nt=document.createElement('div'); nt.className='cell-note toets-time-note';
+    const txt=document.createElement('span');
+    txt.textContent=`${t.subject?t.subject+' · ':''}${t.startTime}–${t.endTime} (${t.duration} min)`;
+    nt.appendChild(txt);
+    if(editable){
+      const del=document.createElement('button');
+      del.type='button'; del.className='toets-time-del'; del.textContent='✕'; del.title='Toets verwijderen';
+      del.addEventListener('click',e=>{ e.stopPropagation(); _removeToetsAt(S.currentStudentId,key,di,labelId); });
+      nt.appendChild(del);
+    }
+    cell.appendChild(nt);
+    return;
+  }
   // Show for yellow cells OR for late-start toets cells (not yellow themselves)
   const rawToets = curData().toets?.[key]?.[di]?.[slot.id];
   const isToetsCell = c === 'yellow' || (rawToets && rawToets.lateStart > 0);
-  if(!isToetsCell) return;
+  if(!isToetsCell || rawToets?.labelSlot) return;
   // Show subject only (no duration text)
   const toets = rawToets || getToets(key, di, slot.id);
   const noteTxt = toets.subject || '';
@@ -9432,6 +9522,28 @@ function _clearToetsData(weekKey, di, sid){
 function _parseTime(t){
   const [h,m] = t.trim().split(':').map(Number);
   return h*60 + (m||0);
+}
+function _fmtMin(min){
+  return `${String(Math.floor(min/60)).padStart(2,'0')}:${String(min%60).padStart(2,'0')}`;
+}
+// Strook {top,height} in % in het beginuur van een toets; null als de toets dat uur helemaal vult
+function _toetsOriginStrip(rec, slot){
+  if(!rec) return null;
+  const slotDur=_slotDuration(slot), late=rec.lateStart||0;
+  if(!(late>0) && !(rec.duration && rec.duration<slotDur)) return null;
+  const yellowMin=Math.min(rec.duration||45, slotDur*(1-late));
+  return {top:late*100, height:yellowMin/slotDur*100};
+}
+// Geel deel van een uur voor alle toetsen van een dag; null als er geen toets valt
+function _toetsSegment(day, slot){
+  if(!day) return null;
+  const origin=_toetsOriginStrip(day[slot.id],slot);
+  if(origin) return origin;
+  for(const t of Object.values(day)){
+    if(t.extended?.includes(slot.id)) return {top:0,height:100};
+    if(t.partial?.slotId===slot.id) return {top:0,height:t.partial.fraction*100};
+  }
+  return null;
 }
 function _slotDuration(slot){
   const parts = slot.time.split('–');
