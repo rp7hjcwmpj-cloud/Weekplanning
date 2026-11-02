@@ -1516,6 +1516,13 @@ body.dark .stu-sport-chip {
   transition:border-color .13s;
 }
 .tip-form-inp:focus { border-color:var(--brand); outline:none; }
+.tip-dag-btn { padding:.22rem .45rem; border:1.5px solid var(--border); border-radius:6px; background:var(--surf-2); color:var(--tx); font-size:.74rem; cursor:pointer; line-height:1.3; text-align:center; transition:background .12s,border-color .12s; }
+.tip-dag-btn:hover { border-color:var(--brand); color:var(--brand); }
+.tip-dag-btn.selected { border-color:var(--brand); background:var(--brand); color:#fff; }
+.tip-direct-plan-bar { display:none; }
+.tip-collega-result { padding:.35rem .6rem; cursor:pointer; font-size:.8rem; border-bottom:1px solid var(--border); }
+.tip-collega-result:last-child { border-bottom:none; }
+.tip-collega-result:hover { background:var(--brand-light); }
 .tip-dur-opt {
   display:flex; align-items:center; gap:.25rem; padding:.22rem .5rem;
   border-radius:6px; border:1.5px solid var(--border); background:var(--surf-2);
@@ -2346,6 +2353,28 @@ body.dark .stu-sport-chip {
           <label class="tip-form-lbl">Begintijd <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
           <input id="tip-begintijd" class="tip-form-inp" type="time" oninput="_tipFormChange()" style="max-width:120px;">
           <div id="tip-tijd-preview" style="font-size:.75rem;font-weight:700;color:var(--brand);margin-top:.2rem;min-height:1em;"></div>
+        </div>
+
+        <div class="tip-form-row">
+          <label class="tip-form-lbl">Dag</label>
+          <div style="display:flex;gap:.25rem;flex-wrap:wrap;" id="tip-dag-btns"></div>
+          <div id="tip-dag-hint" style="font-size:.69rem;color:var(--tx3);margin-top:.18rem;display:none;">Kies vak + dag + begintijd om direct in te plannen.</div>
+        </div>
+
+        <div id="tip-direct-plan-bar" style="display:none;margin:.3rem 0 .1rem;padding:.45rem .6rem;background:var(--brand-light);border:1.5px solid var(--brand);border-radius:8px;font-size:.82rem;">
+          <div id="tip-direct-plan-info" style="margin-bottom:.35rem;color:var(--tx);font-weight:600;"></div>
+          <button class="btn-p" style="width:100%;font-size:.82rem;padding:.35rem;" onclick="_tipDirectPlan()">✓ Inplannen</button>
+        </div>
+
+        <!-- Collega uitnodiging (alleen als M365 gekoppeld) -->
+        <div id="tip-collega-row" style="display:none;">
+          <div class="tip-panel-title" style="margin-top:.4rem;">📧 Agenda-uitnodiging sturen</div>
+          <div style="position:relative;">
+            <input id="tip-collega-search" class="tip-form-inp" type="text" placeholder="Naam collega zoeken…" autocomplete="off" oninput="_tipCollegaSearch(this.value)">
+            <div id="tip-collega-results" style="display:none;position:absolute;left:0;right:0;top:100%;background:var(--surf-1);border:1.5px solid var(--brand);border-radius:7px;z-index:200;max-height:130px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);"></div>
+          </div>
+          <div id="tip-collega-selected" style="display:none;font-size:.76rem;color:var(--brand);padding:.22rem .5rem;background:var(--brand-light);border-radius:6px;margin-top:.25rem;align-items:center;gap:.4rem;flex-wrap:wrap;"></div>
+          <div style="font-size:.68rem;color:var(--tx3);margin-top:.18rem;">Stuur een agenda-uitnodiging (ICS) naar een collega.</div>
         </div>
 
         <!-- Geïmporteerde toetsen (alleen als aanwezig) -->
@@ -6755,7 +6784,7 @@ function renderToetsenCards(){
   const filterQ      = (document.getElementById('toetsen-filter-naam')?.value||'').toLowerCase().trim();
 
   // Alle leerlingen die minstens één toets hebben in de import
-  const stuIdsInImport = new Set(S.toetsenImport.map(t=>t.matchedStudentId).filter(Boolean));
+  const stuIdsInImport = new Set(S.toetsenImport.filter(t=>!t._handmatig).map(t=>t.matchedStudentId).filter(Boolean));
   let studenten = S.students.filter(s => stuIdsInImport.has(s.id));
 
   // Zoekfilter op naam of klas
@@ -6776,7 +6805,7 @@ function renderToetsenCards(){
 
   let html='';
   for(const stu of studenten){
-    const stuToetsen = S.toetsenImport.filter(t=>t.matchedStudentId===stu.id);
+    const stuToetsen = S.toetsenImport.filter(t=>t.matchedStudentId===stu.id&&!t._handmatig);
 
     // Unieke vakken van deze leerling (over alle periodes)
     const allVakken = [...new Set(Object.values(stu.vakken||{}).flat())].sort((a,b)=>a.localeCompare(b,'nl'));
@@ -6854,8 +6883,8 @@ function renderToetsenCards(){
 }
 
 function _updateToetsStatusBar(){
-  const open  = S.toetsenImport.filter(t=>t.status==='open').length;
-  const total = S.toetsenImport.length;
+  const open  = S.toetsenImport.filter(t=>t.status==='open'&&!t._handmatig).length;
+  const total = S.toetsenImport.filter(t=>!t._handmatig).length;
   const bar   = document.getElementById('toetsen-status-bar');
   if(!bar) return;
   bar.style.display='flex';
@@ -6958,7 +6987,7 @@ function _setToetsInPlanner(studentId, weekKey, di, slotId, toets){
 function updateToetsBadge(){
   const badge=document.getElementById('toets-badge');
   if(!badge) return;
-  const open=S.toetsenImport.filter(t=>t.status==='open').length;
+  const open=S.toetsenImport.filter(t=>t.status==='open'&&!t._handmatig).length;
   if(open>0){ badge.textContent=open; badge.style.display='flex'; }
   else { badge.style.display='none'; }
   _updateToetsInplanBtn();
@@ -6976,6 +7005,9 @@ let _tipWy = null;          // {week, year}
 let _tipSelectedToetsId = null;
 let _tipSelectedDi = null;
 let _tipSelectedSlotId = null;
+let _tipSelectedDag = null; // 0-4 (Ma-Vr), set via dag-selector
+let _tipCollegaEmail = '';
+let _tipCollegaNaam = '';
 
 function openToetsInplanModal(){
   const stuId=S.currentStudentId;
@@ -6984,8 +7016,9 @@ function openToetsInplanModal(){
   document.getElementById('tip-stu-naam').textContent=stu?stu.name:'—';
   _tipWy={week:S.wy.week, year:S.wy.year};
   _tipSelectedToetsId=null; _tipSelectedDi=null; _tipSelectedSlotId=null;
+  _tipSelectedDag=null; _tipCollegaEmail=''; _tipCollegaNaam='';
 
-  // Vul vak-dropdown met vakken van de leerling
+  // Vul vak-dropdown
   const vakSel=document.getElementById('tip-vak');
   const vakken=getActiveVakken(stu);
   vakSel.innerHTML='<option value="">— kies vak —</option>'
@@ -6998,11 +7031,42 @@ function openToetsInplanModal(){
   const dur50=document.querySelector('input[name="tip-dur"][value="50"]');
   if(dur50) dur50.checked=true;
 
-  // Geïmporteerde toetsen
+  // Dag-knoppen renderen
+  _tipRenderDagBtns();
+
+  // Collega-sectie (alleen bij M365-koppeling)
+  const cr=document.getElementById('tip-collega-row');
+  if(cr) cr.style.display=_graphToken?'':'none';
+  const cs=document.getElementById('tip-collega-search');
+  if(cs) cs.value='';
+  const csel=document.getElementById('tip-collega-selected');
+  if(csel) csel.style.display='none';
+  const cres=document.getElementById('tip-collega-results');
+  if(cres) cres.style.display='none';
+
+  // Direct-plan bar verbergen
+  const dpb=document.getElementById('tip-direct-plan-bar');
+  if(dpb) dpb.style.display='none';
+
   _tipRenderToetsen();
   _tipRenderGrid();
   document.getElementById('tip-confirm-bar').style.display='none';
   document.getElementById('modal-toets-inplan').classList.add('show');
+}
+
+function _tipRenderDagBtns(){
+  const ct=document.getElementById('tip-dag-btns');
+  if(!ct||!_tipWy) return;
+  const {week,year}=_tipWy;
+  const dates=weekDates(year,week);
+  const DAYS=['Ma','Di','Wo','Do','Vr'];
+  const MONTHS_S=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  ct.innerHTML=DAYS.map((d,i)=>{
+    const dt=dates[i];
+    const dd=dt?`${dt.getDate()} ${MONTHS_S[dt.getMonth()]}`:d;
+    const sel=_tipSelectedDag===i?'selected':'';
+    return `<button type="button" class="tip-dag-btn ${sel}" data-di="${i}" onclick="_tipSelectDag(${i})">${d}<br><span style="font-size:.62rem;opacity:.8;">${dd}</span></button>`;
+  }).join('');
 }
 
 function closeToetsInplanModal(){
@@ -7011,7 +7075,7 @@ function closeToetsInplanModal(){
 
 function _tipRenderToetsen(){
   const stuId=S.currentStudentId;
-  const toetsen=S.toetsenImport.filter(t=>t.matchedStudentId===stuId);
+  const toetsen=S.toetsenImport.filter(t=>t.matchedStudentId===stuId&&!t._handmatig);
   const sec=document.getElementById('tip-import-section');
   const ct=document.getElementById('tip-toetsen-list');
   if(!toetsen.length){ if(sec) sec.style.display='none'; return; }
@@ -7083,8 +7147,10 @@ function _tipFormChange(){
       prev.textContent=`Duur: ${dur} min`;
     }
   }
-  // Herbereken confirm bar als slot al geselecteerd
-  if(_tipSelectedDi!==null && _tipSelectedSlotId) _tipUpdateConfirmBar();
+  // Als dag + begintijd ingevuld → auto-select slot & toon direct-plan knop
+  _tipAutoSelectFromForm();
+  // Herbereken confirm bar als slot handmatig geselecteerd (geen auto)
+  if(_tipSelectedDi!==null && _tipSelectedSlotId && _tipSelectedDag===null) _tipUpdateConfirmBar();
 }
 
 function _tipCalcTime(slot){
@@ -7127,7 +7193,173 @@ function tipNavWeek(delta){
   if(delta>0){ week++; if(week>isoWeek(new Date(year,11,28))){ week=1; year++; } }
   else { week--; if(week<1){ year--; week=isoWeek(new Date(year,11,28)); } }
   _tipWy={week,year};
+  _tipSelectedDi=null; _tipSelectedSlotId=null;
+  _tipRenderDagBtns();
   _tipRenderGrid();
+  document.getElementById('tip-confirm-bar').style.display='none';
+  const dpb=document.getElementById('tip-direct-plan-bar');
+  if(dpb) dpb.style.display='none';
+}
+
+function _tipSelectDag(di){
+  _tipSelectedDag=di;
+  _tipSelectedDi=null; _tipSelectedSlotId=null;
+  document.querySelectorAll('#tip-dag-btns .tip-dag-btn').forEach(b=>{
+    b.classList.toggle('selected', parseInt(b.dataset.di)===di);
+  });
+  _tipAutoSelectFromForm();
+}
+
+function _tipFindSlotForTime(timeStr){
+  if(!timeStr) return null;
+  const [h,m]=timeStr.split(':').map(Number);
+  const tMin=h*60+m;
+  for(const slot of SCHOOL){
+    if(slot.kind==='pause') continue;
+    const parts=slot.time.split('–');
+    if(parts.length<2) continue;
+    const [sh,sm]=parts[0].trim().split(':').map(Number);
+    const [eh,em]=parts[1].trim().split(':').map(Number);
+    if(tMin>=sh*60+sm && tMin<eh*60+em) return slot.id;
+  }
+  // Dichtstbijzijnde slot-start als geen exacte match
+  let best=null, bestDiff=Infinity;
+  for(const slot of SCHOOL){
+    if(slot.kind==='pause') continue;
+    const [sh,sm]=slot.time.split('–')[0].trim().split(':').map(Number);
+    const diff=Math.abs(tMin-(sh*60+sm));
+    if(diff<bestDiff){ bestDiff=diff; best=slot.id; }
+  }
+  return best;
+}
+
+function _tipAutoSelectFromForm(){
+  const {vak,begintijd}=_tipGetFormData();
+  const dpb=document.getElementById('tip-direct-plan-bar');
+  const dpi=document.getElementById('tip-direct-plan-info');
+  const hint=document.getElementById('tip-dag-hint');
+  if(!vak||_tipSelectedDag===null){
+    if(dpb) dpb.style.display='none';
+    if(hint) hint.style.display=(vak&&_tipSelectedDag===null)?'':'none';
+    return;
+  }
+  if(hint) hint.style.display='none';
+  if(!begintijd){
+    if(dpb) dpb.style.display='none';
+    return;
+  }
+  const slotId=_tipFindSlotForTime(begintijd);
+  if(!slotId){ if(dpb) dpb.style.display='none'; return; }
+  // Auto-select
+  _tipSelectedDi=_tipSelectedDag;
+  _tipSelectedSlotId=slotId;
+  _tipRenderGrid();
+  // Toon direct-plan bar
+  const {dur}=_tipGetFormData();
+  const [bh,bm]=begintijd.split(':').map(Number);
+  const endMin=bh*60+bm+dur;
+  const endStr=`${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
+  const DAYS_FULL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
+  const {week,year}=_tipWy;
+  const dt=weekDates(year,week)[_tipSelectedDag];
+  const MONTHS_S=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const datumStr=dt?`${DAYS_FULL[_tipSelectedDag]} ${dt.getDate()} ${MONTHS_S[dt.getMonth()]}`:'—';
+  if(dpi) dpi.textContent=`${vak} · ${datumStr} · ${begintijd} – ${endStr} (${dur} min)`;
+  if(dpb) dpb.style.display='';
+  // Verberg de confirm bar (wordt vervangen door direct-plan bar)
+  document.getElementById('tip-confirm-bar').style.display='none';
+}
+
+function _tipDirectPlan(){
+  // Roep gewoon confirmToetsInplan aan — state is al gezet door _tipAutoSelectFromForm
+  confirmToetsInplan();
+}
+
+/* Collega zoeken */
+async function _tipCollegaSearch(q){
+  const res=document.getElementById('tip-collega-results');
+  if(!res) return;
+  if(!q||q.length<2||!_graphToken){ res.style.display='none'; return; }
+  try{
+    const r=await fetch(
+      `https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName,'${encodeURIComponent(q)}')&$select=id,displayName,mail&$top=8`,
+      {headers:{Authorization:'Bearer '+_graphToken}});
+    const d=await r.json();
+    if(!d.value?.length){ res.style.display='none'; return; }
+    res.style.display='';
+    res.innerHTML=d.value.map(u=>
+      `<div class="tip-collega-result" onclick="_tipSelectCollega(${JSON.stringify(u.mail||'')},${JSON.stringify(u.displayName||'')})">
+        <strong>${u.displayName||'?'}</strong><br>
+        <span style="font-size:.7rem;color:var(--tx3);">${u.mail||'geen mail'}</span>
+      </div>`
+    ).join('');
+  }catch(e){ res.style.display='none'; }
+}
+
+function _tipSelectCollega(email, naam){
+  _tipCollegaEmail=email; _tipCollegaNaam=naam;
+  const res=document.getElementById('tip-collega-results');
+  if(res) res.style.display='none';
+  const inp=document.getElementById('tip-collega-search');
+  if(inp) inp.value='';
+  const sel=document.getElementById('tip-collega-selected');
+  if(sel){ sel.style.display='flex'; sel.innerHTML=`<span>📧 <strong>${naam}</strong> <span style="opacity:.7;">${email}</span></span><button onclick="_tipClearCollega()" style="margin-left:auto;border:none;background:none;cursor:pointer;font-size:.85rem;padding:0 .2rem;">✕</button>`; }
+}
+
+function _tipClearCollega(){
+  _tipCollegaEmail=''; _tipCollegaNaam='';
+  const inp=document.getElementById('tip-collega-search');
+  if(inp) inp.value='';
+  const sel=document.getElementById('tip-collega-selected');
+  if(sel) sel.style.display='none';
+}
+
+async function _sendCollegaCalendarInvite(toets, dt, slotId){
+  if(!_graphToken||!_tipCollegaEmail||!dt) return;
+  const slot=SCHOOL.find(s=>s.id===slotId);
+  if(!slot) return;
+  const [startH,startM]=slot.time.split('–')[0].trim().split(':').map(Number);
+  let evStartH=startH, evStartM=startM;
+  if(toets.tijdstip){ const [h,m]=toets.tijdstip.split(':').map(Number); if(!isNaN(h)&&!isNaN(m)){evStartH=h;evStartM=m;} }
+  const dur=toets._dur||50;
+  const evEndTotalM=evStartH*60+evStartM+dur;
+  const evEndH=Math.floor(evEndTotalM/60), evEndM=evEndTotalM%60;
+  const pad=n=>String(n).padStart(2,'0');
+  const ymd=`${dt.getFullYear()}${pad(dt.getMonth()+1)}${pad(dt.getDate())}`;
+  const dtStart=`${ymd}T${pad(evStartH)}${pad(evStartM)}00`;
+  const dtEnd=`${ymd}T${pad(evEndH)}${pad(evEndM)}00`;
+  const stu=S.students.find(s=>s.id===toets.matchedStudentId);
+  const stuNaam=stu?stu.name:'leerling';
+  const onderwerp=toets.onderwerp||'';
+  const summary=`Toets ${toets.vak}${onderwerp?' – '+onderwerp:''} — ${stuNaam}`;
+  const desc=`Leerling: ${stuNaam}\\nVak: ${toets.vak}${onderwerp?'\\nOnderwerp: '+onderwerp:''}\\nDuur: ${dur} min`;
+  const now=new Date();
+  const dtStamp=`${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+  const uid=`tip-${toets.id}-${Date.now()}@parmantscholen.nl`;
+  const ics=[
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Parmant Planner 2.0//NL',
+    'CALSCALE:GREGORIAN','METHOD:REQUEST',
+    'BEGIN:VEVENT',`UID:${uid}`,`DTSTAMP:${dtStamp}`,
+    `DTSTART;TZID=Europe/Amsterdam:${dtStart}`,`DTEND;TZID=Europe/Amsterdam:${dtEnd}`,
+    `SUMMARY:${summary}`,`DESCRIPTION:${desc}`,
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+  const icsB64=btoa(unescape(encodeURIComponent(ics)));
+  try{
+    await fetch('https://graph.microsoft.com/v1.0/me/sendMail',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+_graphToken,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        message:{
+          subject:summary,
+          body:{contentType:'HTML',content:`<p>Er is een toets ingepland.<br><b>Leerling:</b> ${stuNaam}<br><b>Vak:</b> ${toets.vak}${onderwerp?'<br><b>Onderwerp:</b> '+onderwerp:''}<br><b>Datum:</b> ${dt.toLocaleDateString('nl-NL')}<br><b>Tijd:</b> ${pad(evStartH)}:${pad(evStartM)} – ${pad(evEndH)}:${pad(evEndM)}<br><b>Duur:</b> ${dur} min</p>`},
+          toRecipients:[{emailAddress:{address:_tipCollegaEmail,name:_tipCollegaNaam}}],
+          attachments:[{'@odata.type':'#microsoft.graph.fileAttachment',name:'toets_uitnodiging.ics',contentType:'text/calendar',contentBytes:icsB64}]
+        },
+        saveToSentItems:false
+      })
+    });
+  }catch(e){ console.warn('Collega invite fout:',e); }
 }
 
 function _tipRenderGrid(){
@@ -7260,14 +7492,24 @@ function confirmToetsInplan(){
 
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 
+  // Collega-uitnodiging versturen indien geselecteerd
+  if(_tipCollegaEmail && _tipLastPlannedToets){
+    _sendCollegaCalendarInvite(_tipLastPlannedToets.toets, _tipLastPlannedToets.dt, _tipLastPlannedToets.slotId);
+  }
+
   // Reset modal state
   _tipSelectedDi=null; _tipSelectedSlotId=null; _tipSelectedToetsId=null;
-  _tipRenderToetsen(); _tipRenderGrid();
+  _tipSelectedDag=null;
+  const dpb2=document.getElementById('tip-direct-plan-bar');
+  if(dpb2) dpb2.style.display='none';
+  _tipRenderToetsen(); _tipRenderGrid(); _tipRenderDagBtns();
 
   // Succesmelding
   const bar=document.getElementById('tip-confirm-bar');
   bar.style.display='';
+  const collegaBevestiging=_tipCollegaEmail?`<div style="font-size:.8rem;color:#2D8B50;margin-top:.3rem;">📧 Agendauitnodiging verstuurd naar ${_tipCollegaNaam||_tipCollegaEmail}</div>`:'';
   bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ingepland in het rooster!</div>
+    ${collegaBevestiging}
     <div class="tip-confirm-actions">
       <button class="btn-g" onclick="downloadToetsICS_last()">📅 Download Outlook ICS</button>
       <button class="btn-p" onclick="closeToetsInplanModal()">Klaar</button>
