@@ -1460,6 +1460,54 @@ body.dark .stu-sport-chip {
   border-color: #2471A3 !important;
   color: #2471A3 !important;
 }
+.stu-hb-icon.stu-hb-toets {
+  background: var(--brand-light) !important;
+  border-color: var(--brand) !important;
+  color: var(--brand) !important;
+}
+.stu-hb-icon.stu-hb-toets:hover {
+  background: var(--brand) !important;
+  color: #fff !important;
+}
+
+/* ── TIP (Toets Inplannen) modal ── */
+.tip-layout { display:flex; gap:1rem; margin-top:.75rem; min-height:320px; }
+.tip-left { flex:0 0 220px; display:flex; flex-direction:column; gap:.4rem; overflow-y:auto; max-height:480px; }
+.tip-right { flex:1; overflow-x:auto; }
+.tip-panel-title { font-size:.7rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--tx3); margin-bottom:.3rem; }
+.tip-toets-card {
+  border:1.5px solid var(--border); border-radius:8px; padding:.5rem .7rem;
+  cursor:pointer; transition:border-color .13s,background .13s;
+  font-size:.83rem;
+}
+.tip-toets-card:hover { border-color:var(--brand); background:var(--brand-light); }
+.tip-toets-card.selected { border-color:var(--brand); background:var(--brand-light); }
+.tip-toets-card .tip-tc-vak { font-weight:700; color:var(--tx); }
+.tip-toets-card .tip-tc-meta { font-size:.72rem; color:var(--tx3); margin-top:.15rem; }
+.tip-grid-wrap { overflow-x:auto; }
+.tip-grid-table { border-collapse:collapse; width:100%; min-width:420px; }
+.tip-grid-table th {
+  font-size:.68rem; font-weight:700; text-align:center; padding:.25rem .2rem;
+  background:var(--surf-2); border:1px solid var(--border); white-space:nowrap;
+}
+.tip-grid-table .tip-th-time { width:56px; font-size:.65rem; color:var(--tx3); }
+.tip-grid-table td {
+  border:1px solid var(--border); height:30px; text-align:center; vertical-align:middle;
+  font-size:.65rem; font-weight:600; transition:background .12s;
+}
+.tip-grid-table td.tip-pause { background:var(--surf-2); color:var(--tx3); font-size:.6rem; height:14px; }
+.tip-grid-table td.tip-slot-empty { cursor:default; color:var(--tx3); }
+.tip-grid-table td.tip-slot-empty.tip-pickable { cursor:pointer; }
+.tip-grid-table td.tip-slot-empty.tip-pickable:hover { background:var(--brand-light) !important; color:var(--brand); }
+.tip-grid-table td.tip-slot-selected { background:var(--brand) !important; color:#fff !important; }
+.tip-confirm-bar {
+  margin-top:.85rem; padding:.75rem 1rem; background:var(--brand-light);
+  border:1.5px solid var(--brand); border-radius:10px; display:flex;
+  flex-direction:column; gap:.5rem;
+}
+.tip-confirm-bar strong { color:var(--brand); }
+.tip-confirm-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
+.tip-no-toetsen { font-size:.82rem; color:var(--tx3); text-align:center; padding:1.5rem .5rem; }
 
 /* ── Week-navigatie: 2Scool stijl ── */
 .week-nav-wrap {
@@ -1946,6 +1994,7 @@ body.dark .stu-sport-chip {
     <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
       <button class="stu-hb stu-hb-icon" id="btn-std-rooster" onclick="openStdModal()" title="Standaardrooster">📋</button>
       <button class="stu-hb stu-hb-icon stu-hb-edit" id="btn-edit" onclick="toggleEdit()" title="Rooster aanpassen">✏️</button>
+      <button class="stu-hb stu-hb-icon stu-hb-toets" id="btn-toets-inplan" onclick="openToetsInplanModal()" title="Toets inplannen" style="display:none;">📝</button>
     </div>
   </div>
   </div>
@@ -2236,6 +2285,50 @@ body.dark .stu-sport-chip {
     <button class="btn-p" id="toets-send-btn" onclick="confirmToetsMail()">✉️ Mail sturen &amp; opslaan</button>
     <button class="btn-g" onclick="saveToetsNoMail()">Opslaan zonder mail</button>
     <button class="btn-ghost" onclick="cancelToets()">✕ Annuleren</button>
+  </div>
+</div>
+
+<!-- ══ TOETS INPLANNEN MODAAL ═══════════════════════ -->
+<div class="overlay" id="modal-toets-inplan">
+  <div class="modal-card" style="max-width:880px;width:98%;max-height:95vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;flex-shrink:0;">
+      <h2 style="margin:0;font-size:1.05rem;">📝 Toets inplannen — <span id="tip-stu-naam" style="color:var(--brand);">—</span></h2>
+      <button class="btn-g sm" onclick="closeToetsInplanModal()" style="padding:.3rem .75rem;font-size:.8rem;">✕ Sluiten</button>
+    </div>
+
+    <div class="tip-layout">
+      <!-- Left: open toetsen -->
+      <div class="tip-left">
+        <div class="tip-panel-title">Selecteer toets</div>
+        <div id="tip-toetsen-list"><div class="tip-no-toetsen">Geen open toetsen</div></div>
+      </div>
+
+      <!-- Right: mini rooster -->
+      <div class="tip-right">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem;">
+          <button onclick="tipNavWeek(-1)" style="width:26px;height:26px;border:1px solid var(--border);background:var(--surf-2);border-radius:6px;cursor:pointer;font-size:.8rem;">‹</button>
+          <span id="tip-week-label" style="font-weight:700;font-size:.85rem;color:var(--tx);"></span>
+          <button onclick="tipNavWeek(1)" style="width:26px;height:26px;border:1px solid var(--border);background:var(--surf-2);border-radius:6px;cursor:pointer;font-size:.8rem;">›</button>
+        </div>
+        <div class="tip-grid-wrap">
+          <div id="tip-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm bar (verborgen totdat toets+slot gekozen) -->
+    <div class="tip-confirm-bar" id="tip-confirm-bar" style="display:none;">
+      <div style="font-size:.86rem;">
+        Inplannen: <strong id="tip-sel-vak">—</strong>
+        op <strong id="tip-sel-datum">—</strong>, <strong id="tip-sel-slot-lbl">—</strong>
+        (<span id="tip-sel-time">—</span>)
+      </div>
+      <div class="tip-confirm-actions">
+        <button class="btn-p" onclick="confirmToetsInplan()">✓ Inplannen in rooster</button>
+        <button class="btn-g" onclick="downloadToetsICS()">📅 Download Outlook ICS</button>
+        <button class="btn-ghost" onclick="_tipClearSelection()">✕ Deselecteer</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -6812,6 +6905,259 @@ function updateToetsBadge(){
   const open=S.toetsenImport.filter(t=>t.status==='open').length;
   if(open>0){ badge.textContent=open; badge.style.display='flex'; }
   else { badge.style.display='none'; }
+  _updateToetsInplanBtn();
+}
+
+function _updateToetsInplanBtn(){
+  const btn=document.getElementById('btn-toets-inplan');
+  if(!btn) return;
+  const canEdit=S.role==='coordinator'||S.role==='coach';
+  if(!canEdit){ btn.style.display='none'; return; }
+  const stuId=S.currentStudentId;
+  const hasToetsen = stuId && S.toetsenImport.some(t=>t.matchedStudentId===stuId);
+  btn.style.display=hasToetsen?'':'none';
+}
+
+/* ── Toets Inplannen Modal (TIP) ── */
+let _tipWy = null;          // {week, year}
+let _tipSelectedToetsId = null;
+let _tipSelectedDi = null;
+let _tipSelectedSlotId = null;
+
+function openToetsInplanModal(){
+  const stuId=S.currentStudentId;
+  if(!stuId) return;
+  const stu=S.students.find(s=>s.id===stuId);
+  document.getElementById('tip-stu-naam').textContent=stu?stu.name:'—';
+  _tipWy={week:S.wy.week, year:S.wy.year};
+  _tipSelectedToetsId=null; _tipSelectedDi=null; _tipSelectedSlotId=null;
+  _tipRenderToetsen();
+  _tipRenderGrid();
+  document.getElementById('tip-confirm-bar').style.display='none';
+  document.getElementById('modal-toets-inplan').classList.add('show');
+}
+
+function closeToetsInplanModal(){
+  document.getElementById('modal-toets-inplan').classList.remove('show');
+}
+
+function _tipRenderToetsen(){
+  const stuId=S.currentStudentId;
+  const toetsen=S.toetsenImport.filter(t=>t.matchedStudentId===stuId);
+  const ct=document.getElementById('tip-toetsen-list');
+  if(!toetsen.length){
+    ct.innerHTML='<div class="tip-no-toetsen">Geen toetsen gevonden voor deze leerling.</div>';
+    return;
+  }
+  const _fmt=d=>{
+    if(!d) return '—';
+    const p=d.split('-');
+    return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:d;
+  };
+  ct.innerHTML=toetsen.map(t=>{
+    const isSel=t.id===_tipSelectedToetsId;
+    const statusLbl=t.status==='gepland'
+      ? `<span style="color:#2D8B50;font-size:.68rem;">✓ gepland</span>`
+      : `<span style="color:#C05818;font-size:.68rem;">open</span>`;
+    return `<div class="tip-toets-card${isSel?' selected':''}" onclick="_tipSelectToets('${t.id}')">
+      <div class="tip-tc-vak">${t.vak||'?'}</div>
+      <div class="tip-tc-meta">${_fmt(t.datum)}${t.tijdstip?' · '+t.tijdstip:''} ${statusLbl}
+        ${t.lokaal?'<br>🏫 '+t.lokaal:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _tipSelectToets(id){
+  _tipSelectedToetsId=id;
+  _tipSelectedDi=null; _tipSelectedSlotId=null;
+  _tipRenderToetsen();
+  _tipRenderGrid();
+  document.getElementById('tip-confirm-bar').style.display='none';
+}
+
+function _tipClearSelection(){
+  _tipSelectedToetsId=null; _tipSelectedDi=null; _tipSelectedSlotId=null;
+  _tipRenderToetsen(); _tipRenderGrid();
+  document.getElementById('tip-confirm-bar').style.display='none';
+}
+
+function tipNavWeek(delta){
+  if(!_tipWy) return;
+  let {week,year}=_tipWy;
+  if(delta>0){ week++; if(week>isoWeek(new Date(year,11,28))){ week=1; year++; } }
+  else { week--; if(week<1){ year--; week=isoWeek(new Date(year,11,28)); } }
+  _tipWy={week,year};
+  _tipRenderGrid();
+}
+
+function _tipRenderGrid(){
+  const ct=document.getElementById('tip-grid');
+  const wl=document.getElementById('tip-week-label');
+  if(!ct||!_tipWy) return;
+  const {week,year}=_tipWy;
+  wl.textContent=`Week ${week} — ${year}`;
+
+  const stuId=S.currentStudentId;
+  const sd=S.studentData[stuId]||{};
+  const weekKey=`${year}-W${String(week).padStart(2,'0')}`;
+  const dates=weekDates(year,week);
+  const DAYS_S=['Ma','Di','Wo','Do','Vr'];
+
+  const BG={green:'#D4EDDA',red:'#F8D7DA',rose:'#FFE2DC',blue:'#D1E8FF',
+            purple:'#E8D5F5',yellow:'#FFFDE7',orange:'#FFD9A8'};
+  const TX={green:'#145A2E',red:'#7A1A22',rose:'#8B1A0A',blue:'#1A3A6B',
+            purple:'#4A1A72',yellow:'#5D4000',orange:'#6B2800'};
+  const LBL={green:'A',red:'Tr',rose:'O',blue:'R',purple:'W',yellow:'Toets',orange:'Toe'};
+
+  let html=`<table class="tip-grid-table">
+    <thead><tr>
+      <th class="tip-th-time">Tijd</th>
+      ${DAYS_S.map((d,i)=>{
+        const dt=dates[i];
+        const dd=dt?`${dt.getDate()} ${['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][dt.getMonth()]}`:d;
+        return `<th>${d}<br><span style="font-weight:400;font-size:.6rem;">${dd}</span></th>`;
+      }).join('')}
+    </tr></thead><tbody>`;
+
+  for(const slot of SCHOOL){
+    if(slot.kind==='pause'){
+      html+=`<tr><td class="tip-pause" style="font-size:.6rem;color:var(--tx3);">${slot.time}</td>${[0,1,2,3,4].map(()=>`<td class="tip-pause">pauze</td>`).join('')}</tr>`;
+      continue;
+    }
+    const cells=[0,1,2,3,4].map(di=>{
+      let c=null;
+      if(sd.ovr?.[weekKey]?.[di]?.[slot.id]!==undefined) c=sd.ovr[weekKey][di][slot.id];
+      else if(sd.std?.[di]?.[slot.id]!==undefined) c=sd.std[di][slot.id];
+      const bg=c?BG[c]:'';
+      const lbl=c?LBL[c]||'':'';
+      const isSel=(_tipSelectedDi===di&&_tipSelectedSlotId===slot.id);
+      const canPick=!!_tipSelectedToetsId;
+      let cls='';
+      if(isSel) cls='tip-slot-selected';
+      else if(!c) cls='tip-slot-empty'+(canPick?' tip-pickable':'');
+      const onclick=canPick?`onclick="_tipClickSlot(${di},'${slot.id}',this)"`:'' ;
+      return `<td class="${cls}" style="${bg?'background:'+bg+';color:'+TX[c]+';':''}" ${onclick}>${isSel?'📝':lbl}</td>`;
+    }).join('');
+    html+=`<tr>
+      <td style="background:var(--surf-2);color:var(--tx3);font-size:.6rem;padding:0 3px;white-space:nowrap;text-align:left;">
+        <span style="font-weight:700;">${slot.label}</span><br>${slot.time}
+      </td>${cells}</tr>`;
+  }
+  html+='</tbody></table>';
+  ct.innerHTML=html;
+}
+
+function _tipClickSlot(di, slotId, el){
+  if(!_tipSelectedToetsId) return;
+  _tipSelectedDi=di; _tipSelectedSlotId=slotId;
+  _tipRenderGrid();
+  // Update confirm bar
+  const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
+  const {week,year}=_tipWy;
+  const dates=weekDates(year,week);
+  const dt=dates[di];
+  const slot=SCHOOL.find(s=>s.id===slotId);
+  const DAYS_FULL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
+  const datumStr=dt?`${DAYS_FULL[di]} ${dt.getDate()} ${['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][dt.getMonth()]} ${year}`:'—';
+  document.getElementById('tip-sel-vak').textContent=t?t.vak:'—';
+  document.getElementById('tip-sel-datum').textContent=datumStr;
+  document.getElementById('tip-sel-slot-lbl').textContent=slot?slot.label:'—';
+  document.getElementById('tip-sel-time').textContent=slot?slot.time:'—';
+  document.getElementById('tip-confirm-bar').style.display='';
+}
+
+function confirmToetsInplan(){
+  const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
+  if(!t||_tipSelectedDi===null||!_tipSelectedSlotId) return;
+  const {week,year}=_tipWy;
+  const weekKey=`${year}-W${String(week).padStart(2,'0')}`;
+  const dates=weekDates(year,week);
+  const dt=dates[_tipSelectedDi];
+  // Build datum string yyyy-mm-dd
+  const datum=dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`:t.datum;
+
+  // Remove old planned cell if any
+  if(t.geplandWeekKey && t.matchedStudentId){
+    const stuData=S.studentData[t.matchedStudentId];
+    if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow')
+      stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+  }
+  _setToetsInPlanner(t.matchedStudentId, weekKey, _tipSelectedDi, _tipSelectedSlotId, t);
+  t.datum=datum; t.status='gepland'; t.geplandWeekKey=weekKey; t.geplandDi=_tipSelectedDi; t.geplandSlot=_tipSelectedSlotId;
+  persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
+
+  // Sla op voor ICS na bevestiging
+  _tipLastPlannedToets={toets:t, dt:dates[_tipSelectedDi], slotId:_tipSelectedSlotId};
+
+  // Refresh state in modal
+  _tipSelectedDi=null; _tipSelectedSlotId=null; _tipSelectedToetsId=null;
+  _tipRenderToetsen(); _tipRenderGrid();
+  // Show quick success toast
+  const bar=document.getElementById('tip-confirm-bar');
+  bar.style.display='';
+  bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ingepland in het rooster!</div>
+    <div class="tip-confirm-actions">
+      <button class="btn-g" onclick="downloadToetsICS_last()">📅 Download Outlook ICS</button>
+      <button class="btn-p" onclick="closeToetsInplanModal()">Klaar</button>
+    </div>`;
+}
+
+let _tipLastPlannedToets = null; // opslaan voor ICS download na bevestiging
+
+function downloadToetsICS(){
+  const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
+  if(!t||_tipSelectedDi===null||!_tipSelectedSlotId) return;
+  const {week,year}=_tipWy;
+  const dates=weekDates(year,week);
+  _generateAndDownloadICS(t, dates[_tipSelectedDi], _tipSelectedSlotId);
+}
+
+function downloadToetsICS_last(){
+  if(!_tipLastPlannedToets) return;
+  const {toets,dt,slotId}=_tipLastPlannedToets;
+  _generateAndDownloadICS(toets,dt,slotId);
+}
+
+function _generateAndDownloadICS(t, dt, slotId){
+  const slot=SCHOOL.find(s=>s.id===slotId);
+  if(!slot||!dt) { alert('Geen datum/slot beschikbaar voor ICS.'); return; }
+  // Parse start time
+  const [startH,startM]=slot.time.split('–')[0].trim().split(':').map(Number);
+  // Use toets tijdstip if available, else slot start
+  let evStartH=startH, evStartM=startM;
+  if(t.tijdstip){
+    const [h,m]=t.tijdstip.split(':').map(Number);
+    if(!isNaN(h)&&!isNaN(m)){ evStartH=h; evStartM=m; }
+  }
+  const dur=50; // standaard 1 blok
+  const evEndTotalM=evStartH*60+evStartM+dur;
+  const evEndH=Math.floor(evEndTotalM/60), evEndM=evEndTotalM%60;
+
+  const pad=n=>String(n).padStart(2,'0');
+  const yyyymmdd=`${dt.getFullYear()}${pad(dt.getMonth()+1)}${pad(dt.getDate())}`;
+  const dtStart=`${yyyymmdd}T${pad(evStartH)}${pad(evStartM)}00`;
+  const dtEnd  =`${yyyymmdd}T${pad(evEndH)}${pad(evEndM)}00`;
+
+  const stu=S.students.find(s=>s.id===t.matchedStudentId);
+  const stuNaam=stu?stu.name:'leerling';
+  const summary=`Toets ${t.vak} — ${stuNaam}`;
+  const desc=`Leerling: ${stuNaam}\\nKlas: ${t.klas}\\nVak: ${t.vak}\\nDuur: ${dur} min${t.lokaal?'\\nLokaal: '+t.lokaal:''}`;
+  const loc=t.lokaal||'';
+
+  const uid_str=`toets-${t.id}-${Date.now()}@parmantscholen.nl`;
+  const now=new Date();
+  const dtStamp=`${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+
+  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Parmant Planner 2.0//NL\r\nCALSCALE:GREGORIAN\r\nMETHOD:REQUEST\r\nBEGIN:VEVENT\r\nUID:${uid_str}\r\nDTSTAMP:${dtStamp}\r\nDTSTART;TZID=Europe/Amsterdam:${dtStart}\r\nDTEND;TZID=Europe/Amsterdam:${dtEnd}\r\nSUMMARY:${summary}\r\nDESCRIPTION:${desc}\r\n${loc?'LOCATION:'+loc+'\r\n':''}END:VEVENT\r\nEND:VCALENDAR`;
+
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`toets_${t.vak.replace(/[^a-zA-Z0-9]/g,'_')}_${stuNaam.replace(/\s+/g,'_')}.ics`;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },1000);
+  _tipLastPlannedToets={toets:t,dt,slotId};
 }
 
 /* Excel export — laad SheetJS dynamisch */
@@ -6928,6 +7274,8 @@ function showMain(){
   if(sez) sez.style.display=canEdit?'flex':'none';
   const bsr=document.getElementById('btn-std-rooster');
   if(bsr) bsr.style.display=S.role==='coach'?'':'none';
+  // Toets inplannen knop: zichtbaar voor coach en coordinator als er toetsen zijn
+  _updateToetsInplanBtn();
   const bgp=document.getElementById('btn-gesprek');
   if(bgp) bgp.style.display=S.role==='coach'?'':'none';
   document.getElementById('hdr-docent-zone').style.display=S.role==='docent'?'flex':'none';
@@ -7003,6 +7351,7 @@ function updateStudentBar(){
     vdHtml+=`<span style="display:inline-flex;align-items:center;gap:.3rem;margin-left:.5rem;"><span class="stu-vchip" style="background:rgba(255,255,255,.38);color:#fff;">PWS</span>${dots}${pencil}</span>`;
   }
   vd.innerHTML=vdHtml;
+  _updateToetsInplanBtn();
 }
 
 function prevStudent(){
@@ -8056,9 +8405,10 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
   return wrap;
 }
 
-// Kleurkiezer: 7 gekleurde rondjes bovenin de cel in bewerkmodus
-const _PICKER_COLORS = [null,'green','red','rose','blue','purple','yellow','orange'];
-const _STD_PICKER_COLORS = [null,'green','red','rose','blue']; // Wedstrijd/Toets/Toernooi alleen via weekplanning
+// Kleurkiezer: 6 gekleurde rondjes bovenin de cel in bewerkmodus
+// Yellow (Toets) is verwijderd uit de picker — toetsen worden ingepland via de knop "Toets inplannen"
+const _PICKER_COLORS = [null,'green','red','rose','blue','purple','orange'];
+const _STD_PICKER_COLORS = [null,'green','red','rose','blue']; // Wedstrijd/Toernooi alleen via weekplanning
 const _PICKER_BG = {
   green:'#D4EDDA', red:'#F8D7DA', rose:'#FFE2DC',
   blue:'#D1E8FF', purple:'#E8D5F5', yellow:'#FFFDE7', orange:'#FFD9A8'
@@ -8146,16 +8496,7 @@ function _refreshToetsBtn(cell, c, key, di, slot, slots, dates, editable){
     nt.textContent=noteTxt.length>maxLen?noteTxt.slice(0,maxLen-1)+'…':noteTxt;
     cell.appendChild(nt);
   }
-  if(!editable) return;
-  const btn=document.createElement('button');
-  btn.className='toets-icon-btn';
-  btn.title='Toets beheren / mail sturen';
-  btn.textContent='📝';
-  btn.addEventListener('click',(e)=>{
-    e.stopPropagation();
-    openToetsModal(key,di,slot,slots,dates);
-  });
-  cell.appendChild(btn);
+  // Toets-icon-btn verwijderd: toetsen worden beheerd via "Toets inplannen" knop in de toolbar
 }
 
 function _refreshNoteUI(cell, c, key, di, slot, editable){
