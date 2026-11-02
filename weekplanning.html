@@ -1508,6 +1508,21 @@ body.dark .stu-sport-chip {
 .tip-confirm-bar strong { color:var(--brand); }
 .tip-confirm-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
 .tip-no-toetsen { font-size:.82rem; color:var(--tx3); text-align:center; padding:1.5rem .5rem; }
+.tip-form-row { display:flex; flex-direction:column; gap:.2rem; }
+.tip-form-lbl { font-size:.7rem; font-weight:700; color:var(--tx3); }
+.tip-form-inp {
+  width:100%; padding:.35rem .6rem; border:1.5px solid var(--border); border-radius:7px;
+  background:var(--surf-2); color:var(--tx); font-size:.83rem; font-family:inherit;
+  transition:border-color .13s;
+}
+.tip-form-inp:focus { border-color:var(--brand); outline:none; }
+.tip-dur-opt {
+  display:flex; align-items:center; gap:.25rem; padding:.22rem .5rem;
+  border-radius:6px; border:1.5px solid var(--border); background:var(--surf-2);
+  cursor:pointer; font-size:.76rem; font-weight:500; transition:background .12s,border-color .12s;
+}
+.tip-dur-opt:has(input:checked) { border-color:var(--brand); background:var(--brand-light); color:var(--brand); }
+.tip-dur-opt input { accent-color:var(--brand); cursor:pointer; width:12px; height:12px; }
 
 /* ── Week-navigatie: 2Scool stijl ── */
 .week-nav-wrap {
@@ -2290,17 +2305,55 @@ body.dark .stu-sport-chip {
 
 <!-- ══ TOETS INPLANNEN MODAAL ═══════════════════════ -->
 <div class="overlay" id="modal-toets-inplan">
-  <div class="modal-card" style="max-width:880px;width:98%;max-height:95vh;overflow-y:auto;">
+  <div class="modal-card" style="max-width:920px;width:98%;max-height:95vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;flex-shrink:0;">
       <h2 style="margin:0;font-size:1.05rem;">📝 Toets inplannen — <span id="tip-stu-naam" style="color:var(--brand);">—</span></h2>
       <button class="btn-g sm" onclick="closeToetsInplanModal()" style="padding:.3rem .75rem;font-size:.8rem;">✕ Sluiten</button>
     </div>
 
     <div class="tip-layout">
-      <!-- Left: open toetsen -->
-      <div class="tip-left">
-        <div class="tip-panel-title">Selecteer toets</div>
-        <div id="tip-toetsen-list"><div class="tip-no-toetsen">Geen open toetsen</div></div>
+      <!-- Left: toets formulier + optioneel importlijst -->
+      <div class="tip-left" style="flex:0 0 240px;gap:.55rem;">
+
+        <!-- Formulier -->
+        <div class="tip-panel-title">Toetsgegevens</div>
+
+        <div class="tip-form-row">
+          <label class="tip-form-lbl">Vak</label>
+          <select id="tip-vak" class="tip-form-inp" onchange="_tipFormChange()">
+            <option value="">— kies vak —</option>
+          </select>
+        </div>
+
+        <div class="tip-form-row">
+          <label class="tip-form-lbl">Onderwerp <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
+          <input id="tip-onderwerp" class="tip-form-inp" type="text" placeholder="Bijv. Hoofdstuk 4…" oninput="_tipFormChange()">
+        </div>
+
+        <div class="tip-form-row">
+          <label class="tip-form-lbl">Duur</label>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="30" onchange="_tipFormChange()"> 30 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="45" onchange="_tipFormChange()"> 45 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="50" checked onchange="_tipFormChange()"> 50 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="60" onchange="_tipFormChange()"> 60 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="100" onchange="_tipFormChange()"> 100 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="120" onchange="_tipFormChange()"> 120 min</label>
+          </div>
+        </div>
+
+        <div class="tip-form-row">
+          <label class="tip-form-lbl">Begintijd <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
+          <input id="tip-begintijd" class="tip-form-inp" type="time" oninput="_tipFormChange()" style="max-width:120px;">
+          <div id="tip-tijd-preview" style="font-size:.75rem;font-weight:700;color:var(--brand);margin-top:.2rem;min-height:1em;"></div>
+        </div>
+
+        <!-- Geïmporteerde toetsen (alleen als aanwezig) -->
+        <div id="tip-import-section" style="display:none;">
+          <div class="tip-panel-title" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border);">Of kies uit import</div>
+          <div id="tip-toetsen-list"></div>
+        </div>
+
       </div>
 
       <!-- Right: mini rooster -->
@@ -2310,18 +2363,21 @@ body.dark .stu-sport-chip {
           <span id="tip-week-label" style="font-weight:700;font-size:.85rem;color:var(--tx);"></span>
           <button onclick="tipNavWeek(1)" style="width:26px;height:26px;border:1px solid var(--border);background:var(--surf-2);border-radius:6px;cursor:pointer;font-size:.8rem;">›</button>
         </div>
+        <div style="font-size:.73rem;color:var(--tx3);margin-bottom:.4rem;">
+          Klik op een uur om de toets daar in te plannen.
+        </div>
         <div class="tip-grid-wrap">
           <div id="tip-grid"></div>
         </div>
       </div>
     </div>
 
-    <!-- Confirm bar (verborgen totdat toets+slot gekozen) -->
+    <!-- Confirm bar -->
     <div class="tip-confirm-bar" id="tip-confirm-bar" style="display:none;">
       <div style="font-size:.86rem;">
         Inplannen: <strong id="tip-sel-vak">—</strong>
         op <strong id="tip-sel-datum">—</strong>, <strong id="tip-sel-slot-lbl">—</strong>
-        (<span id="tip-sel-time">—</span>)
+        — <span id="tip-sel-time" style="color:var(--brand);font-weight:700;">—</span>
       </div>
       <div class="tip-confirm-actions">
         <button class="btn-p" onclick="confirmToetsInplan()">✓ Inplannen in rooster</button>
@@ -6928,6 +6984,21 @@ function openToetsInplanModal(){
   document.getElementById('tip-stu-naam').textContent=stu?stu.name:'—';
   _tipWy={week:S.wy.week, year:S.wy.year};
   _tipSelectedToetsId=null; _tipSelectedDi=null; _tipSelectedSlotId=null;
+
+  // Vul vak-dropdown met vakken van de leerling
+  const vakSel=document.getElementById('tip-vak');
+  const vakken=getActiveVakken(stu);
+  vakSel.innerHTML='<option value="">— kies vak —</option>'
+    +vakken.map(v=>`<option value="${v}">${v}</option>`).join('');
+
+  // Reset formulier
+  document.getElementById('tip-onderwerp').value='';
+  document.getElementById('tip-begintijd').value='';
+  document.getElementById('tip-tijd-preview').textContent='';
+  const dur50=document.querySelector('input[name="tip-dur"][value="50"]');
+  if(dur50) dur50.checked=true;
+
+  // Geïmporteerde toetsen
   _tipRenderToetsen();
   _tipRenderGrid();
   document.getElementById('tip-confirm-bar').style.display='none';
@@ -6941,11 +7012,10 @@ function closeToetsInplanModal(){
 function _tipRenderToetsen(){
   const stuId=S.currentStudentId;
   const toetsen=S.toetsenImport.filter(t=>t.matchedStudentId===stuId);
+  const sec=document.getElementById('tip-import-section');
   const ct=document.getElementById('tip-toetsen-list');
-  if(!toetsen.length){
-    ct.innerHTML='<div class="tip-no-toetsen">Geen toetsen gevonden voor deze leerling.</div>';
-    return;
-  }
+  if(!toetsen.length){ if(sec) sec.style.display='none'; return; }
+  if(sec) sec.style.display='';
   const _fmt=d=>{
     if(!d) return '—';
     const p=d.split('-');
@@ -6968,15 +7038,87 @@ function _tipRenderToetsen(){
 function _tipSelectToets(id){
   _tipSelectedToetsId=id;
   _tipSelectedDi=null; _tipSelectedSlotId=null;
+  // Pre-vul formulier vanuit de geïmporteerde toets
+  const t=S.toetsenImport.find(x=>x.id===id);
+  if(t){
+    const vakSel=document.getElementById('tip-vak');
+    if(t.vak){
+      // Match exact or partial
+      const opt=[...vakSel.options].find(o=>o.value===t.vak||_normVak(o.value)===_normVak(t.vak));
+      if(opt) vakSel.value=opt.value; else { const o=new Option(t.vak,t.vak); vakSel.add(o); vakSel.value=t.vak; }
+    }
+    if(t.tijdstip) document.getElementById('tip-begintijd').value=t.tijdstip;
+  }
+  _tipFormChange();
   _tipRenderToetsen();
   _tipRenderGrid();
   document.getElementById('tip-confirm-bar').style.display='none';
 }
 
 function _tipClearSelection(){
-  _tipSelectedToetsId=null; _tipSelectedDi=null; _tipSelectedSlotId=null;
-  _tipRenderToetsen(); _tipRenderGrid();
+  _tipSelectedDi=null; _tipSelectedSlotId=null;
+  _tipRenderGrid();
   document.getElementById('tip-confirm-bar').style.display='none';
+}
+
+function _tipGetFormData(){
+  const vak=(document.getElementById('tip-vak')||{}).value||'';
+  const onderwerp=(document.getElementById('tip-onderwerp')||{}).value||'';
+  const durEl=document.querySelector('input[name="tip-dur"]:checked');
+  const dur=durEl?parseInt(durEl.value):50;
+  const begintijd=(document.getElementById('tip-begintijd')||{}).value||'';
+  return {vak,onderwerp,dur,begintijd};
+}
+
+function _tipFormChange(){
+  const {begintijd,dur}=_tipGetFormData();
+  const prev=document.getElementById('tip-tijd-preview');
+  if(prev){
+    if(begintijd){
+      const [h,m]=begintijd.split(':').map(Number);
+      const endMin=h*60+m+dur;
+      const endStr=`${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
+      prev.textContent=`${begintijd} – ${endStr} (${dur} min)`;
+    } else {
+      prev.textContent=`Duur: ${dur} min`;
+    }
+  }
+  // Herbereken confirm bar als slot al geselecteerd
+  if(_tipSelectedDi!==null && _tipSelectedSlotId) _tipUpdateConfirmBar();
+}
+
+function _tipCalcTime(slot){
+  // Gebruik ingevulde begintijd of anders de slottijd
+  const {begintijd,dur}=_tipGetFormData();
+  let startH,startM;
+  if(begintijd){
+    [startH,startM]=begintijd.split(':').map(Number);
+  } else {
+    const t=slot.time.split('–')[0].trim().split(':').map(Number);
+    startH=t[0]; startM=t[1]||0;
+  }
+  const endMin=startH*60+startM+dur;
+  const startStr=`${String(startH).padStart(2,'0')}:${String(startM).padStart(2,'0')}`;
+  const endStr=`${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
+  return {startStr,endStr,dur};
+}
+
+function _tipUpdateConfirmBar(){
+  const {vak}=_tipGetFormData();
+  const slot=SCHOOL.find(s=>s.id===_tipSelectedSlotId);
+  if(!slot) return;
+  const {week,year}=_tipWy;
+  const dates=weekDates(year,week);
+  const dt=dates[_tipSelectedDi];
+  const DAYS_FULL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
+  const MONTHS_S=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const datumStr=dt?`${DAYS_FULL[_tipSelectedDi]} ${dt.getDate()} ${MONTHS_S[dt.getMonth()]} ${year}`:'—';
+  const {startStr,endStr}=_tipCalcTime(slot);
+  document.getElementById('tip-sel-vak').textContent=vak||'(vak niet gekozen)';
+  document.getElementById('tip-sel-datum').textContent=datumStr;
+  document.getElementById('tip-sel-slot-lbl').textContent=slot.label;
+  document.getElementById('tip-sel-time').textContent=`${startStr} – ${endStr}`;
+  document.getElementById('tip-confirm-bar').style.display='';
 }
 
 function tipNavWeek(delta){
@@ -7029,7 +7171,9 @@ function _tipRenderGrid(){
       const bg=c?BG[c]:'';
       const lbl=c?LBL[c]||'':'';
       const isSel=(_tipSelectedDi===di&&_tipSelectedSlotId===slot.id);
-      const canPick=!!_tipSelectedToetsId;
+      // Pickable als er een toets geselecteerd is OF als vak ingevuld is in het formulier
+      const vakIngevuld=!!(document.getElementById('tip-vak')||{}).value;
+      const canPick=!!_tipSelectedToetsId||vakIngevuld;
       let cls='';
       if(isSel) cls='tip-slot-selected';
       else if(!c) cls='tip-slot-empty'+(canPick?' tip-pickable':'');
@@ -7046,51 +7190,81 @@ function _tipRenderGrid(){
 }
 
 function _tipClickSlot(di, slotId, el){
-  if(!_tipSelectedToetsId) return;
+  const {vak}=_tipGetFormData();
+  if(!_tipSelectedToetsId && !vak) return;
   _tipSelectedDi=di; _tipSelectedSlotId=slotId;
   _tipRenderGrid();
-  // Update confirm bar
-  const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
-  const {week,year}=_tipWy;
-  const dates=weekDates(year,week);
-  const dt=dates[di];
-  const slot=SCHOOL.find(s=>s.id===slotId);
-  const DAYS_FULL=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
-  const datumStr=dt?`${DAYS_FULL[di]} ${dt.getDate()} ${['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][dt.getMonth()]} ${year}`:'—';
-  document.getElementById('tip-sel-vak').textContent=t?t.vak:'—';
-  document.getElementById('tip-sel-datum').textContent=datumStr;
-  document.getElementById('tip-sel-slot-lbl').textContent=slot?slot.label:'—';
-  document.getElementById('tip-sel-time').textContent=slot?slot.time:'—';
-  document.getElementById('tip-confirm-bar').style.display='';
+  _tipUpdateConfirmBar();
 }
 
 function confirmToetsInplan(){
-  const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
-  if(!t||_tipSelectedDi===null||!_tipSelectedSlotId) return;
+  if(_tipSelectedDi===null||!_tipSelectedSlotId) return;
+  const stuId=S.currentStudentId;
+  if(!stuId) return;
   const {week,year}=_tipWy;
   const weekKey=`${year}-W${String(week).padStart(2,'0')}`;
   const dates=weekDates(year,week);
   const dt=dates[_tipSelectedDi];
-  // Build datum string yyyy-mm-dd
-  const datum=dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`:t.datum;
+  const datum=dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`:'';
+  const slot=SCHOOL.find(s=>s.id===_tipSelectedSlotId);
+  const {vak,onderwerp,dur,begintijd}=_tipGetFormData();
 
-  // Remove old planned cell if any
-  if(t.geplandWeekKey && t.matchedStudentId){
-    const stuData=S.studentData[t.matchedStudentId];
-    if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow')
-      stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+  // Bepaal effectieve begintijd
+  let effectiefTijdstip=begintijd;
+  if(!effectiefTijdstip && slot){
+    effectiefTijdstip=slot.time.split('–')[0].trim();
   }
-  _setToetsInPlanner(t.matchedStudentId, weekKey, _tipSelectedDi, _tipSelectedSlotId, t);
-  t.datum=datum; t.status='gepland'; t.geplandWeekKey=weekKey; t.geplandDi=_tipSelectedDi; t.geplandSlot=_tipSelectedSlotId;
+
+  if(_tipSelectedToetsId){
+    // Importeer-toets flow: bestaande toets updaten
+    const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
+    if(!t) return;
+    if(t.geplandWeekKey && t.matchedStudentId){
+      const stuData=S.studentData[t.matchedStudentId];
+      if(stuData?.ovr?.[t.geplandWeekKey]?.[t.geplandDi]?.[t.geplandSlot]==='yellow')
+        stuData.ovr[t.geplandWeekKey][t.geplandDi][t.geplandSlot]=null;
+    }
+    // Override form fields indien aangepast
+    if(vak) t.vak=vak;
+    if(onderwerp) t.onderwerp=onderwerp;
+    t.tijdstip=effectiefTijdstip;
+    t._dur=dur;
+    _setToetsInPlanner(t.matchedStudentId, weekKey, _tipSelectedDi, _tipSelectedSlotId, t);
+    t.datum=datum; t.status='gepland'; t.geplandWeekKey=weekKey; t.geplandDi=_tipSelectedDi; t.geplandSlot=_tipSelectedSlotId;
+    _tipLastPlannedToets={toets:t, dt, slotId:_tipSelectedSlotId};
+  } else {
+    // Handmatige invoer: maak tijdelijk toets-object
+    if(!vak){ alert('Kies eerst een vak.'); return; }
+    const stu=S.students.find(s=>s.id===stuId);
+    const newT={
+      id:'manual-'+Date.now(),
+      studentNaam:stu?stu.name:'',
+      klas:stu?stu.klas||'':'',
+      vak,
+      onderwerp,
+      datum,
+      tijdstip:effectiefTijdstip,
+      lokaal:'',
+      status:'gepland',
+      matchedStudentId:stuId,
+      geplandWeekKey:weekKey,
+      geplandDi:_tipSelectedDi,
+      geplandSlot:_tipSelectedSlotId,
+      _dur:dur,
+      _handmatig:true
+    };
+    S.toetsenImport.push(newT);
+    _setToetsInPlanner(stuId, weekKey, _tipSelectedDi, _tipSelectedSlotId, newT);
+    _tipLastPlannedToets={toets:newT, dt, slotId:_tipSelectedSlotId};
+  }
+
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 
-  // Sla op voor ICS na bevestiging
-  _tipLastPlannedToets={toets:t, dt:dates[_tipSelectedDi], slotId:_tipSelectedSlotId};
-
-  // Refresh state in modal
+  // Reset modal state
   _tipSelectedDi=null; _tipSelectedSlotId=null; _tipSelectedToetsId=null;
   _tipRenderToetsen(); _tipRenderGrid();
-  // Show quick success toast
+
+  // Succesmelding
   const bar=document.getElementById('tip-confirm-bar');
   bar.style.display='';
   bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ingepland in het rooster!</div>
@@ -7119,15 +7293,16 @@ function downloadToetsICS_last(){
 function _generateAndDownloadICS(t, dt, slotId){
   const slot=SCHOOL.find(s=>s.id===slotId);
   if(!slot||!dt) { alert('Geen datum/slot beschikbaar voor ICS.'); return; }
-  // Parse start time
+  // Parse start time from slot
   const [startH,startM]=slot.time.split('–')[0].trim().split(':').map(Number);
-  // Use toets tijdstip if available, else slot start
+  // Gebruik toets tijdstip of slot start
   let evStartH=startH, evStartM=startM;
   if(t.tijdstip){
     const [h,m]=t.tijdstip.split(':').map(Number);
     if(!isNaN(h)&&!isNaN(m)){ evStartH=h; evStartM=m; }
   }
-  const dur=50; // standaard 1 blok
+  // Gebruik opgeslagen duur (van formulier) of standaard 50 min
+  const dur=t._dur||50;
   const evEndTotalM=evStartH*60+evStartM+dur;
   const evEndH=Math.floor(evEndTotalM/60), evEndM=evEndTotalM%60;
 
@@ -7138,8 +7313,9 @@ function _generateAndDownloadICS(t, dt, slotId){
 
   const stu=S.students.find(s=>s.id===t.matchedStudentId);
   const stuNaam=stu?stu.name:'leerling';
-  const summary=`Toets ${t.vak} — ${stuNaam}`;
-  const desc=`Leerling: ${stuNaam}\\nKlas: ${t.klas}\\nVak: ${t.vak}\\nDuur: ${dur} min${t.lokaal?'\\nLokaal: '+t.lokaal:''}`;
+  const onderwerp=t.onderwerp||'';
+  const summary=`Toets ${t.vak}${onderwerp?' – '+onderwerp:''} — ${stuNaam}`;
+  const desc=`Leerling: ${stuNaam}\\nKlas: ${t.klas||''}\\nVak: ${t.vak}${onderwerp?'\\nOnderwerp: '+onderwerp:''}\\nDuur: ${dur} min${t.lokaal?'\\nLokaal: '+t.lokaal:''}`;
   const loc=t.lokaal||'';
 
   const uid_str=`toets-${t.id}-${Date.now()}@parmantscholen.nl`;
