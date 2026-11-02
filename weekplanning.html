@@ -6912,10 +6912,7 @@ function _updateToetsInplanBtn(){
   const btn=document.getElementById('btn-toets-inplan');
   if(!btn) return;
   const canEdit=S.role==='coordinator'||S.role==='coach';
-  if(!canEdit){ btn.style.display='none'; return; }
-  const stuId=S.currentStudentId;
-  const hasToetsen = stuId && S.toetsenImport.some(t=>t.matchedStudentId===stuId);
-  btn.style.display=hasToetsen?'':'none';
+  btn.style.display=canEdit?'':'none';
 }
 
 /* ── Toets Inplannen Modal (TIP) ── */
