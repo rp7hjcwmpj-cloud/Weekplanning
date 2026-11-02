@@ -6416,8 +6416,9 @@ function handleToetsenFile(file){
 function showToetsenColMap(){
   const zone = document.getElementById('toetsen-col-map-zone');
   const rows = document.getElementById('toetsen-col-map-rows');
-  const fields = ['naam','klas','vak','datum','tijdstip','lokaal'];
-  const labels = {naam:'Leerlingnaam',klas:'Klas',vak:'Vak',datum:'Datum',tijdstip:'Tijdstip',lokaal:'Lokaal (optioneel)'};
+  // Naam is niet nodig: app koppelt leerlingen via klas + vak
+  const fields = ['klas','vak','datum','tijdstip','lokaal'];
+  const labels = {klas:'Klas *',vak:'Vak *',datum:'Datum',tijdstip:'Tijdstip',lokaal:'Lokaal (optioneel)'};
   rows.innerHTML = fields.map(f=>{
     const detected = _detectCol(_toetsenHeaders, f);
     const opts = ['<option value="">— niet aanwezig —</option>',
@@ -6513,42 +6514,59 @@ function _matchStudent(naam){
   return stu ? stu.id : null;
 }
 
+function _normVak(v){ return String(v||'').toLowerCase().replace(/[\s\/\-\.]/g,''); }
+
+function _stuVolgtVak(stu, vakNorm){
+  // Check of een leerling dit vak volgt in enige periode
+  const vakken = stu.vakken || {};
+  return Object.values(vakken).some(arr =>
+    Array.isArray(arr) && arr.some(v => _normVak(v) === vakNorm)
+  );
+}
+
 function confirmToetsenImport(){
   const get = f => {
     const sel=document.getElementById('colmap-'+f); return sel?sel.value:'';
   };
-  const colNaam=get('naam'), colKlas=get('klas'), colVak=get('vak'),
+  const colKlas=get('klas'), colVak=get('vak'),
         colDatum=get('datum'), colTijd=get('tijdstip'), colLokaal=get('lokaal');
-  if(!colNaam||!colVak){ alert('Kies minimaal de kolommen Leerlingnaam en Vak.'); return; }
+  if(!colKlas||!colVak){ alert('Kies minimaal de kolommen Klas en Vak.'); return; }
   const idx = f => _toetsenHeaders.indexOf(f);
-  const iNaam=idx(colNaam), iKlas=idx(colKlas), iVak=idx(colVak),
+  const iKlas=idx(colKlas), iVak=idx(colVak),
         iDatum=idx(colDatum), iTijd=idx(colTijd), iLokaal=idx(colLokaal);
 
   const imported = [];
   for(const row of _toetsenRawRows){
-    const naam = String(row[iNaam]||'').trim();
-    const vak  = String(row[iVak]||'').trim();
-    if(!naam||!vak) continue;
-    const datum = _parseToetsDate(iDatum>=0?row[iDatum]:'');
-    const toets = {
-      id: uid(),
-      studentNaam: naam,
-      klas: iKlas>=0?String(row[iKlas]||'').trim():'',
-      vak,
-      datum,
-      tijdstip: iTijd>=0?_parseToetsTime(row[iTijd]):'',
-      lokaal: iLokaal>=0?String(row[iLokaal]||'').trim():'',
-      status: 'open',
-      matchedStudentId: _matchStudent(naam),
-      geplandWeekKey: null, geplandDi: null, geplandSlot: null,
-    };
-    imported.push(toets);
+    const klas = String(row[iKlas]||'').trim();
+    const vak  = String(row[iVak] ||'').trim();
+    if(!klas||!vak) continue;
+    const datum    = _parseToetsDate(iDatum>=0  ? row[iDatum]  : '');
+    const tijdstip = iTijd>=0    ? _parseToetsTime(row[iTijd])          : '';
+    const lokaal   = iLokaal>=0  ? String(row[iLokaal]||'').trim()      : '';
+    const vakNorm  = _normVak(vak);
+
+    // Zoek alle leerlingen in deze klas die dit vak volgen
+    const matches = S.students.filter(s => s.klass===klas && _stuVolgtVak(s, vakNorm));
+
+    if(matches.length === 0){
+      // Toch toevoegen zodat het zichtbaar is (geen match)
+      imported.push({ id:uid(), studentNaam:`(geen leerling in ${klas})`, klas, vak, datum, tijdstip, lokaal,
+        status:'open', matchedStudentId:null, geplandWeekKey:null, geplandDi:null, geplandSlot:null });
+    } else {
+      for(const stu of matches){
+        imported.push({ id:uid(), studentNaam:stu.name, klas, vak, datum, tijdstip, lokaal,
+          status:'open', matchedStudentId:stu.id, geplandWeekKey:null, geplandDi:null, geplandSlot:null });
+      }
+    }
   }
   if(!imported.length){ alert('Geen geldige rijen gevonden. Controleer de kolomkeuze.'); return; }
 
-  // Merge: keep existing gepland entries for same student+vak+datum
+  // Merge: bewaar al geplande entries voor dezelfde student+vak+datum
   const keep = S.toetsenImport.filter(t=>t.status==='gepland');
-  S.toetsenImport = [...keep.filter(k=>!imported.find(i=>i.studentNaam===k.studentNaam&&i.vak===k.vak&&i.datum===k.datum)), ...imported];
+  S.toetsenImport = [
+    ...keep.filter(k=>!imported.find(i=>i.matchedStudentId&&i.matchedStudentId===k.matchedStudentId&&i.vak===k.vak&&i.datum===k.datum)),
+    ...imported
+  ];
   persist();
   resetToetsenUpload();
   document.getElementById('toetsen-list-zone').style.display='';
