@@ -6346,7 +6346,7 @@ const TOETS_COL_ALIASES = {
   klas:     ['klas','groep','class','leerjaar','klas/groep','klasgroep'],
   vak:      ['vak','vakcode','subject','vak code','vak/onderdeel','onderdeel','vakken'],
   datum:    ['datum','date','dag','toetsdatum','datum toets'],
-  tijdstip: ['tijdstip','tijd','time','van','starttijd','aanvangstijd','uur'],
+  tijdstip: ['tijdstip','tijd','time','van','starttijd','aanvangstijd','uur','begintijd','aanvang','start','begin'],
   lokaal:   ['lokaal','zaal','ruimte','room','locatie'],
 };
 
@@ -6460,16 +6460,29 @@ function _parseToetsDate(raw){
 
 function _parseToetsTime(raw){
   if(!raw) return '';
-  if(typeof raw === 'number' && raw < 1){
-    // Fraction of day
-    const totalMin = Math.round(raw * 1440);
-    const h = Math.floor(totalMin/60), m = totalMin%60;
-    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  if(typeof raw === 'number'){
+    if(raw < 1){
+      // Excel fraction of day (e.g. 0.354166... = 8:30)
+      const totalMin = Math.round(raw * 1440);
+      const h = Math.floor(totalMin/60), m = totalMin%60;
+      return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    }
+    // Soms slaat Excel tijd op als geheel getal uur (8 → 08:00)
+    return `${String(Math.floor(raw)).padStart(2,'0')}:00`;
+  }
+  if(raw instanceof Date){
+    return `${String(raw.getHours()).padStart(2,'0')}:${String(raw.getMinutes()).padStart(2,'0')}`;
   }
   const s = String(raw).trim();
-  // H:MM or HH:MM
-  const m = s.match(/^(\d{1,2}):(\d{2})/);
+  // HH:MM of H:MM (dubbele punt)
+  let m = s.match(/^(\d{1,2}):(\d{2})/);
   if(m) return `${String(parseInt(m[1])).padStart(2,'0')}:${m[2]}`;
+  // HH.MM of H.MM (punt — Nederlands formaat)
+  m = s.match(/^(\d{1,2})\.(\d{2})/);
+  if(m) return `${String(parseInt(m[1])).padStart(2,'0')}:${m[2]}`;
+  // Alleen uren: "8" of "09"
+  m = s.match(/^(\d{1,2})$/);
+  if(m) return `${String(parseInt(m[1])).padStart(2,'0')}:00`;
   return s;
 }
 
@@ -6655,17 +6668,24 @@ function renderToetsenCards(){
       if(filterStatus==='gepland' && toets.status!=='gepland') continue;
 
       const datumLabel = toets.datum    ? fmtDate(toets.datum) : '—';
-      const tijdLabel  = toets.tijdstip || '—';
       const slot       = toets.datum && toets.tijdstip ? _findSlotByTime(toets.tijdstip) : null;
+      // Toon echte Excel-starttijd + eindtijd (+50 min = 1 blok standaard)
+      let tijdLabel = toets.tijdstip || '—';
+      if(toets.tijdstip){
+        const [hh,mm] = toets.tijdstip.split(':').map(Number);
+        const endMin  = hh*60 + mm + 50;
+        const endStr  = `${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
+        tijdLabel = `${toets.tijdstip} – ${endStr}`;
+      }
       const slotLabel  = slot ? slot.label : '';
-      const canPlan    = !!toets.datum && !!slot;
 
       const statusEl = toets.status==='gepland'
         ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland · week ${toets.geplandWeekKey?.split('-W')[1]||''}</span>`
         : `<span class="toets-stu-status toets-stu-open">📅 ${datumLabel} · 🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</span>`;
 
+      // Inplannen altijd tonen als er een datum is (planToets toont zelf een melding als slot ontbreekt)
       const actBtns = toets.status==='open'
-        ? `${canPlan?`<button class="toets-stu-btn plan" onclick="planToets('${toets.id}')">📅 Inplannen</button>`:''}
+        ? `${toets.datum?`<button class="toets-stu-btn plan" onclick="planToets('${toets.id}')">📅 Inplannen</button>`:''}
            <button class="toets-stu-btn herplan" onclick="openHerplan('${toets.id}',this)">🔄 Herplannen</button>
            <button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${toets.id}')">✕</button>`
         : `<button class="toets-stu-btn unplan" onclick="unplanToets('${toets.id}')">✗ Ongedaan</button>
