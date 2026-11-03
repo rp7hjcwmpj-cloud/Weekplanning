@@ -4644,7 +4644,7 @@ function askConfirm(title,msg,cb){
   document.getElementById('modal-confirm').classList.add('show');
 }
 function closeConfirm(){ document.getElementById('modal-confirm').classList.remove('show'); _confirmCb=null; }
-document.getElementById('confirm-ok').addEventListener('click',()=>{ closeConfirm(); if(_confirmCb) _confirmCb(); });
+document.getElementById('confirm-ok').addEventListener('click',()=>{ const cb=_confirmCb; closeConfirm(); if(cb) cb(); });
 
 function resetSpecDays(){
   askConfirm(
@@ -4706,6 +4706,7 @@ function deleteStudent(id){
       S.students=S.students.filter(s=>s.id!==id);
       delete S.studentData[id];
       delete S.studentPasswords[id];
+      S.toetsenImport=S.toetsenImport.filter(t=>t.matchedStudentId!==id);
       if(S.currentStudentId===id) S.currentStudentId=S.students.length?S.students[0].id:null;
       persist(); renderStudentsList();
     }
@@ -6635,6 +6636,9 @@ function openToetsenModal(){
   updateToetsBadge();
 }
 function closeToetsenModal(){
+  // Geplande toetsen staan nu in het rooster en worden daar aangepast
+  S.toetsenImport.forEach(t=>{ if(t.status==='gepland'&&!t._handmatig) t._verborgen=true; });
+  persist();
   document.getElementById('modal-toetsen-import').style.display='none';
   document.getElementById('toetsen-herplan-zone').style.display='none';
 }
@@ -6872,7 +6876,8 @@ function renderToetsenCards(){
   const filterQ      = (document.getElementById('toetsen-filter-naam')?.value||'').toLowerCase().trim();
 
   // Alle leerlingen die minstens één toets hebben in de import
-  const stuIdsInImport = new Set(S.toetsenImport.filter(t=>!t._handmatig).map(t=>t.matchedStudentId).filter(Boolean));
+  const zichtbaar = S.toetsenImport.filter(t=>!t._handmatig&&!t._verborgen);
+  const stuIdsInImport = new Set(zichtbaar.map(t=>t.matchedStudentId).filter(Boolean));
   let studenten = S.students.filter(s => stuIdsInImport.has(s.id));
 
   // Zoekfilter op naam of klas
@@ -6881,8 +6886,8 @@ function renderToetsenCards(){
   );
 
   // Statusfilter: alleen studenten waarbij minstens één toets matcht
-  if(filterStatus==='open')    studenten = studenten.filter(s => S.toetsenImport.some(t=>t.matchedStudentId===s.id&&t.status==='open'));
-  if(filterStatus==='gepland') studenten = studenten.filter(s => S.toetsenImport.some(t=>t.matchedStudentId===s.id&&t.status==='gepland'));
+  if(filterStatus==='open')    studenten = studenten.filter(s => zichtbaar.some(t=>t.matchedStudentId===s.id&&t.status==='open'));
+  if(filterStatus==='gepland') studenten = studenten.filter(s => zichtbaar.some(t=>t.matchedStudentId===s.id&&t.status==='gepland'));
 
   studenten = [...studenten].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
 
@@ -6893,7 +6898,7 @@ function renderToetsenCards(){
 
   let html='';
   for(const stu of studenten){
-    const stuToetsen = S.toetsenImport.filter(t=>t.matchedStudentId===stu.id&&!t._handmatig);
+    const stuToetsen = zichtbaar.filter(t=>t.matchedStudentId===stu.id);
 
     // Unieke vakken van deze leerling (over alle periodes)
     const allVakken = [...new Set(Object.values(stu.vakken||{}).flat())].sort((a,b)=>a.localeCompare(b,'nl'));
@@ -6946,7 +6951,7 @@ function renderToetsenCards(){
       const slotLabel  = slot ? slot.label : '';
 
       const statusEl = toets.status==='gepland'
-        ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland · week ${toets.geplandWeekKey?.split('-W')[1]||''}</span>`
+        ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland · week ${toets.geplandWeekKey?.split('-')[1]||''}</span>`
         : `<span class="toets-stu-status toets-stu-open">📅 ${datumLabel} · 🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</span>`;
 
       // Inplannen altijd tonen als er een datum is (planToets toont zelf een melding als slot ontbreekt)
@@ -7001,7 +7006,7 @@ function unplanToets(id){
   if(t.matchedStudentId && t.geplandWeekKey!=null && t.geplandDi!=null && t.geplandSlot){
     _clearToetsInPlanner(t.matchedStudentId, t.geplandWeekKey, t.geplandDi, t.geplandSlot);
   }
-  t.status='open'; t.geplandWeekKey=null; t.geplandDi=null; t.geplandSlot=null;
+  t.status='open'; t.geplandWeekKey=null; t.geplandDi=null; t.geplandSlot=null; t._verborgen=false;
   persist(); renderToetsenCards(); updateToetsBadge();
   if(S.currentStudentId) renderSchedule();
 }
@@ -7115,7 +7120,7 @@ function _removeToetsAt(studentId, weekKey, di, slotId){
   const t=S.toetsenImport.find(x=>x.matchedStudentId===studentId&&x.geplandWeekKey===weekKey&&x.geplandDi===di&&x.geplandSlot===slotId);
   if(t){
     if(t._handmatig) S.toetsenImport=S.toetsenImport.filter(x=>x!==t);
-    else { t.status='open'; t.geplandWeekKey=null; t.geplandDi=null; t.geplandSlot=null; }
+    else { t.status='open'; t.geplandWeekKey=null; t.geplandDi=null; t.geplandSlot=null; t._verborgen=false; }
   }
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 }
