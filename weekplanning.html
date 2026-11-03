@@ -6891,10 +6891,7 @@ function renderToetsenCards(){
 
   studenten = [...studenten].sort((a,b)=>a.name.localeCompare(b.name,'nl'));
 
-  if(!studenten.length){
-    ct.innerHTML=`<div style="font-size:.82rem;color:var(--tx3);text-align:center;padding:2rem;">Geen leerlingen met toetsen gevonden.</div>`;
-    _updateToetsStatusBar(); return;
-  }
+  const _passStatus=t=>filterStatus==='all'||t.status===filterStatus;
 
   let html='';
   for(const stu of studenten){
@@ -6920,6 +6917,7 @@ function renderToetsenCards(){
       </div>
       <div class="toets-groep-leerlingen">`;
 
+    const shown=new Set();
     for(const vak of allVakken){
       // Koppel dit vak aan een toets-entry
       const toets = stuToetsen.find(t=>_toetsMatchesVak(t.vak, vak));
@@ -6934,45 +6932,67 @@ function renderToetsenCards(){
         continue;
       }
 
-      // Statusfilter op rijniveau
-      if(filterStatus==='open'    && toets.status!=='open')    continue;
-      if(filterStatus==='gepland' && toets.status!=='gepland') continue;
-
-      const datumLabel = toets.datum    ? fmtDate(toets.datum) : '—';
-      const slot       = toets.datum && toets.tijdstip ? _findSlotByTime(toets.tijdstip) : null;
-      // Toon echte Excel-starttijd + eindtijd (+50 min = 1 blok standaard)
-      let tijdLabel = toets.tijdstip || '—';
-      if(toets.tijdstip){
-        const [hh,mm] = toets.tijdstip.split(':').map(Number);
-        const endMin  = hh*60 + mm + 50;
-        const endStr  = `${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
-        tijdLabel = `${toets.tijdstip} – ${endStr}`;
-      }
-      const slotLabel  = slot ? slot.label : '';
-
-      const statusEl = toets.status==='gepland'
-        ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland · week ${toets.geplandWeekKey?.split('-')[1]||''}</span>`
-        : `<span class="toets-stu-status toets-stu-open">📅 ${datumLabel} · 🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</span>`;
-
-      // Inplannen altijd tonen als er een datum is (planToets toont zelf een melding als slot ontbreekt)
-      const actBtns = toets.status==='open'
-        ? `${toets.datum?`<button class="toets-stu-btn plan" onclick="planToets('${toets.id}')">📅 Inplannen</button>`:''}
-           <button class="toets-stu-btn herplan" onclick="openHerplan('${toets.id}',this)">🔄 Herplannen</button>
-           <button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${toets.id}')">✕</button>`
-        : `<button class="toets-stu-btn unplan" onclick="unplanToets('${toets.id}')">✗ Ongedaan</button>
-           <button class="toets-stu-btn herplan" onclick="openHerplan('${toets.id}',this)">🔄 Verplaatsen</button>
-           <button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${toets.id}')">✕</button>`;
-
-      html += `<div class="toets-stu-row${toets.status==='gepland'?' gepland':''}">
-        <div class="toets-stu-naam">${vak}${toets.lokaal?` <span style="font-size:.65rem;color:var(--tx3);">🏫 ${toets.lokaal}</span>`:''}</div>
-        ${statusEl}
-        <div class="toets-stu-actions">${actBtns}</div>
-      </div>`;
+      if(!_passStatus(toets)) continue;
+      shown.add(toets.id);
+      html += _toetsRowHtml(toets, vak);
     }
+    // Toetsen die bij geen enkel vak van de leerling passen (of een tweede toets voor hetzelfde vak)
+    stuToetsen.filter(t=>!shown.has(t.id)&&_passStatus(t)).forEach(t=>{ html += _toetsRowHtml(t, t.vak||'?'); });
+    html += `</div></div>`;
+  }
+  // Toetsen zonder (bestaande) leerling: wel geteld als open, dus ook tonen
+  const losse = zichtbaar.filter(t=>!S.students.some(s=>s.id===t.matchedStudentId)&&_passStatus(t)
+    &&(!filterQ||`${t.klas||''} ${t.vak||''} ${t.studentNaam||''}`.toLowerCase().includes(filterQ)));
+  if(losse.length){
+    html += `<div class="toets-groep">
+      <div class="toets-groep-hdr">
+        <div class="toets-groep-vak" style="font-size:.95rem;">⚠ Niet gekoppeld aan een leerling</div>
+        <span class="toets-grp-badge open">${losse.length} open</span>
+      </div>
+      <div style="font-size:.72rem;color:var(--tx3);padding:.35rem .6rem 0;">Er is geen leerling gevonden in deze klas die dit vak volgt. Controleer de klas en vakken van de leerling en importeer opnieuw, of verwijder de toets met ✕.</div>
+      <div class="toets-groep-leerlingen">`;
+    [...losse].sort((a,b)=>(a.klas||'').localeCompare(b.klas||'','nl')||(a.vak||'').localeCompare(b.vak||'','nl'))
+      .forEach(t=>{ html += _toetsRowHtml(t, `${t.vak||'?'} <span class="toets-grp-klas">${t.klas||'?'}</span>`, true); });
     html += `</div></div>`;
   }
   ct.innerHTML = html || `<div style="font-size:.82rem;color:var(--tx3);text-align:center;padding:2rem;">Geen toetsen gevonden.</div>`;
   _updateToetsStatusBar();
+}
+
+// Eén regel in de Toetsen-lijst; zonderLeerling: alleen verwijderen mogelijk
+function _toetsRowHtml(toets, label, zonderLeerling){
+  const datumLabel = toets.datum    ? fmtDate(toets.datum) : '—';
+  const slot       = toets.datum && toets.tijdstip ? _findSlotByTime(toets.tijdstip) : null;
+  // Toon echte Excel-starttijd + eindtijd (+50 min = 1 blok standaard)
+  let tijdLabel = toets.tijdstip || '—';
+  if(toets.tijdstip){
+    const [hh,mm] = toets.tijdstip.split(':').map(Number);
+    const endMin  = hh*60 + mm + 50;
+    const endStr  = `${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
+    tijdLabel = `${toets.tijdstip} – ${endStr}`;
+  }
+  const slotLabel  = slot ? slot.label : '';
+
+  const statusEl = toets.status==='gepland'
+    ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland · week ${toets.geplandWeekKey?.split('-')[1]||''}</span>`
+    : `<span class="toets-stu-status toets-stu-open">📅 ${datumLabel} · 🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</span>`;
+
+  const delBtn = `<button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${toets.id}')">✕</button>`;
+  // Inplannen altijd tonen als er een datum is (planToets toont zelf een melding als slot ontbreekt)
+  const actBtns = zonderLeerling ? delBtn
+    : toets.status==='open'
+    ? `${toets.datum?`<button class="toets-stu-btn plan" onclick="planToets('${toets.id}')">📅 Inplannen</button>`:''}
+       <button class="toets-stu-btn herplan" onclick="openHerplan('${toets.id}',this)">🔄 Herplannen</button>
+       ${delBtn}`
+    : `<button class="toets-stu-btn unplan" onclick="unplanToets('${toets.id}')">✗ Ongedaan</button>
+       <button class="toets-stu-btn herplan" onclick="openHerplan('${toets.id}',this)">🔄 Verplaatsen</button>
+       ${delBtn}`;
+
+  return `<div class="toets-stu-row${toets.status==='gepland'?' gepland':''}">
+    <div class="toets-stu-naam">${label}${toets.lokaal?` <span style="font-size:.65rem;color:var(--tx3);">🏫 ${toets.lokaal}</span>`:''}</div>
+    ${statusEl}
+    <div class="toets-stu-actions">${actBtns}</div>
+  </div>`;
 }
 
 function _updateToetsStatusBar(){
