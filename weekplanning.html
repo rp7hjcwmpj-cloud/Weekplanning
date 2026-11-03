@@ -1338,12 +1338,13 @@ body.dark {
 }
 /* Bovenbalk als lichte pil met lijn-icoontjes */
 .hdr-right {
-  background: #ECE7E1;
+  background: #FEF0E2;
+  border: 1px solid #F5C89A;
   border-radius: 999px;
   padding: .3rem .45rem;
   gap: .1rem !important;
 }
-body.dark .hdr-right { background: var(--surf-2); }
+body.dark .hdr-right { background: #3A1800; border-color: #6B3010; }
 .hdr-right .hb { color: #3B3F47 !important; font-weight: 500 !important; border-radius: 999px !important; padding: .4rem .75rem !important; }
 body.dark .hdr-right .hb { color: var(--tx2) !important; }
 .hdr-right .hb:hover { background: rgba(255,255,255,.7) !important; }
@@ -2145,7 +2146,6 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico" data-ico="cap"></span> Docenten</button>
         <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;"><span class="hb-ico" data-ico="message"></span> Coachgesprek</button>
         <button class="hb" onclick="showVergaderingScreen()"><span class="hb-ico" data-ico="monitor"></span> Vergadering</button>
-        <button class="hb" onclick="openAanwModal()"><span class="hb-ico" data-ico="usercheck"></span> Aanwezigheid</button>
         <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico" data-ico="chart"></span> Cijfers</button>
         <div class="hb-toets-wrap" style="position:relative;display:inline-flex;">
           <button class="hb" onclick="openToetsenModal()"><span class="hb-ico" data-ico="filepen"></span> Toetsen</button>
