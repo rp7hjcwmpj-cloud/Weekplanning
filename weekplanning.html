@@ -8291,10 +8291,6 @@ function showMain(){
   // Ouder: read-only, geen knoppen
   updateEditUI(); updateStudentBar(); renderWeekNav(); renderSchedule();
   _applyMainView();
-  // Coach: show change log popup after render
-  if(S.role==='coach'){
-    setTimeout(checkCoachChanges, 300);
-  }
   // Start achtergrond-refresh voor niet-leerling rollen (eenmalig per sessie)
   if(S.role!=='leerling') _startHwAutoRefresh();
 }
@@ -9551,7 +9547,7 @@ function applyCell(cell,c,time,vak){
   if(c){
     const lbl=document.createElement('div'); lbl.className='cell-lbl';
     // Don't show standaardrooster time on yellow (toets) cells
-    let lblTxt = (c==='green'&&vak) ? 'Les: '+vak : (COLOR_LBL[c]||'');
+    let lblTxt = COLOR_LBL[c]||'';
     lbl.textContent=lblTxt + (time && c!=='yellow' ? ' ('+time+')' : '');
     cell.appendChild(lbl);
     // Small vacation/studiedag badge in corner when color overrides a spec-day cell
@@ -9966,7 +9962,7 @@ function openStdModal(){
   const stu=S.students.find(s=>s.id===S.currentStudentId);
   document.getElementById('std-modal-sub').innerHTML=
     'Standaardrooster voor <strong>'+(stu?stu.name:'leerling')+'</strong>.<br>'
-    +'Klik op een kleur · kies bij groen ook het vak';
+    +'Klik op een kleur om de status te kiezen';
   renderStdGrid();
   document.getElementById('modal-std').classList.add('show');
 }
@@ -9998,28 +9994,11 @@ function _buildStdPicker(cell, currentColor, di, slotId){
     });
     picker.appendChild(dot);
   });
-  // Vak-dropdown — altijd zichtbaar, vaste lijst ongeacht statuskleur
-  const _STD_VAK_LIST=['NE','EN','DU','FA','AK','GS','EC','BEC','BI','NA','SK','Wi','WiA','WiB','MA'];
-  const vakSel=document.createElement('select');
-  vakSel.className='sdc-vak-sel';
-  vakSel.title='Vak voor dit lesuur';
-  const optEmpty=document.createElement('option'); optEmpty.value=''; optEmpty.textContent='— Les —';
-  vakSel.appendChild(optEmpty);
-  _STD_VAK_LIST.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; vakSel.appendChild(o); });
-  const curVak=(S.tmpStdVak[di]&&S.tmpStdVak[di][slotId])||'';
-  vakSel.value=curVak;
-  vakSel.addEventListener('change',(e)=>{
-    e.stopPropagation();
-    if(!S.tmpStdVak[di]) S.tmpStdVak[di]={};
-    if(vakSel.value) S.tmpStdVak[di][slotId]=vakSel.value;
-    else delete S.tmpStdVak[di][slotId];
-    lbl.textContent=_stdCellLabel(currentColor,curTime,vakSel.value);
-  });
   // Label below dots
   const lbl=document.createElement('div');
   lbl.className='sdc-lbl';
   const curTime=(S.tmpStdTimes[di]&&S.tmpStdTimes[di][slotId])||'';
-  lbl.textContent=_stdCellLabel(currentColor,curTime,curVak);
+  lbl.textContent=_stdCellLabel(currentColor,curTime);
   // Time input
   const timeInp=document.createElement('input');
   timeInp.type='time'; timeInp.className='sdc-time-inp';
@@ -10030,7 +10009,7 @@ function _buildStdPicker(cell, currentColor, di, slotId){
     if(!S.tmpStdTimes[di]) S.tmpStdTimes[di]={};
     if(timeInp.value) S.tmpStdTimes[di][slotId]=timeInp.value;
     else delete S.tmpStdTimes[di][slotId];
-    lbl.textContent=_stdCellLabel(currentColor,timeInp.value,(S.tmpStdVak[di]&&S.tmpStdVak[di][slotId])||'');
+    lbl.textContent=_stdCellLabel(currentColor,timeInp.value);
   });
   // Remove old elements
   cell.querySelector('.sdc-picker')?.remove();
@@ -10038,14 +10017,12 @@ function _buildStdPicker(cell, currentColor, di, slotId){
   cell.querySelector('.sdc-lbl')?.remove();
   cell.querySelector('.sdc-time-inp')?.remove();
   cell.appendChild(picker);
-  cell.appendChild(vakSel);
   cell.appendChild(lbl);
   cell.appendChild(timeInp);
 }
-function _stdCellLabel(clr, time, vak){
-  let base=STD_LBL[clr||'null']||'—';
-  if(clr==='green'&&vak) base='Les: '+vak;
-  return base+(time?' ('+time+')':'');
+// Lesvakken komen straks uit Zermelo; het standaardrooster toont alleen status en tijd
+function _stdCellLabel(clr, time){
+  return (STD_LBL[clr||'null']||'—')+(time?' ('+time+')':'');
 }
 
 function renderStdGrid(){
