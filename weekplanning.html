@@ -1336,6 +1336,22 @@ body.dark {
   margin: 0 .15rem;
   flex-shrink: 0;
 }
+/* Bovenbalk als lichte pil met lijn-icoontjes */
+.hdr-right {
+  background: #ECE7E1;
+  border-radius: 999px;
+  padding: .3rem .45rem;
+  gap: .1rem !important;
+}
+body.dark .hdr-right { background: var(--surf-2); }
+.hdr-right .hb { color: #3B3F47 !important; font-weight: 500 !important; border-radius: 999px !important; padding: .4rem .75rem !important; }
+body.dark .hdr-right .hb { color: var(--tx2) !important; }
+.hdr-right .hb:hover { background: rgba(255,255,255,.7) !important; }
+.hdr-right .hb.on { background: #fff !important; color: var(--tx) !important; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+body.dark .hdr-right .hb.on { background: var(--surface) !important; }
+.hb-ico svg { width: 15px; height: 15px; display: block; }
+.hb.hb-icon .hb-ico svg { width: 17px; height: 17px; }
+.hdr-right .hdr-sep { background: rgba(0,0,0,.12); }
 /* Sync chip aanpassen voor lichte balk */
 .sync-chip.idle { background: var(--surf-2) !important; color: var(--tx3) !important; }
 .sync-chip.syncing { background: rgba(200,160,0,.15) !important; color: #A07800 !important; }
@@ -1764,6 +1780,95 @@ body.dark .stu-sport-chip {
   background: var(--border);
   margin: .2rem 0;
 }
+/* ══ DASHBOARD ══ */
+.planner-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.dash-view { padding: 1.4rem 2.2rem 2.5rem; max-width: 1500px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.dash-kicker { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--tx3); font-weight: 600; }
+.dash-date { font-family: 'Outfit', sans-serif; font-size: clamp(2.3rem, 4.2vw, 3.6rem); font-weight: 300; color: var(--tx); letter-spacing: -.02em; line-height: 1.1; margin: .2rem 0 .7rem; }
+.dash-progress { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
+.dash-bars { display: flex; gap: 5px; }
+.dash-bar { width: 26px; height: 5px; border-radius: 3px; background: #DCD6CF; }
+.dash-bar.past { background: #C9C2BA; }
+.dash-bar.now { background: var(--brand); }
+body.dark .dash-bar { background: var(--surf-2); }
+.dash-now { font-size: .82rem; color: var(--tx2); }
+.dash-now b { color: var(--tx); font-weight: 600; }
+.dash-grid { display: grid; gap: 1.2rem; margin-top: 1.6rem;
+  grid-template-columns: minmax(0,1fr) minmax(0,1.35fr) minmax(0,.85fr);
+  grid-template-areas: "toetsen aanw doc" "toetsen verlof doc"; }
+.dash-toetsen { grid-area: toetsen; } .dash-aanw { grid-area: aanw; } .dash-doc { grid-area: doc; } .dash-verlof { grid-area: verlof; }
+@media (max-width: 1150px) { .dash-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "aanw aanw" "toetsen doc" "verlof doc"; } }
+@media (max-width: 720px) { .dash-view { padding: 1rem; } .dash-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "aanw" "toetsen" "verlof" "doc"; } }
+.dash-card { background: var(--surface); border: 1px solid #F3D4B4; border-radius: 22px; padding: 1.25rem 1.3rem; box-shadow: 0 2px 14px rgba(200,90,0,.05); min-width: 0; }
+body.dark .dash-card { border-color: var(--border); }
+.dash-card-hdr { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
+.dash-card-hdr h3 { font-size: 1.05rem; font-weight: 600; color: var(--tx); margin: 0; }
+.dash-card-hdr p { font-size: .8rem; color: var(--tx3); margin: .1rem 0 0; }
+.dash-card-hdr > div:nth-child(2) { flex: 1; min-width: 0; }
+.dash-ico { width: 40px; height: 40px; border-radius: 12px; background: var(--surf-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--tx2); }
+.dash-ico svg { width: 19px; height: 19px; }
+.dash-big { font-family: 'Outfit', sans-serif; font-size: 2.6rem; font-weight: 300; color: var(--tx); line-height: 1; }
+.dash-round-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: #1D6FA5; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.dash-round-btn svg { width: 17px; height: 17px; }
+.dash-empty { font-size: .86rem; color: var(--tx2); }
+.dash-sublbl { font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--tx3); font-weight: 700; margin: 1rem 0 .4rem; }
+.dash-trow { display: flex; align-items: center; gap: .7rem; padding: .55rem 0; border-top: 1px solid var(--border); }
+.dash-trow:first-child { border-top: none; }
+.dash-ttime { font-family: ui-monospace, Menlo, monospace; font-size: .75rem; color: var(--tx2); min-width: 3.4rem; white-space: nowrap; flex-shrink: 0; line-height: 1.35; }
+.dash-tinfo { flex: 1; min-width: 0; font-size: .84rem; color: var(--tx); }
+.dash-tinfo span { display: block; font-size: .74rem; color: var(--tx3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-mini-btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--tx2); flex-shrink: 0; padding: 0; }
+.dash-mini-btn:hover { border-color: var(--brand); color: var(--brand); }
+.dash-mini-btn svg { width: 14px; height: 14px; }
+.dash-select { border: 1px solid var(--border); background: var(--surface); color: var(--tx); border-radius: 999px; padding: .45rem .9rem; font-size: .84rem; font-family: inherit; }
+.dash-aanw-tbl { width: 100%; border-collapse: collapse; }
+.dash-aanw-tbl th { font-size: .66rem; font-weight: 500; color: var(--tx3); padding: 0 0 .45rem; text-align: center; }
+.dash-aanw-tbl td { padding: .38rem 0; border-top: 1px solid var(--border); text-align: center; }
+.dash-aanw-tbl td.dash-aanw-naam { text-align: left; font-size: .84rem; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 11rem; padding-right: .5rem; }
+.dash-aanw-tbl .now { background: #FFF1E2; }
+.dash-aanw-tbl th.now { color: var(--brand); font-weight: 700; background: none; }
+body.dark .dash-aanw-tbl .now { background: rgba(247,148,29,.1); }
+.dash-sq { width: 16px; height: 16px; border-radius: 4px; background: #ECE8E3; display: inline-block; vertical-align: middle; }
+body.dark .dash-sq { background: var(--surf-2); }
+.dash-chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #C9C2BA; background: var(--surface); cursor: pointer; vertical-align: middle; display: inline-flex; align-items: center; justify-content: center; padding: 0; color: #fff; }
+.dash-chk.on { background: #2D8B50; border-color: #2D8B50; }
+.dash-chk svg { width: 12px; height: 12px; }
+.dash-legend { display: flex; flex-wrap: wrap; gap: .3rem .9rem; margin-top: .9rem; font-size: .72rem; color: var(--tx2); }
+.dash-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: .3rem; }
+.dash-tag { font-size: .62rem; font-weight: 700; border-radius: 999px; padding: .05rem .45rem; margin-left: .35rem; vertical-align: middle; }
+.dash-tag.verlof { background: #E3F1F7; color: #1D6FA5; }
+.dash-drow { display: flex; align-items: flex-start; gap: .7rem; padding: .42rem .5rem; border-radius: 10px; }
+.dash-drow.now { background: #FFF1E2; }
+body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
+.dash-drow .n { width: 1.2rem; font-size: .84rem; color: var(--tx); text-align: right; }
+.dash-drow .t { font-family: ui-monospace, Menlo, monospace; font-size: .74rem; color: var(--tx2); width: 6.6rem; flex-shrink: 0; padding-top: 1px; }
+.dash-drow.now .n, .dash-drow.now .t { color: var(--brand); font-weight: 600; }
+.dash-chips { display: flex; flex-wrap: wrap; gap: .25rem; }
+.dash-chip { font-size: .66rem; font-weight: 700; border-radius: 6px; padding: .08rem .38rem; border: 1.5px solid var(--tx); color: var(--tx); }
+.dash-chip.les { background: var(--tx); color: var(--surface); }
+.dash-vrow { border: 1px solid var(--border); border-radius: 14px; padding: .7rem .85rem; margin-bottom: .6rem; }
+.dash-vrow-top { display: flex; justify-content: space-between; gap: .6rem; align-items: baseline; }
+.dash-vrow-naam { font-weight: 600; font-size: .9rem; color: var(--tx); }
+.dash-vrow-per { font-size: .78rem; color: var(--tx2); }
+.dash-vrow-reden { font-size: .78rem; color: var(--tx3); margin-top: .2rem; }
+.dash-vrow-acts { display: flex; gap: .4rem; margin-top: .55rem; flex-wrap: wrap; align-items: center; }
+.dash-btn { border: 1px solid var(--border); background: var(--surface); color: var(--tx); border-radius: 999px; padding: .32rem .8rem; font-size: .76rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.dash-btn.ok { background: #2D8B50; border-color: #2D8B50; color: #fff; }
+.dash-btn.nok { color: #C0392B; border-color: rgba(192,57,43,.35); }
+.dash-conflict { display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; background: #FFF6D6; color: #6B4E00; border: 1px solid #EBCB5E; border-radius: 8px; padding: .12rem .2rem .12rem .5rem; margin: .35rem .3rem 0 0; }
+.dash-conflict button { border: none; background: #fff; border-radius: 6px; cursor: pointer; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0; color: #6B4E00; }
+.dash-conflict svg { width: 12px; height: 12px; }
+.dash-status { font-size: .7rem; font-weight: 700; border-radius: 999px; padding: .1rem .55rem; }
+.dash-status.aangevraagd { background: #FFF1E2; color: #B05A00; }
+.dash-status.goedgekeurd { background: #E6F4EA; color: #1E7040; }
+.dash-status.afgewezen { background: #FBE7E5; color: #A93226; }
+/* Verlof-kaart in het rooster */
+.toets-card.verlof-card { background: #DCEFF8; border-color: #6FB3D6; color: #134E6F; z-index: 2; }
+.toets-card.verlof-card .toets-card-tag { background: #1D6FA5; }
+/* Verlof-modal */
+.verlof-form .tip-form-row { margin-bottom: .6rem; }
+.verlof-list { margin-top: 1rem; border-top: 1px solid var(--border); padding-top: .8rem; }
+
 /* Rechterkolom: los venster Rooster aanpassen boven de statuskleuren */
 .right-col {
   display: flex;
@@ -2035,35 +2140,38 @@ body.dark .stu-sport-chip {
     <div id="hdr-schoolname" style="display:none;">Parmant Joris</div>
     <div class="hdr-right">
       <div id="hdr-edit-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
-        <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico">👨‍🏫</span> Docenten</button>
-        <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;"><span class="hb-ico">💬</span> Coachgesprek</button>
-        <button class="hb" onclick="showVergaderingScreen()"><span class="hb-ico">🖥</span> Vergadering</button>
-        <button class="hb" onclick="openAanwModal()"><span class="hb-ico">📋</span> Aanwezigheid</button>
-        <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico">📊</span> Cijfers</button>
+        <button class="hb" id="btn-nav-dash" onclick="showDashboard()"><span class="hb-ico" data-ico="dash"></span> Dashboard</button>
+        <button class="hb" id="btn-nav-planner" onclick="showPlanner()"><span class="hb-ico" data-ico="calendar"></span> Planner</button>
+        <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico" data-ico="cap"></span> Docenten</button>
+        <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;"><span class="hb-ico" data-ico="message"></span> Coachgesprek</button>
+        <button class="hb" onclick="showVergaderingScreen()"><span class="hb-ico" data-ico="monitor"></span> Vergadering</button>
+        <button class="hb" onclick="openAanwModal()"><span class="hb-ico" data-ico="usercheck"></span> Aanwezigheid</button>
+        <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico" data-ico="chart"></span> Cijfers</button>
         <div class="hb-toets-wrap" style="position:relative;display:inline-flex;">
-          <button class="hb" onclick="openToetsenModal()"><span class="hb-ico">📝</span> Toetsen</button>
+          <button class="hb" onclick="openToetsenModal()"><span class="hb-ico" data-ico="filepen"></span> Toetsen</button>
           <span class="toets-badge" id="toets-badge" style="display:none;"></span>
         </div>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
-        <button class="hb" onclick="openBeschModal()"><span class="hb-ico">📅</span> Beschikbaarheid</button>
-        <button class="hb" onclick="openLaModal()"><span class="hb-ico">👥</span> Leerlingen</button>
-        <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico">📊</span> Cijfers</button>
+        <button class="hb" onclick="openBeschModal()"><span class="hb-ico" data-ico="calcheck"></span> Beschikbaarheid</button>
+        <button class="hb" onclick="openLaModal()"><span class="hb-ico" data-ico="users"></span> Leerlingen</button>
+        <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico" data-ico="chart"></span> Cijfers</button>
       </div>
       <div id="hdr-leerling-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
-        <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico">👁</span> Docenten</button>
-        <button class="hb" id="btn-hw-toggle" onclick="toggleHwPanel()"><span class="hb-ico">📖</span> Huiswerk</button>
+        <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico" data-ico="eye"></span> Docenten</button>
+        <button class="hb" id="btn-hw-toggle" onclick="toggleHwPanel()"><span class="hb-ico" data-ico="book"></span> Huiswerk</button>
+        <button class="hb" onclick="openVerlofModal()"><span class="hb-ico" data-ico="hand"></span> Verlof</button>
       </div>
       <div class="hdr-sep" id="hdr-sep-nav"></div>
       <span id="sync-chip" class="sync-chip" style="display:none;"></span>
-      <button id="btn-m365-login" class="hb" style="display:none;" onclick="m365SignIn()"><span class="hb-ico">🔑</span> Aanmelden</button>
+      <button id="btn-m365-login" class="hb" style="display:none;" onclick="m365SignIn()"><span class="hb-ico" data-ico="key"></span> Aanmelden</button>
       <span class="role-pill" id="role-pill"></span>
-      <button class="hb hb-icon" id="btn-admin-header" style="display:none;" onclick="showAdmin()" title="Instellingen">⚙️</button>
+      <button class="hb hb-icon" id="btn-admin-header" style="display:none;" onclick="showAdmin()" title="Instellingen"><span class="hb-ico" data-ico="settings"></span></button>
       <div id="hdr-display-zone" style="display:none;gap:.2rem;align-items:center;">
-        <button class="hb" onclick="displayBack()"><span class="hb-ico">←</span> Leerlingen</button>
-        <button class="hb hb-icon hb-logout" onclick="displayLogout()" title="Uitloggen">⇥</button>
+        <button class="hb" onclick="displayBack()"><span class="hb-ico" data-ico="back"></span> Leerlingen</button>
+        <button class="hb hb-icon hb-logout" onclick="displayLogout()" title="Uitloggen"><span class="hb-ico" data-ico="logout"></span></button>
       </div>
-      <button class="hb hb-icon hb-logout" id="btn-main-logout" onclick="logout()" title="Uitloggen">⇥</button>
+      <button class="hb hb-icon hb-logout" id="btn-main-logout" onclick="logout()" title="Uitloggen"><span class="hb-ico" data-ico="logout"></span></button>
     </div>
   </div>
 
@@ -2071,6 +2179,7 @@ body.dark .stu-sport-chip {
     ✏️ &nbsp;Bewerkingsmodus actief — klik een vak aan om de status te wisselen. Druk nogmaals op "Rooster aanpassen" om te stoppen.
   </div>
 
+  <div id="planner-view" class="planner-view">
   <!-- Student picker -->
   <div class="student-bar-wrap">
   <!-- Zoek leerling -->
@@ -2164,6 +2273,90 @@ body.dark .stu-sport-chip {
       <div class="csb-dot-row" id="btn-toets-inplan" title="Toets inplannen" onclick="openToetsInplanModal()" style="display:none;"><div class="csb-icon">📝</div></div>
     </div>
     </div>
+  </div>
+  </div><!-- /planner-view -->
+
+  <!-- ══ DASHBOARD (coach / coördinator) ══ -->
+  <div id="dash-view" class="dash-view" style="display:none;">
+    <div class="dash-kicker" id="dash-kicker"></div>
+    <div class="dash-date" id="dash-date"></div>
+    <div class="dash-progress"><div class="dash-bars" id="dash-bars"></div><div class="dash-now" id="dash-now"></div></div>
+    <div class="dash-grid">
+      <section class="dash-card dash-toetsen">
+        <div class="dash-card-hdr">
+          <span class="dash-ico" data-ico="filepen"></span>
+          <div><h3>Toetsen vandaag</h3><p id="dash-toetsen-sub"></p></div>
+          <div class="dash-big" id="dash-toetsen-n">0</div>
+        </div>
+        <div id="dash-toetsen-body"></div>
+      </section>
+      <section class="dash-card dash-aanw">
+        <div class="dash-card-hdr">
+          <span class="dash-ico" data-ico="users"></span>
+          <div><h3>Aanwezigheid</h3><p id="dash-aanw-sub"></p></div>
+          <select class="dash-select" id="dash-klas" onchange="renderDashboard()"></select>
+        </div>
+        <div id="dash-aanw-body"></div>
+      </section>
+      <section class="dash-card dash-doc">
+        <div class="dash-card-hdr">
+          <span class="dash-ico" data-ico="clock"></span>
+          <div><h3>Docenten</h3><p>Per lesuur</p></div>
+        </div>
+        <div id="dash-doc-body"></div>
+      </section>
+      <section class="dash-card dash-verlof">
+        <div class="dash-card-hdr">
+          <span class="dash-ico" data-ico="hand"></span>
+          <div><h3>Verlof</h3><p>Aanvragen en toetsen herplannen</p></div>
+          <button type="button" class="dash-round-btn" title="Verlof invoeren voor een leerling" onclick="openVerlofModal()"><span data-ico="plus"></span></button>
+        </div>
+        <div id="dash-verlof-body"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VERLOF AANVRAGEN ══════════════════════════════ -->
+<div class="overlay" id="modal-verlof">
+  <div class="modal-card" style="max-width:460px;max-height:92vh;overflow-y:auto;">
+    <h2 id="verlof-title">Verlof aanvragen</h2>
+    <p class="modal-sub" id="verlof-sub" style="font-size:.82rem;color:var(--tx3);margin-bottom:.9rem;"></p>
+    <div class="verlof-form">
+      <div class="tip-form-row" id="verlof-stu-row">
+        <label class="tip-form-lbl">Leerling</label>
+        <select id="verlof-stu" class="tip-form-inp"></select>
+      </div>
+      <div style="display:flex;gap:.6rem;">
+        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Van</label><input id="verlof-van" class="tip-form-inp" type="date" onchange="_verlofVanChange()"></div>
+        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Tot en met</label><input id="verlof-tot" class="tip-form-inp" type="date"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:.45rem;font-size:.84rem;color:var(--tx);margin:.1rem 0 .6rem;cursor:pointer;">
+        <input type="checkbox" id="verlof-heledag" checked onchange="_verlofHeleDagChange()"> Hele dag
+      </label>
+      <div id="verlof-tijden" style="display:none;gap:.6rem;">
+        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Vanaf</label><input id="verlof-tvan" class="tip-form-inp" type="time"></div>
+        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Tot</label><input id="verlof-ttot" class="tip-form-inp" type="time"></div>
+      </div>
+      <div class="tip-form-row">
+        <label class="tip-form-lbl">Reden</label>
+        <select id="verlof-reden" class="tip-form-inp">
+          <option>Wedstrijd of toernooi</option>
+          <option>Trainingskamp</option>
+          <option>Medisch</option>
+          <option>Familie</option>
+          <option>Anders</option>
+        </select>
+      </div>
+      <div class="tip-form-row">
+        <label class="tip-form-lbl">Toelichting <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
+        <input id="verlof-toel" class="tip-form-inp" type="text" placeholder="Bijv. NK in Eindhoven">
+      </div>
+      <div class="err-msg" id="verlof-err" style="display:none;margin:.3rem 0;"></div>
+      <button class="btn-p" id="verlof-submit" onclick="submitVerlof()">Verlof aanvragen</button>
+      <button class="btn-g" onclick="closeVerlofModal()">Sluiten</button>
+    </div>
+    <div class="verlof-list" id="verlof-list"></div>
   </div>
 </div>
 
@@ -3257,6 +3450,8 @@ const S = {
              'P3.1':{from:'',to:''},'P3.2':{from:'',to:''},'P3.3':{from:'',to:''}},
   },
   toetsenImport:[],      // [{id,studentNaam,klas,vak,datum,tijdstip,lokaal,status:'open'|'gepland',matchedStudentId,geplandWeekKey,geplandDi,geplandSlot}]
+  verlof:[],             // [{id,studentId,van,tot,heleDag,tijdVan,tijdTot,reden,toelichting,status:'aangevraagd'|'goedgekeurd'|'afgewezen',aangevraagdOp,aangevraagdDoor,beoordeeldDoor,beoordeeldOp}]
+  mainView:null,         // 'dash' | 'planner' — startscherm coach/coördinator is het dashboard
 };
 
 /* ══ HELPERS ════════════════════════════════════════ */
@@ -3356,7 +3551,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof'
 ];
 
 let _graphToken = null;
@@ -3912,6 +4107,7 @@ function persist(){
     localStorage.setItem('wp_superadmins', JSON.stringify(S.superadmins));
     localStorage.setItem('wp_displayPw', S.displayPassword||'');
     localStorage.setItem('wp_toetsenImport', JSON.stringify(S.toetsenImport));
+    localStorage.setItem('wp_verlof', JSON.stringify(S.verlof));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -3949,6 +4145,7 @@ function hydrate(){
     const sadm=localStorage.getItem('wp_superadmins'); if(sadm) S.superadmins=JSON.parse(sadm);
     const dpw=localStorage.getItem('wp_displayPw'); if(dpw!==null) S.displayPassword=dpw;
     const tsi=localStorage.getItem('wp_toetsenImport'); if(tsi) S.toetsenImport=JSON.parse(tsi);
+    const vlf=localStorage.getItem('wp_verlof'); if(vlf) S.verlof=JSON.parse(vlf);
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -4120,6 +4317,7 @@ function doLogin(){
   S.role==='admin' ? showAdmin() : showMain();
 }
 function logout(){
+  S.mainView=null; // volgende login start weer op het dashboard
   confirmLogout();
 }
 
@@ -7391,6 +7589,7 @@ function _tipStuNamen(ids){
 
 function closeToetsInplanModal(){
   document.getElementById('modal-toets-inplan').classList.remove('show');
+  if(S.mainView==='dash') renderDashboard();
 }
 
 function _tipRenderToetsen(){
@@ -8090,6 +8289,7 @@ function showMain(){
   if(mainLogout) mainLogout.style.display=isDisplay?'none':'';
   // Ouder: read-only, geen knoppen
   updateEditUI(); updateStudentBar(); renderWeekNav(); renderSchedule();
+  _applyMainView();
   // Coach: show change log popup after render
   if(S.role==='coach'){
     setTimeout(checkCoachChanges, 300);
@@ -9101,13 +9301,13 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
         }
       } else if(pause){
         cell.innerHTML='<div class="pause-lbl">pauze</div>';
-        if(_toetsenOver(key,di,slot).length) cell.classList.add('toets-under');
+        if(_toetsenOver(key,di,slot).length||_verlofOver(toDS(dates[di]),slot)) cell.classList.add('toets-under');
       } else {
         const _onder=_toetsenOver(key,di,slot).length>0;
         // Onder een toetskaart blijft de originele status zichtbaar (vaag)
         let c=getColor(key,di,slot.id);
         if(c==='yellow'&&_onder) c=_toetsUnderColor(key,di,slot.id);
-        if(_onder) cell.classList.add('toets-under');
+        if(_onder||_verlofOver(toDS(dates[di]),slot)) cell.classList.add('toets-under');
         const _cellTime=curData().std?.times?.[di]?.[slot.id]||null;
         const _cellVak=curData().std?.vakken?.[di]?.[slot.id]||'';
         applyCell(cell,c,_cellTime,_cellVak);
@@ -9189,8 +9389,8 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
 
 /* ── Toetskaarten ── */
 // Begin/eind (minuten) van alle toetsen op een dag; ook oude toetsen zonder duur (heel lesuur)
-function _toetsTijden(key,di){
-  const day=curData().toets?.[key]?.[di];
+function _toetsTijden(key,di,sd=curData()){
+  const day=sd.toets?.[key]?.[di];
   if(!day) return [];
   return Object.keys(day).map(originId=>{
     const rec=day[originId];
@@ -9221,6 +9421,24 @@ function _toetsUnderColor(key,di,sid){
   return curData().std?.[di]?.[sid]??null;
 }
 
+// Goedgekeurd verlof van een leerling op een datum: [{start,end,rec}] in minuten
+function _verlofOpDag(stuId, ds){
+  if(!stuId) return [];
+  const lessen=SCHOOL.filter(s=>s.kind==='lesson');
+  const dagStart=_parseTime(lessen[0].time.split('–')[0]);
+  const dagEind=_parseTime(lessen[lessen.length-1].time.split('–')[1]);
+  return (S.verlof||[]).filter(v=>v.studentId===stuId&&v.status==='goedgekeurd'&&v.van<=ds&&ds<=(v.tot||v.van))
+    .map(v=>({rec:v,
+      start:v.heleDag?dagStart:_parseTime(v.tijdVan),
+      end:v.heleDag?dagEind:_parseTime(v.tijdTot)}));
+}
+function _verlofOver(ds, slot){
+  const parts=slot.time.split('–');
+  if(parts.length<2) return false;
+  const [ss,se]=parts.map(_parseTime);
+  return _verlofOpDag(S.currentStudentId,ds).some(v=>v.start<se&&v.end>ss);
+}
+
 // Plaatst de toetskaarten over het rooster, precies van begin- tot eindtijd
 function _placeToetsCards(root){
   if(!root) return;
@@ -9232,7 +9450,9 @@ function _placeToetsCards(root){
     const dis=[...new Set([...wrap.querySelectorAll('.dc[data-di]')].map(c=>+c.dataset.di))];
     dis.forEach(di=>{
       const toetsen=_toetsTijden(key,di);
-      if(!toetsen.length) return;
+      const [wy,ww]=key.split('-').map(Number);
+      const verlof=_verlofOpDag(S.currentStudentId,toDS(weekDates(wy,ww)[di]));
+      if(!toetsen.length&&!verlof.length) return;
       // Tijd → y-positie via de rijen van deze dagkolom
       const rows=[...wrap.querySelectorAll(`.dc[data-di="${di}"]`)].map(cell=>{
         const slot=SCHOOL.find(s=>s.id===cell.dataset.slot);
@@ -9247,6 +9467,19 @@ function _placeToetsCards(root){
         return row.r.top+f*row.r.height-wr.top;
       };
       const col=rows[0].r;
+      // Goedgekeurd verlof: brede blauwe kaart, toetsen liggen erbovenop
+      verlof.forEach(v=>{
+        const top=yAt(v.start), h=Math.max(14,yAt(v.end)-top);
+        const card=document.createElement('div');
+        card.className='toets-card verlof-card';
+        const w=col.width*.92;
+        card.style.cssText=`top:${top}px;height:${h}px;left:${col.left-wr.left+(col.width-w)/2}px;width:${w}px;`;
+        const tag=document.createElement('div'); tag.className='toets-card-tag'; tag.textContent='Verlof';
+        const tx=document.createElement('div'); tx.className='toets-card-txt'; tx.textContent=v.rec.reden+(v.rec.toelichting?' – '+v.rec.toelichting:'');
+        card.append(tag,tx);
+        card.title='Verlof: '+tx.textContent;
+        wrap.appendChild(card);
+      });
       toetsen.forEach(t=>{
         const top=yAt(t.start), h=Math.max(14,yAt(t.end)-top);
         const card=document.createElement('div');
@@ -10195,6 +10428,354 @@ function saveToetsNoMail(){
 function cancelToets(){
   document.getElementById('modal-toets').classList.remove('show');
   _toetsCtx=null;
+}
+
+/* ══ LIJN-ICOONTJES ══════════════════════════════════ */
+const ICO = {
+  dash:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  calcheck:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/>',
+  cap:'<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+  message:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  monitor:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  usercheck:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>',
+  filepen:'<path d="M12 22h6a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v10"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/>',
+  book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  hand:'<path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  key:'<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
+  back:'<path d="m12 19-7-7 7-7M19 12H5"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  pencil:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+};
+function _ico(name){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[name]||''}</svg>`;
+}
+function _fillIcons(root=document){
+  root.querySelectorAll('[data-ico]').forEach(el=>{ if(!el.firstChild) el.innerHTML=_ico(el.dataset.ico); });
+}
+_fillIcons();
+
+/* ══ DASHBOARD ═══════════════════════════════════════ */
+function _applyMainView(){
+  const staff=S.role==='coach'||S.role==='coordinator';
+  if(!staff) S.mainView='planner';
+  else if(!S.mainView) S.mainView='dash';
+  const dash=S.mainView==='dash';
+  document.getElementById('planner-view').style.display=dash?'none':'';
+  document.getElementById('dash-view').style.display=dash?'':'none';
+  document.getElementById('btn-nav-dash')?.classList.toggle('on',dash);
+  document.getElementById('btn-nav-planner')?.classList.toggle('on',!dash);
+  if(dash) renderDashboard();
+  else _placeToetsCards(document.getElementById('sched-area'));
+}
+function showDashboard(){
+  S.mainView='dash';
+  if(S.editMode){ S.editMode=false; updateEditUI(); renderSchedule(); }
+  _applyMainView();
+}
+function showPlanner(){
+  S.mainView='planner';
+  _applyMainView();
+}
+// Dashboard elke minuut bijwerken (huidig lesuur)
+setInterval(()=>{ if(S.mainView==='dash'&&document.getElementById('screen-main').classList.contains('show')) renderDashboard(); },60000);
+
+const _DASH_KLEUR={green:'#2D8B50',red:'#C0392B',blue:'#2471A3',purple:'#7D3C98',yellow:'#E0B000',orange:'#E07010',rose:'#C2185B'};
+const _DAGEN=['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+
+function _dashVandaag(){
+  const now=new Date();
+  const {year,week}=weekYear(now);
+  const di=(now.getDay()+6)%7;
+  return {now,year,week,di,key:wk(year,week),ds:toDS(now),min:now.getHours()*60+now.getMinutes()};
+}
+function _esc(t){ const d=document.createElement('div'); d.textContent=t??''; return d.innerHTML; }
+function _fmtDag(ds){
+  const d=new Date(ds+'T12:00:00');
+  return `${DAYS_SHORT[(d.getDay()+6)%7].toLowerCase()} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+// Toetsen van alle zichtbare leerlingen op een datum
+function _dashToetsenOp(dt){
+  const {year,week}=weekYear(dt);
+  const key=wk(year,week), di=(dt.getDay()+6)%7;
+  const out=[];
+  visibleStudents().forEach(stu=>{
+    const sd=S.studentData[stu.id];
+    if(!sd) return;
+    _toetsTijden(key,di,sd).forEach(t=>out.push({...t,stu,key,di,ds:toDS(dt)}));
+  });
+  return out.sort((a,b)=>a.start-b.start||a.stu.name.localeCompare(b.stu.name,'nl'));
+}
+
+function renderDashboard(){
+  const v=_dashVandaag();
+  const lessen=SCHOOL.filter(s=>s.kind==='lesson');
+  const nuSlot=SCHOOL.find(s=>{ const [a,b]=s.time.split('–').map(_parseTime); return v.min>=a&&v.min<b; });
+  const weekend=v.di>4;
+
+  // Kop
+  document.getElementById('dash-kicker').textContent=`Vandaag · week ${v.week}`;
+  document.getElementById('dash-date').textContent=`${_DAGEN[v.now.getDay()]} ${v.now.getDate()} ${MONTHS_FULL[v.now.getMonth()].toLowerCase()}`;
+  document.getElementById('dash-bars').innerHTML=lessen.map(s=>{
+    const [a,b]=s.time.split('–').map(_parseTime);
+    const cls=weekend?'':(v.min>=b?'past':(v.min>=a?'now':''));
+    return `<div class="dash-bar ${cls}" title="${s.label} ${s.time}"></div>`;
+  }).join('');
+  const eersteStart=lessen[0].time.split('–')[0], laatsteEind=_parseTime(lessen[lessen.length-1].time.split('–')[1]);
+  document.getElementById('dash-now').innerHTML=weekend?'Weekend — geen lessen'
+    :nuSlot?(nuSlot.kind==='pause'?`<b>Nu · pauze</b> ${nuSlot.time}`:`<b>Nu · ${nuSlot.label.toLowerCase()}</b> ${nuSlot.time}`)
+    :v.min<_parseTime(eersteStart)?`Eerste uur begint om <b>${eersteStart}</b>`:(v.min>=laatsteEind?'Lesdag voorbij':'');
+
+  _renderDashToetsen(v);
+  _renderDashAanw(v,lessen,nuSlot);
+  _renderDashDocenten(v,nuSlot);
+  _renderDashVerlof(v);
+  _fillIcons(document.getElementById('dash-view'));
+}
+
+function _dashToetsRow(t,metDag){
+  const sub=[t.rec.subject||'Toets',`${t.end-t.start} min`].join(' · ');
+  return `<div class="dash-trow">
+    <div class="dash-ttime">${metDag?_fmtDag(t.ds)+'<br>':''}${_fmtMin(t.start)}${metDag?'':'<br>'+_fmtMin(t.end)}</div>
+    <div class="dash-tinfo">${_esc(t.stu.name)}<span>${_esc(sub)}</span></div>
+    <button type="button" class="dash-mini-btn" title="Toets aanpassen of verplaatsen"
+      onclick="openToetsInplanModal({stuId:'${t.stu.id}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})"><span data-ico="pencil"></span></button>
+  </div>`;
+}
+function _renderDashToetsen(v){
+  const vandaag=_dashToetsenOp(v.now);
+  document.getElementById('dash-toetsen-n').textContent=vandaag.length;
+  document.getElementById('dash-toetsen-sub').textContent=vandaag.length?`${vandaag.length} toets${vandaag.length===1?'':'en'} vandaag`:'Vandaag geen toetsen';
+  // Komende week (zonder vandaag)
+  const komend=[];
+  for(let i=1;i<=7;i++){
+    const d=new Date(v.now); d.setDate(d.getDate()+i);
+    if(d.getDay()===0||d.getDay()===6) continue;
+    komend.push(..._dashToetsenOp(d));
+  }
+  let html=vandaag.map(t=>_dashToetsRow(t,false)).join('');
+  if(komend.length){
+    html+=`<div class="dash-sublbl">Komende week</div>`+komend.map(t=>_dashToetsRow(t,true)).join('');
+  } else if(!vandaag.length){
+    html=`<div class="dash-empty">Er staan de komende week geen toetsen gepland.</div>`;
+  }
+  document.getElementById('dash-toetsen-body').innerHTML=html;
+}
+
+function _renderDashAanw(v,lessen,nuSlot){
+  const sel=document.getElementById('dash-klas');
+  const alle=visibleStudents();
+  const klassen=[...new Set(alle.map(s=>s.klass).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'nl'));
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Alle klassen</option>'+klassen.map(k=>`<option${k===cur?' selected':''}>${_esc(k)}</option>`).join('');
+  const stus=alle.filter(s=>!sel.value||s.klass===sel.value).sort((a,b)=>a.name.localeCompare(b.name,'nl'));
+  const dayRec=(S.aanw[v.key]||{})[v.di]||{};
+  const aanwezig=stus.filter(s=>dayRec[s.id]?.status==='ok').length;
+  const nogDoor=stus.filter(s=>!dayRec[s.id]&&_stuExpectedOnDay(s.id,v.key,v.di)).length;
+  const lbl=nuSlot&&nuSlot.kind==='lesson'?nuSlot.label.replace('Uur','Uur'):'Vandaag';
+  document.getElementById('dash-aanw-sub').textContent=`${lbl}: ${aanwezig} aanwezig · nog ${nogDoor} door te geven`;
+  if(!stus.length){ document.getElementById('dash-aanw-body').innerHTML='<div class="dash-empty">Geen leerlingen.</div>'; return; }
+  const nuId=nuSlot?.kind==='lesson'?nuSlot.id:null;
+  let html=`<table class="dash-aanw-tbl"><thead><tr><th></th>${lessen.map((s,i)=>`<th class="${s.id===nuId?'now':''}">${i+1}</th>`).join('')}<th title="Aanwezig gemeld">${_ico('check')}</th></tr></thead><tbody>`;
+  stus.forEach(stu=>{
+    const verlof=_verlofOpDag(stu.id,v.ds).length>0;
+    const ok=dayRec[stu.id]?.status==='ok';
+    html+=`<tr><td class="dash-aanw-naam" title="${_esc(stu.name)}">${_esc(stu.name)}${verlof?'<span class="dash-tag verlof">verlof</span>':''}</td>`;
+    lessen.forEach(s=>{
+      const c=_aanwSlotColor(stu.id,v.key,v.di,s.id);
+      html+=`<td class="${s.id===nuId?'now':''}"><span class="dash-sq" style="${c&&_DASH_KLEUR[c]?'background:'+_DASH_KLEUR[c]:''}" title="${s.label}: ${c?(COLOR_LBL[c]||c):'leeg'}"></span></td>`;
+    });
+    html+=`<td><button type="button" class="dash-chk${ok?' on':''}" title="${ok?'Aanwezig gemeld':'Aanwezig melden'}" onclick="_dashToggleAanw('${stu.id}')">${ok?_ico('check'):''}</button></td></tr>`;
+  });
+  html+=`</tbody></table><div class="dash-legend">${[['green','Aanwezig'],['red','Training'],['blue','Rust'],['purple','Wedstrijd'],['yellow','Toets'],['orange','Toernooi'],['rose','Overig']]
+    .map(([c,l])=>`<span><i style="background:${_DASH_KLEUR[c]}"></i>${l}</span>`).join('')}</div>`;
+  document.getElementById('dash-aanw-body').innerHTML=html;
+}
+function _dashToggleAanw(stuId){
+  const v=_dashVandaag();
+  const rec=((S.aanw[v.key]||{})[v.di]||{})[stuId];
+  _saveAanwData(v.key,v.di,stuId,rec?.status==='ok'?null:'ok',rec?.note||'');
+  renderDashboard();
+}
+
+function _renderDashDocenten(v,nuSlot){
+  const lessen=SCHOOL.filter(s=>s.kind==='lesson');
+  const besch=S.beschikbaarheid||{};
+  let iets=false;
+  let html=lessen.map((s,i)=>{
+    const chips=[];
+    Object.keys(besch).sort((a,b)=>a.localeCompare(b,'nl')).forEach(vak=>{
+      const val=besch[vak]?.[v.di]?.[s.id];
+      if(!val) return;
+      if(val.startsWith('les-')){
+        const lok=val.includes('|')?val.split('|')[1]:'';
+        chips.push(`<span class="dash-chip les" title="${_esc(vak)} geeft les${lok?' in '+_esc(lok):''}">${_esc(vak)}</span>`);
+      } else if(val==='lokaal107'||val.startsWith('lokaal-')){
+        const lok=val==='lokaal107'?'107':val.slice(7);
+        chips.push(`<span class="dash-chip" title="${_esc(vak)} beschikbaar in lokaal ${_esc(lok)}">${_esc(vak)}</span>`);
+      }
+    });
+    if(chips.length) iets=true;
+    return `<div class="dash-drow${nuSlot&&nuSlot.id===s.id?' now':''}"><span class="n">${i+1}</span><span class="t">${s.time}</span><div class="dash-chips">${chips.join('')}</div></div>`;
+  }).join('');
+  html+=`<div class="dash-legend"><span><span class="dash-chip les">NE</span> geeft les</span><span><span class="dash-chip">NE</span> beschikbaar in lokaal</span></div>`;
+  if(!iets) html+=`<div class="dash-empty" style="margin-top:.8rem;">Er is voor vandaag nog geen beschikbaarheid ingevuld door docenten.</div>`;
+  document.getElementById('dash-doc-body').innerHTML=html;
+}
+
+/* ══ VERLOF ══════════════════════════════════════════ */
+function _verlofPeriode(r){
+  const dag=r.van===(r.tot||r.van)?_fmtDag(r.van):`${_fmtDag(r.van)} – ${_fmtDag(r.tot)}`;
+  return dag+(r.heleDag?' · hele dag':` · ${r.tijdVan}–${r.tijdTot}`);
+}
+// Toetsen van de leerling die in de verlofperiode vallen
+function _verlofConflicten(r){
+  const sd=S.studentData[r.studentId];
+  if(!sd) return [];
+  const out=[];
+  const d=new Date(r.van+'T12:00:00'), eind=new Date((r.tot||r.van)+'T12:00:00');
+  for(let n=0;d<=eind&&n<62;n++,d.setDate(d.getDate()+1)){
+    const {year,week}=weekYear(d);
+    const key=wk(year,week), di=(d.getDay()+6)%7;
+    const [vs,ve]=r.heleDag?[0,24*60]:[_parseTime(r.tijdVan),_parseTime(r.tijdTot)];
+    _toetsTijden(key,di,sd).filter(t=>t.start<ve&&t.end>vs).forEach(t=>out.push({...t,key,di,ds:toDS(d)}));
+  }
+  return out;
+}
+function _renderDashVerlof(v){
+  const ids=new Set(visibleStudents().map(s=>s.id));
+  const naam=id=>S.students.find(s=>s.id===id)?.name||'Onbekende leerling';
+  const isCoord=S.role==='coordinator';
+  const open=(S.verlof||[]).filter(r=>ids.has(r.studentId)&&r.status==='aangevraagd').sort((a,b)=>a.van.localeCompare(b.van));
+  const komend=(S.verlof||[]).filter(r=>ids.has(r.studentId)&&r.status==='goedgekeurd'&&(r.tot||r.van)>=v.ds).sort((a,b)=>a.van.localeCompare(b.van));
+  const blok=(r,metActies)=>{
+    const conf=_verlofConflicten(r).map(t=>`<span class="dash-conflict">⚠ Toets ${_esc(t.rec.subject||'')} · ${_fmtDag(t.ds)} ${_fmtMin(t.start)}
+      <button type="button" title="Toets herplannen" onclick="openToetsInplanModal({stuId:'${r.studentId}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})">${_ico('pencil')}</button></span>`).join('');
+    let acts='';
+    if(metActies){
+      acts=isCoord
+        ?`<button type="button" class="dash-btn ok" onclick="beoordeelVerlof('${r.id}','goedgekeurd')">✓ Goedkeuren</button>
+          <button type="button" class="dash-btn nok" onclick="beoordeelVerlof('${r.id}','afgewezen')">✕ Afwijzen</button>`
+        :`<span style="font-size:.74rem;color:var(--tx3);">Wacht op goedkeuring door de coördinator</span>`;
+    } else if(isCoord){
+      acts=`<button type="button" class="dash-btn" onclick="beoordeelVerlof('${r.id}','aangevraagd')" title="Terugzetten naar aangevraagd">↺ Terugzetten</button>`;
+    }
+    return `<div class="dash-vrow">
+      <div class="dash-vrow-top"><span class="dash-vrow-naam">${_esc(naam(r.studentId))}</span><span class="dash-status ${r.status}">${r.status}</span></div>
+      <div class="dash-vrow-per">${_verlofPeriode(r)}</div>
+      <div class="dash-vrow-reden">${_esc(r.reden)}${r.toelichting?' – '+_esc(r.toelichting):''}</div>
+      ${conf?`<div>${conf}</div>`:''}
+      ${acts?`<div class="dash-vrow-acts">${acts}</div>`:''}
+    </div>`;
+  };
+  let html=open.map(r=>blok(r,true)).join('');
+  if(komend.length) html+=`<div class="dash-sublbl">Goedgekeurd</div>`+komend.map(r=>blok(r,false)).join('');
+  document.getElementById('dash-verlof-body').innerHTML=html||'<div class="dash-empty">Er staat niets open.</div>';
+}
+function beoordeelVerlof(id,status){
+  const r=(S.verlof||[]).find(x=>x.id===id);
+  if(!r||S.role!=='coordinator') return;
+  r.status=status;
+  r.beoordeeldDoor=status==='aangevraagd'?'':(S.loggedInEmail||'Coördinator');
+  r.beoordeeldOp=status==='aangevraagd'?'':new Date().toISOString();
+  persist();
+  renderDashboard();
+  if(r.studentId===S.currentStudentId) renderSchedule();
+}
+
+// Verlof aanvragen (leerling) of invoeren voor een leerling (coach/coördinator)
+function openVerlofModal(){
+  const isLeerling=S.role==='leerling';
+  const stuSel=document.getElementById('verlof-stu');
+  document.getElementById('verlof-stu-row').style.display=isLeerling?'none':'';
+  if(!isLeerling){
+    stuSel.innerHTML=[...visibleStudents()].sort((a,b)=>a.name.localeCompare(b.name,'nl'))
+      .map(s=>`<option value="${s.id}"${s.id===S.currentStudentId?' selected':''}>${_esc(s.name)}</option>`).join('');
+  }
+  document.getElementById('verlof-title').textContent=isLeerling?'Verlof aanvragen':'Verlof invoeren';
+  document.getElementById('verlof-sub').textContent=isLeerling
+    ?'Je aanvraag gaat naar de coördinator. Je ziet hieronder of hij is goedgekeurd.'
+    :(S.role==='coordinator'?'Verlof dat jij invoert is meteen goedgekeurd.':'De coördinator moet dit verlof nog goedkeuren.');
+  document.getElementById('verlof-submit').textContent=isLeerling?'Verlof aanvragen':'Verlof opslaan';
+  const vandaag=toDS(new Date());
+  document.getElementById('verlof-van').value=vandaag;
+  document.getElementById('verlof-tot').value=vandaag;
+  document.getElementById('verlof-heledag').checked=true;
+  _verlofHeleDagChange();
+  document.getElementById('verlof-tvan').value='';
+  document.getElementById('verlof-ttot').value='';
+  document.getElementById('verlof-toel').value='';
+  document.getElementById('verlof-reden').selectedIndex=0;
+  document.getElementById('verlof-err').style.display='none';
+  _renderVerlofLijst();
+  document.getElementById('modal-verlof').classList.add('show');
+}
+function closeVerlofModal(){ document.getElementById('modal-verlof').classList.remove('show'); }
+function _verlofVanChange(){
+  const van=document.getElementById('verlof-van').value, tot=document.getElementById('verlof-tot');
+  if(van&&(!tot.value||tot.value<van)) tot.value=van;
+}
+function _verlofHeleDagChange(){
+  document.getElementById('verlof-tijden').style.display=document.getElementById('verlof-heledag').checked?'none':'flex';
+}
+function submitVerlof(){
+  const err=document.getElementById('verlof-err');
+  const fout=t=>{ err.textContent=t; err.style.display=''; };
+  err.style.display='none';
+  const isLeerling=S.role==='leerling';
+  const studentId=isLeerling?S.leerlingStudentId:document.getElementById('verlof-stu').value;
+  if(!studentId) return fout('Kies een leerling.');
+  const van=document.getElementById('verlof-van').value;
+  const tot=document.getElementById('verlof-tot').value||van;
+  if(!van) return fout('Vul de datum in.');
+  if(tot<van) return fout('De einddatum ligt vóór de begindatum.');
+  const heleDag=document.getElementById('verlof-heledag').checked;
+  const tijdVan=document.getElementById('verlof-tvan').value, tijdTot=document.getElementById('verlof-ttot').value;
+  if(!heleDag&&(!tijdVan||!tijdTot)) return fout('Vul de begin- en eindtijd in, of kies hele dag.');
+  if(!heleDag&&tijdTot<=tijdVan) return fout('De eindtijd ligt vóór de begintijd.');
+  const coord=S.role==='coordinator';
+  (S.verlof=S.verlof||[]).push({
+    id:uid(), studentId, van, tot, heleDag,
+    tijdVan:heleDag?'':tijdVan, tijdTot:heleDag?'':tijdTot,
+    reden:document.getElementById('verlof-reden').value,
+    toelichting:document.getElementById('verlof-toel').value.trim(),
+    status:coord?'goedgekeurd':'aangevraagd',
+    aangevraagdOp:new Date().toISOString(),
+    aangevraagdDoor:S.loggedInEmail||S.role,
+    beoordeeldDoor:coord?(S.loggedInEmail||'Coördinator'):'',
+    beoordeeldOp:coord?new Date().toISOString():''
+  });
+  persist();
+  if(isLeerling){ _renderVerlofLijst(); }
+  else { closeVerlofModal(); }
+  if(S.mainView==='dash') renderDashboard();
+  if(studentId===S.currentStudentId) renderSchedule();
+}
+// Eigen aanvragen van de leerling, met status
+function _renderVerlofLijst(){
+  const ct=document.getElementById('verlof-list');
+  if(S.role!=='leerling'){ ct.style.display='none'; return; }
+  const eigen=(S.verlof||[]).filter(r=>r.studentId===S.leerlingStudentId).sort((a,b)=>b.van.localeCompare(a.van));
+  ct.style.display='';
+  ct.innerHTML=`<div class="dash-sublbl" style="margin-top:0;">Mijn aanvragen</div>`+(eigen.length?eigen.map(r=>`<div class="dash-vrow">
+      <div class="dash-vrow-top"><span class="dash-vrow-per">${_verlofPeriode(r)}</span><span class="dash-status ${r.status}">${r.status}</span></div>
+      <div class="dash-vrow-reden">${_esc(r.reden)}${r.toelichting?' – '+_esc(r.toelichting):''}</div>
+      ${r.status==='aangevraagd'?`<div class="dash-vrow-acts"><button type="button" class="dash-btn nok" onclick="trekVerlofIn('${r.id}')">Intrekken</button></div>`:''}
+    </div>`).join(''):'<div class="dash-empty">Je hebt nog geen verlof aangevraagd.</div>');
+}
+function trekVerlofIn(id){
+  const r=(S.verlof||[]).find(x=>x.id===id);
+  if(!r||r.status!=='aangevraagd'||r.studentId!==S.leerlingStudentId) return;
+  S.verlof=S.verlof.filter(x=>x!==r);
+  persist();
+  _renderVerlofLijst();
 }
 
 /* ══ INIT ════════════════════════════════════════════ */
