@@ -1527,6 +1527,12 @@ body.dark .stu-sport-chip {
 .tip-dag-btn:hover { border-color:var(--brand); color:var(--brand); }
 .tip-dag-btn.selected { border-color:var(--brand); background:var(--brand); color:#fff; }
 .tip-direct-plan-bar { display:none; }
+.tip-stu-results { margin-top:.2rem; background:var(--surface); border:1.5px solid var(--brand); border-radius:7px; max-height:170px; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.tip-stu-chips { display:flex; flex-wrap:wrap; gap:.25rem; margin-top:.3rem; }
+.tip-stu-chip { display:inline-flex; align-items:center; gap:.15rem; font-size:.74rem; font-weight:600; padding:.12rem .25rem .12rem .55rem; border-radius:20px; border:1.5px solid var(--border); background:var(--surf-2); color:var(--tx); cursor:pointer; }
+.tip-stu-chip.viewed { border-color:var(--brand); background:var(--brand-light); color:var(--brand); }
+.tip-stu-chip button { border:none; background:none; cursor:pointer; color:inherit; font-size:.72rem; padding:0 .2rem; opacity:.7; }
+.tip-stu-chip button:hover { opacity:1; }
 .tip-collega-result { padding:.35rem .6rem; cursor:pointer; font-size:.8rem; border-bottom:1px solid var(--border); }
 .tip-collega-result:last-child { border-bottom:none; }
 .tip-collega-result:hover { background:var(--brand-light); }
@@ -1725,6 +1731,35 @@ body.dark .stu-sport-chip {
   height: 1px;
   background: var(--border);
   margin: .2rem 0;
+}
+/* Rechterkolom: los venster Rooster aanpassen boven de statuskleuren */
+.right-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  margin: .3rem .5rem .3rem 0;
+  align-self: flex-start;
+  position: sticky;
+  top: .3rem; /* gelijk met de bovenkant van het rooster */
+  flex-shrink: 0;
+}
+.right-col .color-sidebar { margin: 0; position: static; }
+.csb-edit-win {
+  display: flex;
+  justify-content: center;
+  padding: .5rem .35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  align-self: stretch;
+}
+.csb-edit-win .csb-icon { padding: 0; font-family: inherit; }
+.csb-icon.on {
+  background: rgba(36,113,163,.12);
+  border-color: #2471A3;
+  box-shadow: 0 0 0 2px rgba(36,113,163,.35);
 }
 /* Dot kleuren */
 .csb-green  { background: #2D8B50; }
@@ -2022,7 +2057,6 @@ body.dark .stu-sport-chip {
     <!-- Edit zone (coach/coordinator) -->
     <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
       <button class="stu-hb stu-hb-icon" id="btn-std-rooster" onclick="openStdModal()" title="Standaardrooster">📋</button>
-      <button class="stu-hb stu-hb-icon stu-hb-edit" id="btn-edit" onclick="toggleEdit()" title="Rooster aanpassen">✏️</button>
     </div>
   </div>
   </div>
@@ -2079,6 +2113,10 @@ body.dark .stu-sport-chip {
     <div class="sched-area" id="sched-area"></div>
 
     <!-- ══ KLEURENLEGENDA RECHTSZIJPANEEL ══ -->
+    <div class="right-col" id="right-col">
+    <div class="csb-edit-win" id="csb-edit-win" style="display:none;">
+      <button type="button" class="csb-icon" id="btn-edit" onclick="toggleEdit()" title="Rooster aanpassen">✏️</button>
+    </div>
     <div class="color-sidebar" id="color-sidebar">
       <div class="csb-dot-row" title="Aanwezig"><div class="csb-dot csb-green">A</div></div>
       <div class="csb-dot-row" title="Training"><div class="csb-dot csb-red">Tr</div></div>
@@ -2090,6 +2128,7 @@ body.dark .stu-sport-chip {
       <div class="csb-sep"></div>
       <div class="csb-dot-row" title="Printen" onclick="openPrintModal()"><div class="csb-icon">🖨️</div></div>
       <div class="csb-dot-row" id="btn-toets-inplan" title="Toets inplannen" onclick="openToetsInplanModal()" style="display:none;"><div class="csb-icon">📝</div></div>
+    </div>
     </div>
   </div>
 </div>
@@ -2321,7 +2360,7 @@ body.dark .stu-sport-chip {
 <div class="overlay" id="modal-toets-inplan">
   <div class="modal-card" style="max-width:920px;width:98%;max-height:95vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;flex-shrink:0;">
-      <h2 style="margin:0;font-size:1.05rem;">📝 Toets inplannen — <span id="tip-stu-naam" style="color:var(--brand);">—</span></h2>
+      <h2 style="margin:0;font-size:1.05rem;">📝 Toets inplannen</h2>
       <button class="btn-g sm" onclick="closeToetsInplanModal()" style="padding:.3rem .75rem;font-size:.8rem;">✕ Sluiten</button>
     </div>
 
@@ -2331,6 +2370,13 @@ body.dark .stu-sport-chip {
 
         <!-- Formulier -->
         <div class="tip-panel-title">Toetsgegevens</div>
+
+        <div class="tip-form-row">
+          <label class="tip-form-lbl">Leerlingen</label>
+          <input id="tip-stu-search" class="tip-form-inp" type="text" placeholder="Zoek leerling of klas…" autocomplete="off" oninput="_tipStuSearch(this.value)">
+          <div id="tip-stu-results" class="tip-stu-results" style="display:none;"></div>
+          <div id="tip-stu-chips" class="tip-stu-chips"></div>
+        </div>
 
         <div class="tip-form-row">
           <label class="tip-form-lbl">Vak</label>
@@ -2347,7 +2393,7 @@ body.dark .stu-sport-chip {
         <div class="tip-form-row">
           <label class="tip-form-lbl">Dag</label>
           <div style="display:flex;gap:.25rem;flex-wrap:wrap;" id="tip-dag-btns"></div>
-          <div id="tip-dag-hint" style="font-size:.69rem;color:var(--tx3);margin-top:.18rem;display:none;">Kies vak + dag + begintijd om direct in te plannen.</div>
+          <div id="tip-dag-hint" style="font-size:.69rem;color:var(--tx3);margin-top:.18rem;display:none;">Kies leerling(en) + vak + dag + begintijd om direct in te plannen.</div>
         </div>
 
         <div class="tip-form-row">
@@ -2400,6 +2446,7 @@ body.dark .stu-sport-chip {
         <div style="font-size:.73rem;color:var(--tx3);margin-bottom:.4rem;">
           Klik op een uur om de toets daar in te plannen.
         </div>
+        <div id="tip-grid-stu" style="font-size:.78rem;font-weight:700;color:var(--tx);margin-bottom:.3rem;"></div>
         <div class="tip-grid-wrap">
           <div id="tip-grid"></div>
         </div>
@@ -7063,21 +7110,23 @@ let _tipSelectedSlotId = null;
 let _tipSelectedDag = null; // 0-4 (Ma-Vr), set via dag-selector
 let _tipCollegaEmail = '';
 let _tipCollegaNaam = '';
+let _tipStuIds = [];        // gekozen leerlingen; de toets komt alleen in hun rooster
+let _tipViewStuId = null;   // leerling van wie het mini-rooster getoond wordt
 
 function openToetsInplanModal(){
-  const stuId=S.currentStudentId;
-  if(!stuId) return;
-  const stu=S.students.find(s=>s.id===stuId);
-  document.getElementById('tip-stu-naam').textContent=stu?stu.name:'—';
   _tipWy={week:S.wy.week, year:S.wy.year};
   _tipSelectedToetsId=null; _tipSelectedDi=null; _tipSelectedSlotId=null;
   _tipSelectedDag=null; _tipCollegaEmail=''; _tipCollegaNaam='';
 
-  // Vul vak-dropdown
-  const vakSel=document.getElementById('tip-vak');
-  const vakken=getActiveVakken(stu);
-  vakSel.innerHTML='<option value="">— kies vak —</option>'
-    +vakken.map(v=>`<option value="${v}">${v}</option>`).join('');
+  // Start met de leerling die nu open staat; meer leerlingen toevoegen kan via zoeken
+  const cur=visibleStudents().find(s=>s.id===S.currentStudentId);
+  _tipStuIds=cur?[cur.id]:[];
+  _tipViewStuId=_tipStuIds[0]||null;
+  document.getElementById('tip-stu-search').value='';
+  document.getElementById('tip-stu-results').style.display='none';
+  document.getElementById('tip-vak').value='';
+  _tipFillVakken();
+  _tipRenderStuChips();
 
   // Reset formulier
   document.getElementById('tip-onderwerp').value='';
@@ -7125,13 +7174,107 @@ function _tipRenderDagBtns(){
   }).join('');
 }
 
+/* Leerlingen kiezen */
+function _tipStuSearch(q){
+  const res=document.getElementById('tip-stu-results');
+  q=(q||'').trim().toLowerCase();
+  if(!q){ res.style.display='none'; return; }
+  const vis=visibleStudents();
+  res.innerHTML='';
+  const _item=(title,sub,onClick)=>{
+    const it=document.createElement('div'); it.className='tip-collega-result';
+    const t=document.createElement('strong'); t.textContent=title; it.appendChild(t);
+    if(sub){ const d=document.createElement('div'); d.style.cssText='font-size:.7rem;color:var(--tx3);'; d.textContent=sub; it.appendChild(d); }
+    if(onClick) it.addEventListener('click',onClick); else it.style.cursor='default';
+    res.appendChild(it);
+  };
+  // Hele klas in één keer toevoegen
+  [...new Set(vis.map(s=>s.klass).filter(k=>k&&k.toLowerCase()===q))].forEach(k=>{
+    const ids=vis.filter(s=>s.klass===k).map(s=>s.id);
+    _item(`＋ Alle leerlingen van ${k} (${ids.length})`,'',()=>_tipAddStudents(ids));
+  });
+  vis.filter(s=>s.name.toLowerCase().includes(q)||(s.klass||'').toLowerCase().includes(q))
+    .sort((a,b)=>a.name.localeCompare(b.name,'nl')).slice(0,30)
+    .forEach(s=>_item(s.name+(_tipStuIds.includes(s.id)?' ✓':''),s.klass||'',()=>_tipAddStudents([s.id])));
+  if(!res.children.length) _item('Geen leerling gevonden.','',null);
+  res.style.display='';
+}
+
+function _tipAddStudents(ids){
+  ids.forEach(id=>{ if(!_tipStuIds.includes(id)) _tipStuIds.push(id); });
+  if(!_tipViewStuId) _tipViewStuId=_tipStuIds[0]||null;
+  document.getElementById('tip-stu-search').value='';
+  document.getElementById('tip-stu-results').style.display='none';
+  _tipStudentsChanged();
+}
+
+function _tipRemoveStudent(id){
+  _tipStuIds=_tipStuIds.filter(x=>x!==id);
+  if(_tipViewStuId===id) _tipViewStuId=_tipStuIds[0]||null;
+  _tipStudentsChanged();
+}
+
+function _tipViewStudent(id){
+  _tipViewStuId=id;
+  _tipRenderStuChips();
+  _tipRenderGrid();
+}
+
+function _tipStudentsChanged(){
+  // Een geïmporteerde toets hoort bij één leerling
+  const t=S.toetsenImport.find(x=>x.id===_tipSelectedToetsId);
+  if(t && !(_tipStuIds.length===1 && t.matchedStudentId===_tipStuIds[0])) _tipSelectedToetsId=null;
+  _tipFillVakken();
+  _tipRenderStuChips();
+  _tipRenderToetsen();
+  _tipFormChange();
+}
+
+function _tipRenderStuChips(){
+  const ct=document.getElementById('tip-stu-chips');
+  ct.innerHTML='';
+  _tipStuIds.forEach(id=>{
+    const stu=S.students.find(s=>s.id===id);
+    const chip=document.createElement('span');
+    chip.className='tip-stu-chip'+(id===_tipViewStuId?' viewed':'');
+    chip.title='Rooster bekijken';
+    chip.textContent=stu?stu.name:id;
+    chip.addEventListener('click',()=>_tipViewStudent(id));
+    const del=document.createElement('button');
+    del.type='button'; del.textContent='✕'; del.title='Leerling weghalen';
+    del.addEventListener('click',e=>{ e.stopPropagation(); _tipRemoveStudent(id); });
+    chip.appendChild(del);
+    ct.appendChild(chip);
+  });
+}
+
+// Vakken van alle gekozen leerlingen; een al gekozen vak blijft staan
+function _tipFillVakken(){
+  const vakSel=document.getElementById('tip-vak');
+  const cur=vakSel.value;
+  const vakken=[...new Set(_tipStuIds.flatMap(id=>getActiveVakken(S.students.find(s=>s.id===id))))]
+    .sort((a,b)=>a.localeCompare(b,'nl'));
+  vakSel.innerHTML='<option value="">— kies vak —</option>'
+    +vakken.map(v=>`<option value="${v}">${v}</option>`).join('');
+  if(cur){
+    if(!vakken.includes(cur)) vakSel.add(new Option(cur,cur));
+    vakSel.value=cur;
+  }
+}
+
+function _tipStuNamen(ids){
+  const namen=ids.map(id=>S.students.find(s=>s.id===id)?.name||'leerling');
+  return namen.length>3?`${namen.length} leerlingen`:namen.join(', ');
+}
+
 function closeToetsInplanModal(){
   document.getElementById('modal-toets-inplan').classList.remove('show');
 }
 
 function _tipRenderToetsen(){
-  const stuId=S.currentStudentId;
-  const toetsen=S.toetsenImport.filter(t=>t.matchedStudentId===stuId&&!t._handmatig);
+  // Geïmporteerde toetsen alleen bij precies één gekozen leerling
+  const stuId=_tipStuIds.length===1?_tipStuIds[0]:null;
+  const toetsen=stuId?S.toetsenImport.filter(t=>t.matchedStudentId===stuId&&!t._handmatig):[];
   const sec=document.getElementById('tip-import-section');
   const ct=document.getElementById('tip-toetsen-list');
   if(!toetsen.length){ if(sec) sec.style.display='none'; return; }
@@ -7296,9 +7439,9 @@ function _tipAutoSelectFromForm(){
   const dpb=document.getElementById('tip-direct-plan-bar');
   const dpi=document.getElementById('tip-direct-plan-info');
   const hint=document.getElementById('tip-dag-hint');
-  if(!vak||_tipSelectedDag===null){
+  if(!vak||_tipSelectedDag===null||!_tipStuIds.length){
     if(dpb) dpb.style.display='none';
-    if(hint) hint.style.display=(vak&&_tipSelectedDag===null)?'':'none';
+    if(hint) hint.style.display=(vak&&(_tipSelectedDag===null||!_tipStuIds.length))?'':'none';
     return;
   }
   if(hint) hint.style.display='none';
@@ -7323,7 +7466,7 @@ function _tipAutoSelectFromForm(){
   const MONTHS_S=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
   const datumStr=dt?`${DAYS_FULL[_tipSelectedDag]} ${dt.getDate()} ${MONTHS_S[dt.getMonth()]}`:'—';
   const {onderwerp}=_tipGetFormData();
-  if(dpi) dpi.textContent=`${vak}${onderwerp?' – '+onderwerp:''} · ${datumStr} · ${begintijd} – ${endStr} (${dur} min)`;
+  if(dpi) dpi.textContent=`${_tipStuNamen(_tipStuIds)} · ${vak}${onderwerp?' – '+onderwerp:''} · ${datumStr} · ${begintijd} – ${endStr} (${dur} min)`;
   if(dpb) dpb.style.display='';
   // Verberg de confirm bar (wordt vervangen door direct-plan bar)
   document.getElementById('tip-confirm-bar').style.display='none';
@@ -7396,7 +7539,7 @@ function _tipClearCollega(){
   if(sel) sel.style.display='none';
 }
 
-async function _sendCollegaCalendarInvite(toets, dt, slotId){
+async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen){
   if(!_graphToken||!_tipCollegaEmail||!dt) return false;
   const slot=SCHOOL.find(s=>s.id===slotId);
   if(!slot) return false;
@@ -7411,10 +7554,11 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId){
   const dtStart=`${ymd}T${pad(evStartH)}${pad(evStartM)}00`;
   const dtEnd=`${ymd}T${pad(evEndH)}${pad(evEndM)}00`;
   const stu=S.students.find(s=>s.id===toets.matchedStudentId);
-  const stuNaam=stu?stu.name:'leerling';
+  const stuNaam=stuNamen||(stu?stu.name:'leerling');
+  const stuLbl=stuNamen&&stuNamen.includes(',')?'Leerlingen':'Leerling';
   const onderwerp=toets.onderwerp||'';
   const summary=`Toets ${toets.vak}${onderwerp?' – '+onderwerp:''} — ${stuNaam}`;
-  const desc=`Leerling: ${stuNaam}\\nVak: ${toets.vak}${onderwerp?'\\nOnderwerp: '+onderwerp:''}\\nDuur: ${dur} min`;
+  const desc=`${stuLbl}: ${stuNaam}\\nVak: ${toets.vak}${onderwerp?'\\nOnderwerp: '+onderwerp:''}\\nDuur: ${dur} min`;
   const now=new Date();
   const dtStamp=`${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
   const uid=`tip-${toets.id}-${Date.now()}@parmantscholen.nl`;
@@ -7434,7 +7578,7 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId){
       body:JSON.stringify({
         message:{
           subject:summary,
-          body:{contentType:'HTML',content:`<p>Er is een toets ingepland.<br><b>Leerling:</b> ${stuNaam}<br><b>Vak:</b> ${toets.vak}${onderwerp?'<br><b>Onderwerp:</b> '+onderwerp:''}<br><b>Datum:</b> ${dt.toLocaleDateString('nl-NL')}<br><b>Tijd:</b> ${pad(evStartH)}:${pad(evStartM)} – ${pad(evEndH)}:${pad(evEndM)}<br><b>Duur:</b> ${dur} min</p>`},
+          body:{contentType:'HTML',content:`<p>Er is een toets ingepland.<br><b>${stuLbl}:</b> ${stuNaam}<br><b>Vak:</b> ${toets.vak}${onderwerp?'<br><b>Onderwerp:</b> '+onderwerp:''}<br><b>Datum:</b> ${dt.toLocaleDateString('nl-NL')}<br><b>Tijd:</b> ${pad(evStartH)}:${pad(evStartM)} – ${pad(evEndH)}:${pad(evEndM)}<br><b>Duur:</b> ${dur} min</p>`},
           toRecipients:[{emailAddress:{address:_tipCollegaEmail,name:_tipCollegaNaam}}],
           attachments:[{'@odata.type':'#microsoft.graph.fileAttachment',name:'toets_uitnodiging.ics',contentType:'text/calendar',contentBytes:icsB64}]
         },
@@ -7453,11 +7597,18 @@ function _tipRenderGrid(){
   const {week,year}=_tipWy;
   wl.textContent=`Week ${week} — ${year}`;
 
-  const stuId=S.currentStudentId;
+  const stuId=_tipViewStuId;
   const sd=S.studentData[stuId]||{};
   const weekKey=wk(year,week);
   const dates=weekDates(year,week);
   const DAYS_S=['Ma','Di','Wo','Do','Vr'];
+  const gl=document.getElementById('tip-grid-stu');
+  if(gl){
+    const viewStu=S.students.find(s=>s.id===stuId);
+    gl.textContent=viewStu
+      ?`Rooster van ${viewStu.name}${_tipStuIds.length>1?' — klik op een naam links om een ander rooster te bekijken':''}`
+      :'Kies links een of meer leerlingen.';
+  }
 
   const BG={green:'#D4EDDA',red:'#F8D7DA',rose:'#FFE2DC',blue:'#D1E8FF',
             purple:'#E8D5F5',yellow:'#FFFDE7',orange:'#FFD9A8'};
@@ -7511,7 +7662,7 @@ function _tipRenderGrid(){
       const isSel=(_tipSelectedDi===di&&_tipSelectedSlotId===slot.id);
       // Pickable als er een toets geselecteerd is OF als vak ingevuld is in het formulier
       const vakIngevuld=!!(document.getElementById('tip-vak')||{}).value;
-      const canPick=!!_tipSelectedToetsId||vakIngevuld;
+      const canPick=_tipStuIds.length>0&&(!!_tipSelectedToetsId||vakIngevuld);
       const segBg=_cellSegBg(di,slot);
       let cls='';
       if(!c) cls='tip-slot-empty'+(canPick?' tip-pickable':'');
@@ -7529,7 +7680,7 @@ function _tipRenderGrid(){
 
 function _tipClickSlot(di, slotId, el){
   const {vak}=_tipGetFormData();
-  if(!_tipSelectedToetsId && !vak) return;
+  if(!_tipStuIds.length || (!_tipSelectedToetsId && !vak)) return;
   // Een ingevulde begintijd is leidend; de klik kiest dan alleen de dag
   const {begintijd}=_tipGetFormData();
   _tipSelectedDi=di; _tipSelectedSlotId=(begintijd&&_tipFindSlotForTime(begintijd))||slotId;
@@ -7540,8 +7691,7 @@ function _tipClickSlot(di, slotId, el){
 
 function confirmToetsInplan(){
   if(_tipSelectedDi===null||!_tipSelectedSlotId) return;
-  const stuId=S.currentStudentId;
-  if(!stuId) return;
+  if(!_tipStuIds.length){ alert('Kies eerst een of meer leerlingen.'); return; }
   const {week,year}=_tipWy;
   const weekKey=wk(year,week);
   const dates=weekDates(year,week);
@@ -7549,7 +7699,7 @@ function confirmToetsInplan(){
   const datum=dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`:'';
   const slot=SCHOOL.find(s=>s.id===_tipSelectedSlotId);
   const {vak,onderwerp,dur,begintijd}=_tipGetFormData();
-  let planned=null;
+  let planned=null, plannedIds=[];
 
   if(begintijd){
     const dagStart=_parseTime(SCHOOL[0].time.split('–')[0]);
@@ -7578,38 +7728,42 @@ function confirmToetsInplan(){
     t._dur=dur;
     _setToetsInPlanner(t.matchedStudentId, weekKey, _tipSelectedDi, _tipSelectedSlotId, t);
     t.datum=datum; t.status='gepland'; t.geplandWeekKey=weekKey; t.geplandDi=_tipSelectedDi; t.geplandSlot=_tipSelectedSlotId;
-    planned=t;
+    planned=t; plannedIds=[t.matchedStudentId];
   } else {
-    // Handmatige invoer: maak tijdelijk toets-object
+    // Handmatige invoer: één toets per gekozen leerling, alleen in hun rooster
     if(!vak){ alert('Kies eerst een vak.'); return; }
-    const stu=S.students.find(s=>s.id===stuId);
-    const newT={
-      id:'manual-'+Date.now(),
-      studentNaam:stu?stu.name:'',
-      klas:stu?stu.klas||'':'',
-      vak,
-      onderwerp,
-      datum,
-      tijdstip:effectiefTijdstip,
-      lokaal:'',
-      status:'gepland',
-      matchedStudentId:stuId,
-      geplandWeekKey:weekKey,
-      geplandDi:_tipSelectedDi,
-      geplandSlot:_tipSelectedSlotId,
-      _dur:dur,
-      _handmatig:true
-    };
-    S.toetsenImport.push(newT);
-    _setToetsInPlanner(stuId, weekKey, _tipSelectedDi, _tipSelectedSlotId, newT);
-    planned=newT;
+    _tipStuIds.forEach((stuId,i)=>{
+      const stu=S.students.find(s=>s.id===stuId);
+      const newT={
+        id:'manual-'+Date.now()+'-'+i,
+        studentNaam:stu?stu.name:'',
+        klas:stu?stu.klass||stu.klas||'':'',
+        vak,
+        onderwerp,
+        datum,
+        tijdstip:effectiefTijdstip,
+        lokaal:'',
+        status:'gepland',
+        matchedStudentId:stuId,
+        geplandWeekKey:weekKey,
+        geplandDi:_tipSelectedDi,
+        geplandSlot:_tipSelectedSlotId,
+        _dur:dur,
+        _handmatig:true
+      };
+      S.toetsenImport.push(newT);
+      _setToetsInPlanner(stuId, weekKey, _tipSelectedDi, _tipSelectedSlotId, newT);
+      if(!planned) planned=newT;
+      plannedIds.push(stuId);
+    });
   }
+  const stuNamen=_tipStuNamen(plannedIds);
 
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 
   // Collega-uitnodiging versturen indien geselecteerd
   const collegaNaam=_tipCollegaEmail?(_tipCollegaNaam||_tipCollegaEmail):'';
-  const invite=_tipCollegaEmail?_sendCollegaCalendarInvite(planned, dt, _tipSelectedSlotId):null;
+  const invite=_tipCollegaEmail?_sendCollegaCalendarInvite(planned, dt, _tipSelectedSlotId, plannedIds.map(id=>S.students.find(s=>s.id===id)?.name||'leerling').join(', ')):null;
 
   // Reset modal state
   _tipSelectedDi=null; _tipSelectedSlotId=null; _tipSelectedToetsId=null;
@@ -7622,7 +7776,7 @@ function confirmToetsInplan(){
   document.getElementById('tip-confirm-bar').style.display='none';
   const bar=document.getElementById('tip-success-bar');
   bar.style.display='';
-  bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ingepland in het rooster: ${planned.tijdstip} – ${_fmtMin(_parseTime(planned.tijdstip)+planned._dur)} (${planned._dur} min)</div>
+  bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ingepland voor ${stuNamen}: ${planned.tijdstip} – ${_fmtMin(_parseTime(planned.tijdstip)+planned._dur)} (${planned._dur} min)</div>
     <div id="tip-invite-status" style="font-size:.8rem;"></div>
     <div class="tip-confirm-actions">
       <button class="btn-p" onclick="closeToetsInplanModal()">Klaar</button>
@@ -7750,6 +7904,8 @@ function showMain(){
   if(btnAdm) btnAdm.style.display=(canEdit && isSuperadmin)?'':'none';
   const sez=document.getElementById('stu-edit-zone');
   if(sez) sez.style.display=canEdit?'flex':'none';
+  const cew=document.getElementById('csb-edit-win');
+  if(cew) cew.style.display=canEdit?'':'none';
   const bsr=document.getElementById('btn-std-rooster');
   if(bsr) bsr.style.display=S.role==='coach'?'':'none';
   // Toets inplannen knop: zichtbaar voor coach en coordinator als er toetsen zijn
@@ -8404,7 +8560,7 @@ function updateEditUI(){
   const bn=document.getElementById('edit-banner');
   if(b){
     b.classList.toggle('on',S.editMode);
-    b.textContent=S.editMode?'✏️ ✓':'✏️';
+    b.title=S.editMode?'Klaar met aanpassen':'Rooster aanpassen';
   }
   bn.classList.toggle('show',S.editMode);
 }
