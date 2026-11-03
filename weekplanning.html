@@ -2343,27 +2343,25 @@ body.dark .stu-sport-chip {
         </div>
 
         <div class="tip-form-row">
-          <label class="tip-form-lbl">Duur</label>
-          <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
-            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="30" onchange="_tipFormChange()"> 30 min</label>
-            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="45" onchange="_tipFormChange()"> 45 min</label>
-            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="50" checked onchange="_tipFormChange()"> 50 min</label>
-            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="60" onchange="_tipFormChange()"> 60 min</label>
-            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="100" onchange="_tipFormChange()"> 100 min</label>
-            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="120" onchange="_tipFormChange()"> 120 min</label>
-          </div>
+          <label class="tip-form-lbl">Dag</label>
+          <div style="display:flex;gap:.25rem;flex-wrap:wrap;" id="tip-dag-btns"></div>
+          <div id="tip-dag-hint" style="font-size:.69rem;color:var(--tx3);margin-top:.18rem;display:none;">Kies vak + dag + begintijd om direct in te plannen.</div>
         </div>
 
         <div class="tip-form-row">
           <label class="tip-form-lbl">Begintijd <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
           <input id="tip-begintijd" class="tip-form-inp" type="time" oninput="_tipFormChange()" style="max-width:120px;">
-          <div id="tip-tijd-preview" style="font-size:.75rem;font-weight:700;color:var(--brand);margin-top:.2rem;min-height:1em;"></div>
         </div>
 
         <div class="tip-form-row">
-          <label class="tip-form-lbl">Dag</label>
-          <div style="display:flex;gap:.25rem;flex-wrap:wrap;" id="tip-dag-btns"></div>
-          <div id="tip-dag-hint" style="font-size:.69rem;color:var(--tx3);margin-top:.18rem;display:none;">Kies vak + dag + begintijd om direct in te plannen.</div>
+          <label class="tip-form-lbl">Duur</label>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="50" checked onchange="_tipFormChange()"> 50 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="60" onchange="_tipFormChange()"> 60 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="100" onchange="_tipFormChange()"> 100 min</label>
+            <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="120" onchange="_tipFormChange()"> 120 min</label>
+          </div>
+          <div id="tip-tijd-preview" style="font-size:.75rem;font-weight:700;color:var(--brand);margin-top:.2rem;min-height:1em;"></div>
         </div>
 
         <div id="tip-direct-plan-bar" style="display:none;margin:.3rem 0 .1rem;padding:.45rem .6rem;background:var(--brand-light);border:1.5px solid var(--brand);border-radius:8px;font-size:.82rem;">
@@ -6985,7 +6983,7 @@ function _setToetsInPlanner(studentId, weekKey, di, slotId, toets){
   if(!S.studentData[studentId].toets) S.studentData[studentId].toets={};
   if(!S.studentData[studentId].toets[weekKey]) S.studentData[studentId].toets[weekKey]={};
   if(!S.studentData[studentId].toets[weekKey][di]) S.studentData[studentId].toets[weekKey][di]={};
-  const rec={subject:toets.vak, lokaal:toets.lokaal||''};
+  const rec={subject:toets.vak+(toets.onderwerp?' – '+toets.onderwerp:''), lokaal:toets.lokaal||''};
   S.studentData[studentId].toets[weekKey][di][slotId]=rec;
   // Zonder bekende duur (bijv. import): heel lesuur, zoals hierboven gezet
   const slot=SCHOOL.find(s=>s.id===slotId);
@@ -7322,7 +7320,8 @@ function _tipAutoSelectFromForm(){
   const dt=weekDates(year,week)[_tipSelectedDag];
   const MONTHS_S=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
   const datumStr=dt?`${DAYS_FULL[_tipSelectedDag]} ${dt.getDate()} ${MONTHS_S[dt.getMonth()]}`:'—';
-  if(dpi) dpi.textContent=`${vak} · ${datumStr} · ${begintijd} – ${endStr} (${dur} min)`;
+  const {onderwerp}=_tipGetFormData();
+  if(dpi) dpi.textContent=`${vak}${onderwerp?' – '+onderwerp:''} · ${datumStr} · ${begintijd} – ${endStr} (${dur} min)`;
   if(dpb) dpb.style.display='';
   // Verberg de confirm bar (wordt vervangen door direct-plan bar)
   document.getElementById('tip-confirm-bar').style.display='none';
