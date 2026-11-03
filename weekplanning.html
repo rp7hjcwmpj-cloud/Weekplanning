@@ -1783,9 +1783,9 @@ body.dark .stu-sport-chip {
 }
 /* ══ DASHBOARD ══ */
 .planner-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.dash-view { padding: 1.4rem 2.2rem 2.5rem; max-width: 1500px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.dash-view { padding: .9rem 2rem 1.4rem; max-width: 1500px; width: 100%; margin: 0 auto; box-sizing: border-box; }
 .dash-kicker { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--tx3); font-weight: 600; }
-.dash-date { font-family: 'Outfit', sans-serif; font-size: clamp(2.3rem, 4.2vw, 3.6rem); font-weight: 300; color: var(--tx); letter-spacing: -.02em; line-height: 1.1; margin: .2rem 0 .7rem; }
+.dash-date { font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 3.4vw, 2.9rem); font-weight: 300; color: var(--tx); letter-spacing: -.02em; line-height: 1.1; margin: .1rem 0 .5rem; }
 .dash-progress { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
 .dash-bars { display: flex; gap: 5px; }
 .dash-bar { width: 26px; height: 5px; border-radius: 3px; background: #DCD6CF; }
@@ -1794,21 +1794,21 @@ body.dark .stu-sport-chip {
 body.dark .dash-bar { background: var(--surf-2); }
 .dash-now { font-size: .82rem; color: var(--tx2); }
 .dash-now b { color: var(--tx); font-weight: 600; }
-.dash-grid { display: grid; gap: 1.2rem; margin-top: 1.6rem;
-  grid-template-columns: minmax(0,1fr) minmax(0,1.35fr) minmax(0,.85fr);
-  grid-template-areas: "toetsen aanw doc" "toetsen verlof doc"; }
+.dash-grid { display: grid; gap: 1rem; margin-top: 1.1rem; align-items: start;
+  grid-template-columns: minmax(0,.8fr) minmax(0,1.45fr) minmax(0,1fr);
+  grid-template-areas: "toetsen aanw doc" "toetsen aanw verlof"; }
 .dash-toetsen { grid-area: toetsen; } .dash-aanw { grid-area: aanw; } .dash-doc { grid-area: doc; } .dash-verlof { grid-area: verlof; }
-@media (max-width: 1150px) { .dash-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "aanw aanw" "toetsen doc" "verlof doc"; } }
+@media (max-width: 1150px) { .dash-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "aanw aanw" "toetsen doc" "toetsen verlof"; } }
 @media (max-width: 720px) { .dash-view { padding: 1rem; } .dash-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "aanw" "toetsen" "verlof" "doc"; } }
-.dash-card { background: var(--surface); border: 1px solid #F3D4B4; border-radius: 22px; padding: 1.25rem 1.3rem; box-shadow: 0 2px 14px rgba(200,90,0,.05); min-width: 0; }
+.dash-card { background: var(--surface); border: 1px solid #F3D4B4; border-radius: 20px; padding: 1rem 1.1rem; box-shadow: 0 2px 14px rgba(200,90,0,.05); min-width: 0; }
 body.dark .dash-card { border-color: var(--border); }
-.dash-card-hdr { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
+.dash-card-hdr { display: flex; align-items: center; gap: .7rem; margin-bottom: .7rem; }
 .dash-card-hdr h3 { font-size: 1.05rem; font-weight: 600; color: var(--tx); margin: 0; }
 .dash-card-hdr p { font-size: .8rem; color: var(--tx3); margin: .1rem 0 0; }
 .dash-card-hdr > div:nth-child(2) { flex: 1; min-width: 0; }
-.dash-ico { width: 40px; height: 40px; border-radius: 12px; background: var(--surf-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--tx2); }
+.dash-ico { width: 34px; height: 34px; border-radius: 10px; background: var(--surf-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--tx2); }
 .dash-ico svg { width: 19px; height: 19px; }
-.dash-big { font-family: 'Outfit', sans-serif; font-size: 2.6rem; font-weight: 300; color: var(--tx); line-height: 1; }
+.dash-big { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 300; color: var(--tx); line-height: 1; }
 .dash-round-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: #1D6FA5; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .dash-round-btn svg { width: 17px; height: 17px; }
 .dash-empty { font-size: .86rem; color: var(--tx2); }
@@ -1824,7 +1824,7 @@ body.dark .dash-card { border-color: var(--border); }
 .dash-select { border: 1px solid var(--border); background: var(--surface); color: var(--tx); border-radius: 999px; padding: .45rem .9rem; font-size: .84rem; font-family: inherit; }
 .dash-aanw-tbl { width: 100%; border-collapse: collapse; }
 .dash-aanw-tbl th { font-size: .66rem; font-weight: 500; color: var(--tx3); padding: 0 0 .45rem; text-align: center; }
-.dash-aanw-tbl td { padding: .38rem 0; border-top: 1px solid var(--border); text-align: center; }
+.dash-aanw-tbl td { padding: .3rem 0; border-top: 1px solid var(--border); text-align: center; }
 .dash-aanw-tbl td.dash-aanw-naam { text-align: left; font-size: .84rem; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 11rem; padding-right: .5rem; }
 .dash-aanw-tbl .now { background: #FFF1E2; }
 .dash-aanw-tbl th.now { color: var(--brand); font-weight: 700; background: none; }
@@ -1834,11 +1834,11 @@ body.dark .dash-sq { background: var(--surf-2); }
 .dash-chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #C9C2BA; background: var(--surface); cursor: pointer; vertical-align: middle; display: inline-flex; align-items: center; justify-content: center; padding: 0; color: #fff; }
 .dash-chk.on { background: #2D8B50; border-color: #2D8B50; }
 .dash-chk svg { width: 12px; height: 12px; }
-.dash-legend { display: flex; flex-wrap: wrap; gap: .3rem .9rem; margin-top: .9rem; font-size: .72rem; color: var(--tx2); }
+.dash-legend { display: flex; flex-wrap: wrap; gap: .3rem .9rem; margin-top: .65rem; font-size: .72rem; color: var(--tx2); }
 .dash-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: .3rem; }
 .dash-tag { font-size: .62rem; font-weight: 700; border-radius: 999px; padding: .05rem .45rem; margin-left: .35rem; vertical-align: middle; }
 .dash-tag.verlof { background: #E3F1F7; color: #1D6FA5; }
-.dash-drow { display: flex; align-items: flex-start; gap: .7rem; padding: .42rem .5rem; border-radius: 10px; }
+.dash-drow { display: flex; align-items: flex-start; gap: .6rem; padding: .17rem .45rem; border-radius: 8px; }
 .dash-drow.now { background: #FFF1E2; }
 body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .dash-drow .n { width: 1.2rem; font-size: .84rem; color: var(--tx); text-align: right; }
@@ -1863,9 +1863,13 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .dash-status.aangevraagd { background: #FFF1E2; color: #B05A00; }
 .dash-status.goedgekeurd { background: #E6F4EA; color: #1E7040; }
 .dash-status.afgewezen { background: #FBE7E5; color: #A93226; }
-/* Verlof-kaart in het rooster */
-.toets-card.verlof-card { background: #DCEFF8; border-color: #6FB3D6; color: #134E6F; z-index: 2; }
-.toets-card.verlof-card .toets-card-tag { background: #1D6FA5; }
+/* Knipperend aantal open verlofaanvragen */
+.toets-badge.dash-inline-badge { position: static; display: inline-flex; margin-left: .4rem; vertical-align: 2px; }
+.verlof-redenen { display: flex; flex-wrap: wrap; gap: .35rem; }
+.verlof-reden { display: inline-flex; align-items: center; gap: .35rem; padding: .32rem .7rem; border-radius: 999px; border: 1.5px solid var(--border); background: var(--surf-2); font-size: .8rem; cursor: pointer; color: var(--tx); }
+.verlof-reden input { display: none; }
+.verlof-reden i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.verlof-reden:has(input:checked) { border-color: var(--brand); background: var(--brand-light); font-weight: 600; }
 /* Verlof-modal */
 .verlof-form .tip-form-row { margin-bottom: .6rem; }
 .verlof-list { margin-top: 1rem; border-top: 1px solid var(--border); padding-top: .8rem; }
@@ -2141,7 +2145,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
     <div id="hdr-schoolname" style="display:none;">Parmant Joris</div>
     <div class="hdr-right">
       <div id="hdr-edit-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
-        <button class="hb" id="btn-nav-dash" onclick="showDashboard()"><span class="hb-ico" data-ico="dash"></span> Dashboard</button>
+        <button class="hb" id="btn-nav-dash" onclick="showDashboard()" style="position:relative;"><span class="hb-ico" data-ico="dash"></span> Dashboard<span class="toets-badge" id="verlof-badge" style="display:none;" title="Open verlofaanvragen"></span></button>
         <button class="hb" id="btn-nav-planner" onclick="showPlanner()"><span class="hb-ico" data-ico="calendar"></span> Planner</button>
         <button class="hb" onclick="openLeerlingBeschModal()"><span class="hb-ico" data-ico="cap"></span> Docenten</button>
         <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;"><span class="hb-ico" data-ico="message"></span> Coachgesprek</button>
@@ -2308,7 +2312,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
       <section class="dash-card dash-verlof">
         <div class="dash-card-hdr">
           <span class="dash-ico" data-ico="hand"></span>
-          <div><h3>Verlof</h3><p>Aanvragen en toetsen herplannen</p></div>
+          <div><h3>Verlof<span class="toets-badge dash-inline-badge" id="dash-verlof-badge" style="display:none;"></span></h3><p>Aanvragen en toetsen herplannen</p></div>
           <button type="button" class="dash-round-btn" title="Verlof invoeren voor een leerling" onclick="openVerlofModal()"><span data-ico="plus"></span></button>
         </div>
         <div id="dash-verlof-body"></div>
@@ -2327,30 +2331,27 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <label class="tip-form-lbl">Leerling</label>
         <select id="verlof-stu" class="tip-form-inp"></select>
       </div>
-      <div style="display:flex;gap:.6rem;">
-        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Van</label><input id="verlof-van" class="tip-form-inp" type="date" onchange="_verlofVanChange()"></div>
-        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Tot en met</label><input id="verlof-tot" class="tip-form-inp" type="date"></div>
+      <div class="tip-form-row">
+        <label class="tip-form-lbl">Van</label>
+        <div style="display:flex;gap:.5rem;">
+          <input id="verlof-van" class="tip-form-inp" type="date" style="flex:1.2;" onchange="_verlofVanChange()">
+          <select id="verlof-vanuur" class="tip-form-inp" style="flex:1;"></select>
+        </div>
       </div>
-      <label style="display:flex;align-items:center;gap:.45rem;font-size:.84rem;color:var(--tx);margin:.1rem 0 .6rem;cursor:pointer;">
-        <input type="checkbox" id="verlof-heledag" checked onchange="_verlofHeleDagChange()"> Hele dag
-      </label>
-      <div id="verlof-tijden" style="display:none;gap:.6rem;">
-        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Vanaf</label><input id="verlof-tvan" class="tip-form-inp" type="time"></div>
-        <div class="tip-form-row" style="flex:1;"><label class="tip-form-lbl">Tot</label><input id="verlof-ttot" class="tip-form-inp" type="time"></div>
+      <div class="tip-form-row">
+        <label class="tip-form-lbl">Tot en met</label>
+        <div style="display:flex;gap:.5rem;">
+          <input id="verlof-tot" class="tip-form-inp" type="date" style="flex:1.2;">
+          <select id="verlof-totuur" class="tip-form-inp" style="flex:1;"></select>
+        </div>
       </div>
       <div class="tip-form-row">
         <label class="tip-form-lbl">Reden</label>
-        <select id="verlof-reden" class="tip-form-inp">
-          <option>Wedstrijd of toernooi</option>
-          <option>Trainingskamp</option>
-          <option>Medisch</option>
-          <option>Familie</option>
-          <option>Anders</option>
-        </select>
+        <div class="verlof-redenen" id="verlof-redenen"></div>
       </div>
       <div class="tip-form-row">
-        <label class="tip-form-lbl">Toelichting <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
-        <input id="verlof-toel" class="tip-form-inp" type="text" placeholder="Bijv. NK in Eindhoven">
+        <label class="tip-form-lbl">Opmerking</label>
+        <textarea id="verlof-toel" class="tip-form-inp" rows="3" placeholder="Reden of omschrijving, bijv. NK in Eindhoven"></textarea>
       </div>
       <div class="err-msg" id="verlof-err" style="display:none;margin:.3rem 0;"></div>
       <button class="btn-p" id="verlof-submit" onclick="submitVerlof()">Verlof aanvragen</button>
@@ -3450,7 +3451,7 @@ const S = {
              'P3.1':{from:'',to:''},'P3.2':{from:'',to:''},'P3.3':{from:'',to:''}},
   },
   toetsenImport:[],      // [{id,studentNaam,klas,vak,datum,tijdstip,lokaal,status:'open'|'gepland',matchedStudentId,geplandWeekKey,geplandDi,geplandSlot}]
-  verlof:[],             // [{id,studentId,van,tot,heleDag,tijdVan,tijdTot,reden,toelichting,status:'aangevraagd'|'goedgekeurd'|'afgewezen',aangevraagdOp,aangevraagdDoor,beoordeeldDoor,beoordeeldOp}]
+  verlof:[],             // [{id,studentId,van,vanSlot,tot,totSlot,reden:statuskleur,toelichting,status:'aangevraagd'|'goedgekeurd'|'afgewezen',aangevraagdOp,aangevraagdDoor,beoordeeldDoor,beoordeeldOp,gewijzigdOp,toegepast}]
   mainView:null,         // 'dash' | 'planner' — startscherm coach/coördinator is het dashboard
 };
 
@@ -9301,13 +9302,13 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
         }
       } else if(pause){
         cell.innerHTML='<div class="pause-lbl">pauze</div>';
-        if(_toetsenOver(key,di,slot).length||_verlofOver(toDS(dates[di]),slot)) cell.classList.add('toets-under');
+        if(_toetsenOver(key,di,slot).length) cell.classList.add('toets-under');
       } else {
         const _onder=_toetsenOver(key,di,slot).length>0;
         // Onder een toetskaart blijft de originele status zichtbaar (vaag)
         let c=getColor(key,di,slot.id);
         if(c==='yellow'&&_onder) c=_toetsUnderColor(key,di,slot.id);
-        if(_onder||_verlofOver(toDS(dates[di]),slot)) cell.classList.add('toets-under');
+        if(_onder) cell.classList.add('toets-under');
         const _cellTime=curData().std?.times?.[di]?.[slot.id]||null;
         const _cellVak=curData().std?.vakken?.[di]?.[slot.id]||'';
         applyCell(cell,c,_cellTime,_cellVak);
@@ -9421,22 +9422,10 @@ function _toetsUnderColor(key,di,sid){
   return curData().std?.[di]?.[sid]??null;
 }
 
-// Goedgekeurd verlof van een leerling op een datum: [{start,end,rec}] in minuten
+// Goedgekeurd verlof van een leerling dat (een deel van) deze datum beslaat
 function _verlofOpDag(stuId, ds){
   if(!stuId) return [];
-  const lessen=SCHOOL.filter(s=>s.kind==='lesson');
-  const dagStart=_parseTime(lessen[0].time.split('–')[0]);
-  const dagEind=_parseTime(lessen[lessen.length-1].time.split('–')[1]);
-  return (S.verlof||[]).filter(v=>v.studentId===stuId&&v.status==='goedgekeurd'&&v.van<=ds&&ds<=(v.tot||v.van))
-    .map(v=>({rec:v,
-      start:v.heleDag?dagStart:_parseTime(v.tijdVan),
-      end:v.heleDag?dagEind:_parseTime(v.tijdTot)}));
-}
-function _verlofOver(ds, slot){
-  const parts=slot.time.split('–');
-  if(parts.length<2) return false;
-  const [ss,se]=parts.map(_parseTime);
-  return _verlofOpDag(S.currentStudentId,ds).some(v=>v.start<se&&v.end>ss);
+  return (S.verlof||[]).filter(v=>v.studentId===stuId&&v.status==='goedgekeurd'&&v.van<=ds&&ds<=(v.tot||v.van));
 }
 
 // Plaatst de toetskaarten over het rooster, precies van begin- tot eindtijd
@@ -9450,9 +9439,7 @@ function _placeToetsCards(root){
     const dis=[...new Set([...wrap.querySelectorAll('.dc[data-di]')].map(c=>+c.dataset.di))];
     dis.forEach(di=>{
       const toetsen=_toetsTijden(key,di);
-      const [wy,ww]=key.split('-').map(Number);
-      const verlof=_verlofOpDag(S.currentStudentId,toDS(weekDates(wy,ww)[di]));
-      if(!toetsen.length&&!verlof.length) return;
+      if(!toetsen.length) return;
       // Tijd → y-positie via de rijen van deze dagkolom
       const rows=[...wrap.querySelectorAll(`.dc[data-di="${di}"]`)].map(cell=>{
         const slot=SCHOOL.find(s=>s.id===cell.dataset.slot);
@@ -9467,19 +9454,6 @@ function _placeToetsCards(root){
         return row.r.top+f*row.r.height-wr.top;
       };
       const col=rows[0].r;
-      // Goedgekeurd verlof: brede blauwe kaart, toetsen liggen erbovenop
-      verlof.forEach(v=>{
-        const top=yAt(v.start), h=Math.max(14,yAt(v.end)-top);
-        const card=document.createElement('div');
-        card.className='toets-card verlof-card';
-        const w=col.width*.92;
-        card.style.cssText=`top:${top}px;height:${h}px;left:${col.left-wr.left+(col.width-w)/2}px;width:${w}px;`;
-        const tag=document.createElement('div'); tag.className='toets-card-tag'; tag.textContent='Verlof';
-        const tx=document.createElement('div'); tx.className='toets-card-txt'; tx.textContent=v.rec.reden+(v.rec.toelichting?' – '+v.rec.toelichting:'');
-        card.append(tag,tx);
-        card.title='Verlof: '+tx.textContent;
-        wrap.appendChild(card);
-      });
       toetsen.forEach(t=>{
         const top=yAt(t.start), h=Math.max(14,yAt(t.end)-top);
         const card=document.createElement('div');
@@ -9882,6 +9856,7 @@ async function _doHwSpRefresh(){
   try{
     const result=await spLoad();
     // Rol kan zijn veranderd tijdens het laden (bijv. uitgelogd) — skip als nu leerling
+    if(result.ok && S.role && S.role!=='leerling') _mergeVerlofFromStorage();
     if(result.ok && S.role && S.role!=='leerling'){
       const raw=localStorage.getItem('wp_huiswerk');
       if(raw){
@@ -9914,6 +9889,7 @@ function renderAllHwPictos(skipRefresh=false){
     const _localSnap=[...(S.huiswerk||[])]; // snapshot vóór async spLoad
     spLoad().then(result=>{
       _hwRefreshing=false;
+      if(result.ok) _mergeVerlofFromStorage();
       if(result.ok){
         const raw=localStorage.getItem('wp_huiswerk');
         if(raw){
@@ -10472,6 +10448,7 @@ function _applyMainView(){
   document.getElementById('dash-view').style.display=dash?'':'none';
   document.getElementById('btn-nav-dash')?.classList.toggle('on',dash);
   document.getElementById('btn-nav-planner')?.classList.toggle('on',!dash);
+  _updateVerlofBadge();
   if(dash) renderDashboard();
   else _placeToetsCards(document.getElementById('sched-area'));
 }
@@ -10631,24 +10608,145 @@ function _renderDashDocenten(v,nuSlot){
 }
 
 /* ══ VERLOF ══════════════════════════════════════════ */
-function _verlofPeriode(r){
-  const dag=r.van===(r.tot||r.van)?_fmtDag(r.van):`${_fmtDag(r.van)} – ${_fmtDag(r.tot)}`;
-  return dag+(r.heleDag?' · hele dag':` · ${r.tijdVan}–${r.tijdTot}`);
-}
-// Toetsen van de leerling die in de verlofperiode vallen
-function _verlofConflicten(r){
-  const sd=S.studentData[r.studentId];
-  if(!sd) return [];
+// Reden = statuskleur die bij goedkeuring in het rooster komt
+const VERLOF_REDENEN=[['red','Training'],['blue','Rust'],['purple','Wedstrijd'],['orange','Toernooi'],['rose','Overig']];
+function _verlofRedenLbl(r){ return (VERLOF_REDENEN.find(x=>x[0]===r.reden)||[])[1]||r.reden||''; }
+function _slotIdx(id){ return SCHOOL.findIndex(s=>s.id===id); }
+function _uurLbl(id){ return (SCHOOL.find(s=>s.id===id)?.label||'').toLowerCase(); }
+
+// Alle lesuren (ma–vr) van de verlofperiode: [{ds,key,di,slot}]
+function _verlofLesuren(r){
+  const lessen=SCHOOL.filter(s=>s.kind==='lesson');
+  const vanSlot=r.vanSlot||lessen[0].id, totSlot=r.totSlot||lessen[lessen.length-1].id;
+  const tot=r.tot||r.van;
   const out=[];
-  const d=new Date(r.van+'T12:00:00'), eind=new Date((r.tot||r.van)+'T12:00:00');
+  const d=new Date(r.van+'T12:00:00'), eind=new Date(tot+'T12:00:00');
   for(let n=0;d<=eind&&n<62;n++,d.setDate(d.getDate()+1)){
-    const {year,week}=weekYear(d);
-    const key=wk(year,week), di=(d.getDay()+6)%7;
-    const [vs,ve]=r.heleDag?[0,24*60]:[_parseTime(r.tijdVan),_parseTime(r.tijdTot)];
-    _toetsTijden(key,di,sd).filter(t=>t.start<ve&&t.end>vs).forEach(t=>out.push({...t,key,di,ds:toDS(d)}));
+    const di=(d.getDay()+6)%7;
+    if(di>4) continue;
+    const ds=toDS(d), {year,week}=weekYear(d), key=wk(year,week);
+    lessen.forEach(slot=>{
+      if(ds===r.van&&_slotIdx(slot.id)<_slotIdx(vanSlot)) return;
+      if(ds===tot&&_slotIdx(slot.id)>_slotIdx(totSlot)) return;
+      out.push({ds,key,di,slot});
+    });
   }
   return out;
 }
+function _verlofPeriode(r){
+  const tot=r.tot||r.van;
+  if(!r.vanSlot) return r.van===tot?_fmtDag(r.van):`${_fmtDag(r.van)} – ${_fmtDag(tot)}`;
+  return r.van===tot
+    ?`${_fmtDag(r.van)} · ${_uurLbl(r.vanSlot)}${r.vanSlot!==r.totSlot?' t/m '+_uurLbl(r.totSlot).replace('uur ',''):''}`
+    :`${_fmtDag(r.van)} ${_uurLbl(r.vanSlot)} t/m ${_fmtDag(tot)} ${_uurLbl(r.totSlot)}`;
+}
+function _verlofRedenHtml(r){
+  const c=_DASH_KLEUR[r.reden];
+  return `${c?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};margin-right:.3rem;"></i>`:''}${_esc(_verlofRedenLbl(r))}${r.toelichting?' – '+_esc(r.toelichting):''}`;
+}
+// Toetsen van de leerling die in de verloflesuren vallen
+function _verlofConflicten(r){
+  const sd=S.studentData[r.studentId];
+  if(!sd) return [];
+  const perDag={};
+  _verlofLesuren(r).forEach(({ds,key,di,slot})=>{
+    const [a,b]=slot.time.split('–').map(_parseTime);
+    const d=perDag[ds]||(perDag[ds]={key,di,start:a,end:b});
+    d.start=Math.min(d.start,a); d.end=Math.max(d.end,b);
+  });
+  const out=[];
+  Object.entries(perDag).forEach(([ds,{key,di,start,end}])=>{
+    _toetsTijden(key,di,sd).filter(t=>t.start<end&&t.end>start).forEach(t=>out.push({...t,key,di,ds}));
+  });
+  return out;
+}
+
+// Goedgekeurd: lesuren in het rooster op de redenkleur zetten; oude status bewaren voor terugzetten
+function _verlofToepassen(r){
+  if(!VERLOF_REDENEN.some(x=>x[0]===r.reden)) return; // oude aanvraag zonder statuskleur
+  if(!S.studentData[r.studentId]) S.studentData[r.studentId]={std:{},ovr:{}};
+  const sd=S.studentData[r.studentId];
+  if(!sd.ovr) sd.ovr={};
+  r.toegepast=[];
+  const notitieDagen=new Set();
+  _verlofLesuren(r).forEach(({ds,key,di,slot})=>{
+    if(!sd.ovr[key]) sd.ovr[key]={};
+    if(!sd.ovr[key][di]) sd.ovr[key][di]={};
+    const day=sd.ovr[key][di];
+    const toetsDay=sd.toets?.[key]?.[di]||{};
+    const originId=day[slot.id]==='yellow'
+      ?Object.keys(toetsDay).find(id=>id===slot.id||toetsDay[id].extended?.includes(slot.id)):null;
+    if(originId){
+      // Geel toetsuur: status onder de toetskaart wijzigen, de toets blijft staan
+      const rec=toetsDay[originId];
+      const had=!!rec.under&&Object.prototype.hasOwnProperty.call(rec.under,slot.id);
+      r.toegepast.push({key,di,sid:slot.id,originId,had,val:had?rec.under[slot.id]:null});
+      (rec.under=rec.under||{})[slot.id]=r.reden;
+    } else {
+      const had=Object.prototype.hasOwnProperty.call(day,slot.id);
+      r.toegepast.push({key,di,sid:slot.id,had,val:had?day[slot.id]:null});
+      day[slot.id]=r.reden;
+    }
+    // Opmerking als notitie in het eerste verlofuur van elke dag
+    if(r.toelichting&&!notitieDagen.has(ds)){
+      notitieDagen.add(ds);
+      if(!sd.notes) sd.notes={};
+      const n=((sd.notes[key]=sd.notes[key]||{})[di]=sd.notes[key][di]||{});
+      if(!n[slot.id]||typeof n[slot.id]!=='object') n[slot.id]={};
+      if(!n[slot.id][r.reden]){
+        n[slot.id][r.reden]='Verlof: '+r.toelichting;
+        r.toegepast[r.toegepast.length-1].notitie=true;
+      }
+    }
+  });
+}
+function _verlofTerugdraaien(r){
+  const sd=S.studentData[r.studentId];
+  if(!sd||!r.toegepast) { r.toegepast=null; return; }
+  [...r.toegepast].reverse().forEach(t=>{
+    if(t.notitie){
+      const n=sd.notes?.[t.key]?.[t.di]?.[t.sid];
+      if(n&&n[r.reden]==='Verlof: '+r.toelichting) delete n[r.reden];
+    }
+    if(t.originId){
+      const rec=sd.toets?.[t.key]?.[t.di]?.[t.originId];
+      if(!rec) return;
+      if(t.had) rec.under[t.sid]=t.val; else if(rec.under) delete rec.under[t.sid];
+    } else {
+      const day=sd.ovr?.[t.key]?.[t.di];
+      if(!day||day[t.sid]!==r.reden) return; // intussen met de hand aangepast: laten staan
+      if(t.had) day[t.sid]=t.val; else delete day[t.sid];
+    }
+  });
+  r.toegepast=null;
+}
+
+// Knipperend aantal open aanvragen voor coach en coördinator
+function _updateVerlofBadge(){
+  const staff=S.role==='coach'||S.role==='coordinator';
+  const ids=new Set(staff?visibleStudents().map(s=>s.id):[]);
+  const n=(S.verlof||[]).filter(r=>r.status==='aangevraagd'&&ids.has(r.studentId)).length;
+  ['verlof-badge','dash-verlof-badge'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.textContent=n;
+    el.style.display=staff&&n?(el.classList.contains('dash-inline-badge')?'inline-flex':'flex'):'none';
+  });
+}
+// Na een achtergrond-load uit SharePoint: nieuwe aanvragen van leerlingen overnemen
+function _mergeVerlofFromStorage(){
+  try{
+    const raw=localStorage.getItem('wp_verlof');
+    if(!raw) return;
+    const sp=JSON.parse(raw), lokaal=new Map((S.verlof||[]).map(r=>[r.id,r]));
+    const spIds=new Set(sp.map(r=>r.id));
+    S.verlof=[...sp.map(r=>{ const l=lokaal.get(r.id); return l&&(l.gewijzigdOp||'')>(r.gewijzigdOp||'')?l:r; }),
+      ...(S.verlof||[]).filter(r=>!spIds.has(r.id))];
+    _updateVerlofBadge();
+    if(S.mainView==='dash'&&document.getElementById('screen-main').classList.contains('show')) renderDashboard();
+  }catch(e){}
+}
+
 function _renderDashVerlof(v){
   const ids=new Set(visibleStudents().map(s=>s.id));
   const naam=id=>S.students.find(s=>s.id===id)?.name||'Onbekende leerling';
@@ -10665,12 +10763,12 @@ function _renderDashVerlof(v){
           <button type="button" class="dash-btn nok" onclick="beoordeelVerlof('${r.id}','afgewezen')">✕ Afwijzen</button>`
         :`<span style="font-size:.74rem;color:var(--tx3);">Wacht op goedkeuring door de coördinator</span>`;
     } else if(isCoord){
-      acts=`<button type="button" class="dash-btn" onclick="beoordeelVerlof('${r.id}','aangevraagd')" title="Terugzetten naar aangevraagd">↺ Terugzetten</button>`;
+      acts=`<button type="button" class="dash-btn" onclick="beoordeelVerlof('${r.id}','aangevraagd')" title="Terugzetten naar aangevraagd; het rooster gaat terug naar hoe het was">↺ Terugzetten</button>`;
     }
     return `<div class="dash-vrow">
       <div class="dash-vrow-top"><span class="dash-vrow-naam">${_esc(naam(r.studentId))}</span><span class="dash-status ${r.status}">${r.status}</span></div>
       <div class="dash-vrow-per">${_verlofPeriode(r)}</div>
-      <div class="dash-vrow-reden">${_esc(r.reden)}${r.toelichting?' – '+_esc(r.toelichting):''}</div>
+      <div class="dash-vrow-reden">${_verlofRedenHtml(r)}</div>
       ${conf?`<div>${conf}</div>`:''}
       ${acts?`<div class="dash-vrow-acts">${acts}</div>`:''}
     </div>`;
@@ -10678,13 +10776,18 @@ function _renderDashVerlof(v){
   let html=open.map(r=>blok(r,true)).join('');
   if(komend.length) html+=`<div class="dash-sublbl">Goedgekeurd</div>`+komend.map(r=>blok(r,false)).join('');
   document.getElementById('dash-verlof-body').innerHTML=html||'<div class="dash-empty">Er staat niets open.</div>';
+  _updateVerlofBadge();
 }
 function beoordeelVerlof(id,status){
   const r=(S.verlof||[]).find(x=>x.id===id);
   if(!r||S.role!=='coordinator') return;
+  const was=r.status;
+  if(status==='goedgekeurd'&&was!=='goedgekeurd') _verlofToepassen(r);
+  if(was==='goedgekeurd'&&status!=='goedgekeurd') _verlofTerugdraaien(r);
   r.status=status;
   r.beoordeeldDoor=status==='aangevraagd'?'':(S.loggedInEmail||'Coördinator');
   r.beoordeeldOp=status==='aangevraagd'?'':new Date().toISOString();
+  r.gewijzigdOp=new Date().toISOString();
   persist();
   renderDashboard();
   if(r.studentId===S.currentStudentId) renderSchedule();
@@ -10701,18 +10804,20 @@ function openVerlofModal(){
   }
   document.getElementById('verlof-title').textContent=isLeerling?'Verlof aanvragen':'Verlof invoeren';
   document.getElementById('verlof-sub').textContent=isLeerling
-    ?'Je aanvraag gaat naar de coördinator. Je ziet hieronder of hij is goedgekeurd.'
-    :(S.role==='coordinator'?'Verlof dat jij invoert is meteen goedgekeurd.':'De coördinator moet dit verlof nog goedkeuren.');
+    ?'Je aanvraag gaat naar de coördinator. Na goedkeuring staan de lesuren meteen in je rooster.'
+    :(S.role==='coordinator'?'Verlof dat jij invoert is meteen goedgekeurd en staat direct in het rooster.':'De coördinator moet dit verlof nog goedkeuren.');
   document.getElementById('verlof-submit').textContent=isLeerling?'Verlof aanvragen':'Verlof opslaan';
+  const lessen=SCHOOL.filter(s=>s.kind==='lesson');
+  document.getElementById('verlof-vanuur').innerHTML=lessen.map(s=>`<option value="${s.id}">${s.label} (${s.time.split('–')[0]})</option>`).join('');
+  document.getElementById('verlof-totuur').innerHTML=lessen.map(s=>`<option value="${s.id}">${s.label} (t/m ${s.time.split('–')[1]})</option>`).join('');
+  document.getElementById('verlof-vanuur').value=lessen[0].id;
+  document.getElementById('verlof-totuur').value=lessen[lessen.length-1].id;
+  document.getElementById('verlof-redenen').innerHTML=VERLOF_REDENEN.map(([c,l])=>
+    `<label class="verlof-reden"><input type="radio" name="verlof-reden" value="${c}"><i style="background:${_DASH_KLEUR[c]}"></i>${l}</label>`).join('');
   const vandaag=toDS(new Date());
   document.getElementById('verlof-van').value=vandaag;
   document.getElementById('verlof-tot').value=vandaag;
-  document.getElementById('verlof-heledag').checked=true;
-  _verlofHeleDagChange();
-  document.getElementById('verlof-tvan').value='';
-  document.getElementById('verlof-ttot').value='';
   document.getElementById('verlof-toel').value='';
-  document.getElementById('verlof-reden').selectedIndex=0;
   document.getElementById('verlof-err').style.display='none';
   _renderVerlofLijst();
   document.getElementById('modal-verlof').classList.add('show');
@@ -10721,9 +10826,6 @@ function closeVerlofModal(){ document.getElementById('modal-verlof').classList.r
 function _verlofVanChange(){
   const van=document.getElementById('verlof-van').value, tot=document.getElementById('verlof-tot');
   if(van&&(!tot.value||tot.value<van)) tot.value=van;
-}
-function _verlofHeleDagChange(){
-  document.getElementById('verlof-tijden').style.display=document.getElementById('verlof-heledag').checked?'none':'flex';
 }
 function submitVerlof(){
   const err=document.getElementById('verlof-err');
@@ -10734,27 +10836,31 @@ function submitVerlof(){
   if(!studentId) return fout('Kies een leerling.');
   const van=document.getElementById('verlof-van').value;
   const tot=document.getElementById('verlof-tot').value||van;
-  if(!van) return fout('Vul de datum in.');
-  if(tot<van) return fout('De einddatum ligt vóór de begindatum.');
-  const heleDag=document.getElementById('verlof-heledag').checked;
-  const tijdVan=document.getElementById('verlof-tvan').value, tijdTot=document.getElementById('verlof-ttot').value;
-  if(!heleDag&&(!tijdVan||!tijdTot)) return fout('Vul de begin- en eindtijd in, of kies hele dag.');
-  if(!heleDag&&tijdTot<=tijdVan) return fout('De eindtijd ligt vóór de begintijd.');
-  const coord=S.role==='coordinator';
-  (S.verlof=S.verlof||[]).push({
-    id:uid(), studentId, van, tot, heleDag,
-    tijdVan:heleDag?'':tijdVan, tijdTot:heleDag?'':tijdTot,
-    reden:document.getElementById('verlof-reden').value,
+  const vanSlot=document.getElementById('verlof-vanuur').value;
+  const totSlot=document.getElementById('verlof-totuur').value;
+  if(!van) return fout('Vul de begindatum in.');
+  if(tot<van||(tot===van&&_slotIdx(totSlot)<_slotIdx(vanSlot))) return fout('Het einde ligt vóór het begin.');
+  const reden=document.querySelector('input[name="verlof-reden"]:checked')?.value;
+  if(!reden) return fout('Kies een reden.');
+  const r={
+    id:uid(), studentId, van, vanSlot, tot, totSlot, reden,
     toelichting:document.getElementById('verlof-toel').value.trim(),
-    status:coord?'goedgekeurd':'aangevraagd',
+    status:'aangevraagd',
     aangevraagdOp:new Date().toISOString(),
     aangevraagdDoor:S.loggedInEmail||S.role,
-    beoordeeldDoor:coord?(S.loggedInEmail||'Coördinator'):'',
-    beoordeeldOp:coord?new Date().toISOString():''
-  });
+    beoordeeldDoor:'', beoordeeldOp:'',
+    gewijzigdOp:new Date().toISOString()
+  };
+  if(!_verlofLesuren(r).length) return fout('Er vallen geen lesuren in deze periode.');
+  if(S.role==='coordinator'){
+    _verlofToepassen(r);
+    Object.assign(r,{status:'goedgekeurd',beoordeeldDoor:S.loggedInEmail||'Coördinator',beoordeeldOp:new Date().toISOString()});
+  }
+  (S.verlof=S.verlof||[]).push(r);
   persist();
   if(isLeerling){ _renderVerlofLijst(); }
   else { closeVerlofModal(); }
+  _updateVerlofBadge();
   if(S.mainView==='dash') renderDashboard();
   if(studentId===S.currentStudentId) renderSchedule();
 }
@@ -10766,7 +10872,7 @@ function _renderVerlofLijst(){
   ct.style.display='';
   ct.innerHTML=`<div class="dash-sublbl" style="margin-top:0;">Mijn aanvragen</div>`+(eigen.length?eigen.map(r=>`<div class="dash-vrow">
       <div class="dash-vrow-top"><span class="dash-vrow-per">${_verlofPeriode(r)}</span><span class="dash-status ${r.status}">${r.status}</span></div>
-      <div class="dash-vrow-reden">${_esc(r.reden)}${r.toelichting?' – '+_esc(r.toelichting):''}</div>
+      <div class="dash-vrow-reden">${_verlofRedenHtml(r)}</div>
       ${r.status==='aangevraagd'?`<div class="dash-vrow-acts"><button type="button" class="dash-btn nok" onclick="trekVerlofIn('${r.id}')">Intrekken</button></div>`:''}
     </div>`).join(''):'<div class="dash-empty">Je hebt nog geen verlof aangevraagd.</div>');
 }
