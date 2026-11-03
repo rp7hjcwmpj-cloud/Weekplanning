@@ -1341,12 +1341,17 @@ body.dark {
 .dag-dc { border-bottom: 2px solid var(--border-s); }
 
 /* ── Studentenbalk: 2Scool witte kaart stijl ── */
+/* Balk in het midden van het scherm, Zoek leerling er links naast */
 .student-bar-wrap {
   padding: .3rem 1rem .15rem;
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: .5rem;
+}
+.student-bar-wrap .stu-search-btn { justify-self: end; }
+@media (max-width: 760px) {
+  .student-bar-wrap { display: flex; flex-wrap: wrap; justify-content: center; }
 }
 .student-bar {
   background: #FEF0E2 !important;
@@ -1358,9 +1363,23 @@ body.dark {
   align-items: center;
   gap: .5rem;
   flex-wrap: wrap;
-  width: 50%;
+  width: min(620px, 40vw);
   min-width: 420px;
-  max-width: 780px;
+}
+.stu-name-row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+}
+/* Standaardrooster: oranje ring zodat hij opvalt */
+.stu-hb-icon.stu-hb-std {
+  border: 2px solid var(--brand) !important;
+  background: var(--surface) !important;
+  box-shadow: 0 0 0 2px rgba(232,121,26,.18);
+}
+.stu-hb-icon.stu-hb-std:hover {
+  background: var(--brand-light) !important;
 }
 body.dark .student-bar {
   background: #3A1800 !important;
@@ -2048,16 +2067,18 @@ body.dark .stu-sport-chip {
     <button class="stu-nav" id="btn-stu-prev" onclick="prevStudent()" title="Vorige leerling">‹</button>
     <!-- Leerlinginfo (10% naar rechts) -->
     <div class="stu-center" style="padding-left:10%;">
-      <div class="stu-name" id="stu-name-d">—</div>
+      <div class="stu-name-row">
+        <div class="stu-name" id="stu-name-d">—</div>
+        <!-- Edit zone (coach/coordinator): standaardrooster naast de sport -->
+        <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
+          <button class="stu-hb stu-hb-icon stu-hb-std" id="btn-std-rooster" onclick="openStdModal()" title="Standaardrooster">📋</button>
+        </div>
+      </div>
       <div class="stu-meta" id="stu-meta-d">—</div>
       <div class="stu-vakken" id="stu-vakken"></div>
     </div>
     <!-- → Volgende leerling -->
     <button class="stu-nav" id="btn-stu-next" onclick="nextStudent()" title="Volgende leerling">›</button>
-    <!-- Edit zone (coach/coordinator) -->
-    <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
-      <button class="stu-hb stu-hb-icon" id="btn-std-rooster" onclick="openStdModal()" title="Standaardrooster">📋</button>
-    </div>
   </div>
   </div>
 
