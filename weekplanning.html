@@ -2441,7 +2441,7 @@ body.dark .stu-sport-chip {
             <div id="tip-collega-results" style="display:none;margin-top:.2rem;background:var(--surface);border:1.5px solid var(--brand);border-radius:7px;max-height:130px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);"></div>
           </div>
           <div id="tip-collega-selected" style="display:none;font-size:.76rem;color:var(--brand);padding:.22rem .5rem;background:var(--brand-light);border-radius:6px;margin-top:.25rem;align-items:center;gap:.4rem;flex-wrap:wrap;"></div>
-          <div style="font-size:.68rem;color:var(--tx3);margin-top:.18rem;">Stuur een agenda-uitnodiging (ICS) naar een collega.</div>
+          <div style="font-size:.68rem;color:var(--tx3);margin-top:.18rem;">De collega krijgt een Outlook-uitnodiging (accepteren/weigeren); de afspraak komt ook in je eigen agenda.</div>
         </div>
 
         <div id="tip-direct-plan-bar" style="display:none;margin:.3rem 0 .1rem;padding:.45rem .6rem;background:var(--brand-light);border:1.5px solid var(--brand);border-radius:8px;font-size:.82rem;">
@@ -7591,6 +7591,32 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen){
     `SUMMARY:${summary}`,`DESCRIPTION:${desc}`,
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
+  const bodyHtml=`<p>Er is een toets ingepland.<br><b>${stuLbl}:</b> ${stuNaam}<br><b>Vak:</b> ${toets.vak}${onderwerp?'<br><b>Onderwerp:</b> '+onderwerp:''}<br><b>Datum:</b> ${dt.toLocaleDateString('nl-NL')}<br><b>Tijd:</b> ${pad(evStartH)}:${pad(evStartM)} – ${pad(evEndH)}:${pad(evEndM)}<br><b>Duur:</b> ${dur} min</p>`;
+  const attendee={emailAddress:{address:_tipCollegaEmail,name:_tipCollegaNaam}};
+
+  // 1. Echte Outlook-afspraak in de eigen agenda met de collega als genodigde;
+  //    Outlook stuurt de uitnodiging met Accepteren/Weigeren zelf
+  const ymdDash=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+  try{
+    const r=await fetch('https://graph.microsoft.com/v1.0/me/events',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+_graphToken,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        subject:summary,
+        body:{contentType:'HTML',content:bodyHtml},
+        start:{dateTime:`${ymdDash}T${pad(evStartH)}:${pad(evStartM)}:00`,timeZone:'Europe/Amsterdam'},
+        end:{dateTime:`${ymdDash}T${pad(evEndH)}:${pad(evEndM)}:00`,timeZone:'Europe/Amsterdam'},
+        ...(toets.lokaal?{location:{displayName:toets.lokaal}}:{}),
+        attendees:[{...attendee,type:'required'}],
+        showAs:'busy',
+        responseRequested:true
+      })
+    });
+    if(r.ok) return 'event';
+    console.warn('Agenda-afspraak fout, terugval op ICS-mail:',r.status,await r.text());
+  }catch(e){ console.warn('Agenda-afspraak fout, terugval op ICS-mail:',e); }
+
+  // 2. Terugval (bijv. nog geen agenda-toestemming): mail met ICS-bijlage
   const icsB64=btoa(unescape(encodeURIComponent(ics)));
   try{
     const r=await fetch('https://graph.microsoft.com/v1.0/me/sendMail',{
@@ -7599,15 +7625,15 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen){
       body:JSON.stringify({
         message:{
           subject:summary,
-          body:{contentType:'HTML',content:`<p>Er is een toets ingepland.<br><b>${stuLbl}:</b> ${stuNaam}<br><b>Vak:</b> ${toets.vak}${onderwerp?'<br><b>Onderwerp:</b> '+onderwerp:''}<br><b>Datum:</b> ${dt.toLocaleDateString('nl-NL')}<br><b>Tijd:</b> ${pad(evStartH)}:${pad(evStartM)} – ${pad(evEndH)}:${pad(evEndM)}<br><b>Duur:</b> ${dur} min</p>`},
-          toRecipients:[{emailAddress:{address:_tipCollegaEmail,name:_tipCollegaNaam}}],
+          body:{contentType:'HTML',content:bodyHtml},
+          toRecipients:[attendee],
           attachments:[{'@odata.type':'#microsoft.graph.fileAttachment',name:'toets_uitnodiging.ics',contentType:'text/calendar',contentBytes:icsB64}]
         },
         saveToSentItems:false
       })
     });
     if(!r.ok) console.warn('Collega invite fout:',r.status,await r.text());
-    return r.ok;
+    return r.ok?'mail':false;
   }catch(e){ console.warn('Collega invite fout:',e); return false; }
 }
 
@@ -7805,9 +7831,13 @@ function confirmToetsInplan(){
   if(invite){
     const st=document.getElementById('tip-invite-status');
     st.textContent=`📧 Uitnodiging versturen naar ${collegaNaam}…`;
-    invite.then(ok=>{
-      st.style.color=ok?'#2D8B50':'#C0392B';
-      st.textContent=ok?`📧 Agenda-uitnodiging verstuurd naar ${collegaNaam}`:`⚠ Uitnodiging naar ${collegaNaam} kon niet worden verstuurd. Controleer de M365-verbinding.`;
+    invite.then(res=>{
+      st.style.color=res==='event'?'#2D8B50':res==='mail'?'#C05818':'#C0392B';
+      st.textContent=res==='event'
+        ?`📅 Outlook-uitnodiging verstuurd naar ${collegaNaam} en in je eigen agenda gezet`
+        :res==='mail'
+        ?`📧 Uitnodiging als mail (ICS) verstuurd naar ${collegaNaam}. Log opnieuw in bij M365 om voortaan een echte Outlook-uitnodiging te sturen.`
+        :`⚠ Uitnodiging naar ${collegaNaam} kon niet worden verstuurd. Controleer de M365-verbinding.`;
     });
     _tipClearCollega();
   }
