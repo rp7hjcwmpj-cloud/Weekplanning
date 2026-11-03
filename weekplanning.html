@@ -1345,6 +1345,8 @@ body.dark {
   padding: .3rem 1rem .15rem;
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: .5rem;
 }
 .student-bar {
   background: #FEF0E2 !important;
@@ -1477,7 +1479,7 @@ body.dark .stu-sport-chip {
 
 /* ── TIP (Toets Inplannen) modal ── */
 .tip-layout { display:flex; gap:1rem; margin-top:.75rem; min-height:320px; }
-.tip-left { flex:0 0 220px; display:flex; flex-direction:column; gap:.4rem; overflow-y:auto; max-height:480px; }
+.tip-left { flex:0 0 220px; display:flex; flex-direction:column; gap:.4rem; }
 .tip-right { flex:1; overflow-x:auto; }
 .tip-panel-title { font-size:.7rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--tx3); margin-bottom:.3rem; }
 .tip-toets-card {
@@ -2004,6 +2006,8 @@ body.dark .stu-sport-chip {
 
   <!-- Student picker -->
   <div class="student-bar-wrap">
+  <!-- Zoek leerling -->
+  <button class="stu-search-btn" id="btn-stu-search" onclick="openStuPickModal()">🔍 Zoek leerling</button>
   <div class="student-bar" id="student-bar">
     <!-- ← Vorige leerling -->
     <button class="stu-nav" id="btn-stu-prev" onclick="prevStudent()" title="Vorige leerling">‹</button>
@@ -2015,13 +2019,10 @@ body.dark .stu-sport-chip {
     </div>
     <!-- → Volgende leerling -->
     <button class="stu-nav" id="btn-stu-next" onclick="nextStudent()" title="Volgende leerling">›</button>
-    <!-- Zoek leerling -->
-    <button class="stu-search-btn" id="btn-stu-search" onclick="openStuPickModal()">🔍 Zoek leerling</button>
     <!-- Edit zone (coach/coordinator) -->
     <div id="stu-edit-zone" style="display:none;gap:.4rem;align-items:center;flex-shrink:0;">
       <button class="stu-hb stu-hb-icon" id="btn-std-rooster" onclick="openStdModal()" title="Standaardrooster">📋</button>
       <button class="stu-hb stu-hb-icon stu-hb-edit" id="btn-edit" onclick="toggleEdit()" title="Rooster aanpassen">✏️</button>
-      <button class="stu-hb stu-hb-icon stu-hb-toets" id="btn-toets-inplan" onclick="openToetsInplanModal()" title="Toets inplannen" style="display:none;">📝</button>
     </div>
   </div>
   </div>
@@ -2088,6 +2089,7 @@ body.dark .stu-sport-chip {
       <div class="csb-dot-row" title="Overig"><div class="csb-dot csb-rose">O</div></div>
       <div class="csb-sep"></div>
       <div class="csb-dot-row" title="Printen" onclick="openPrintModal()"><div class="csb-icon">🖨️</div></div>
+      <div class="csb-dot-row" id="btn-toets-inplan" title="Toets inplannen" onclick="openToetsInplanModal()" style="display:none;"><div class="csb-icon">📝</div></div>
     </div>
   </div>
 </div>
@@ -2364,11 +2366,6 @@ body.dark .stu-sport-chip {
           <div id="tip-tijd-preview" style="font-size:.75rem;font-weight:700;color:var(--brand);margin-top:.2rem;min-height:1em;"></div>
         </div>
 
-        <div id="tip-direct-plan-bar" style="display:none;margin:.3rem 0 .1rem;padding:.45rem .6rem;background:var(--brand-light);border:1.5px solid var(--brand);border-radius:8px;font-size:.82rem;">
-          <div id="tip-direct-plan-info" style="margin-bottom:.35rem;color:var(--tx);font-weight:600;"></div>
-          <button class="btn-p" style="width:100%;font-size:.82rem;padding:.35rem;" onclick="_tipDirectPlan()">✓ Inplannen</button>
-        </div>
-
         <!-- Collega uitnodiging (alleen als M365 gekoppeld) -->
         <div id="tip-collega-row" style="display:none;">
           <div class="tip-panel-title" style="margin-top:.4rem;">📧 Agenda-uitnodiging sturen</div>
@@ -2378,6 +2375,11 @@ body.dark .stu-sport-chip {
           </div>
           <div id="tip-collega-selected" style="display:none;font-size:.76rem;color:var(--brand);padding:.22rem .5rem;background:var(--brand-light);border-radius:6px;margin-top:.25rem;align-items:center;gap:.4rem;flex-wrap:wrap;"></div>
           <div style="font-size:.68rem;color:var(--tx3);margin-top:.18rem;">Stuur een agenda-uitnodiging (ICS) naar een collega.</div>
+        </div>
+
+        <div id="tip-direct-plan-bar" style="display:none;margin:.3rem 0 .1rem;padding:.45rem .6rem;background:var(--brand-light);border:1.5px solid var(--brand);border-radius:8px;font-size:.82rem;">
+          <div id="tip-direct-plan-info" style="margin-bottom:.35rem;color:var(--tx);font-weight:600;"></div>
+          <button class="btn-p" style="width:100%;font-size:.82rem;padding:.35rem;" onclick="_tipDirectPlan()">✓ Inplannen</button>
         </div>
 
         <!-- Geïmporteerde toetsen (alleen als aanwezig) -->
