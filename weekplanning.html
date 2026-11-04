@@ -7515,9 +7515,11 @@ function _tipPrefillEditing(){
   }
   document.getElementById('tip-onderwerp').value=t?.onderwerp||recOnd.join(' – ');
   const slot=SCHOOL.find(s=>s.id===originId);
-  const tijd=t?.tijdstip||rec.startTime||(slot?slot.time.split('–')[0].trim():'');
+  // De tijd in het rooster is leidend; de importtijd alleen als die bij het geplande uur hoort
+  const importTijd=t?.tijdstip&&_tipFindSlotForTime(_fmtMin(_parseTime(t.tijdstip)))===originId?t.tijdstip:'';
+  const tijd=rec.startTime||importTijd||(slot?slot.time.split('–')[0].trim():'');
   document.getElementById('tip-begintijd').value=tijd?_fmtMin(_parseTime(tijd)):'';
-  const dur=t?._dur||rec.duration||(slot?_slotDuration(slot):50);
+  const dur=rec.duration||t?._dur||(slot?_slotDuration(slot):50);
   let radio=document.querySelector(`input[name="tip-dur"][value="${dur}"]`);
   if(!radio){
     // Oude duur die niet meer in de lijst staat (bijv. 30 of 45 min)
