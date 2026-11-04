@@ -1863,6 +1863,20 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .dash-status.aangevraagd { background: #FFF1E2; color: #B05A00; }
 .dash-status.goedgekeurd { background: #E6F4EA; color: #1E7040; }
 .dash-status.afgewezen { background: #FBE7E5; color: #A93226; }
+/* Keuze: individuele toets of toetsweek importeren */
+.toets-keuze { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: .9rem; }
+.toets-keuze-opt { position: relative; text-align: left; border: 1.5px solid var(--border); background: var(--surface); border-radius: 16px; padding: 1rem; cursor: pointer; font-family: inherit; color: var(--tx); transition: border-color .13s, background .13s; }
+.toets-keuze-opt:hover { border-color: var(--brand); background: var(--brand-light); }
+.toets-keuze-opt .tk-ico { width: 40px; height: 40px; border-radius: 12px; background: var(--brand-light); color: var(--brand); display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
+.toets-keuze-opt .tk-ico svg { width: 22px; height: 22px; }
+.toets-keuze-opt b { display: block; font-size: .92rem; margin-bottom: .2rem; }
+.toets-keuze-opt span { font-size: .76rem; color: var(--tx3); line-height: 1.35; }
+@media (max-width: 520px) { .toets-keuze { grid-template-columns: 1fr; } }
+/* Eigen toets-icoon in de rechterkolom */
+.csb-icon.csb-toets { color: var(--brand); position: relative; }
+.csb-icon svg { width: 18px; height: 18px; }
+/* Genodigden: oranje pillen, leerlingen zonder e-mailadres grijs */
+.tip-stu-chip.geen-mail { border-style: dashed; color: var(--tx3); cursor: default; }
 /* Knipperend aantal open verlofaanvragen */
 .toets-badge.dash-inline-badge { position: static; display: inline-flex; margin-left: .4rem; vertical-align: 2px; }
 .verlof-redenen { display: flex; flex-wrap: wrap; gap: .35rem; }
@@ -2151,10 +2165,6 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <button class="hb" id="btn-gesprek" onclick="openGesprekModal()" style="display:none;"><span class="hb-ico" data-ico="message"></span> Coachgesprek</button>
         <button class="hb" onclick="showVergaderingScreen()"><span class="hb-ico" data-ico="monitor"></span> Vergadering</button>
         <button class="hb" onclick="showCijfersScreen()"><span class="hb-ico" data-ico="chart"></span> Cijfers</button>
-        <div class="hb-toets-wrap" style="position:relative;display:inline-flex;">
-          <button class="hb" onclick="openToetsenModal()"><span class="hb-ico" data-ico="filepen"></span> Toetsen</button>
-          <span class="toets-badge" id="toets-badge" style="display:none;"></span>
-        </div>
       </div>
       <div id="hdr-docent-zone" style="display:none;gap:.2rem;flex-wrap:wrap;align-items:center;">
         <button class="hb" onclick="openBeschModal()"><span class="hb-ico" data-ico="calcheck"></span> Beschikbaarheid</button>
@@ -2274,7 +2284,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
       <div class="csb-dot-row" title="Overig"><div class="csb-dot csb-rose">O</div></div>
       <div class="csb-sep"></div>
       <div class="csb-dot-row" title="Printen" onclick="openPrintModal()"><div class="csb-icon">🖨️</div></div>
-      <div class="csb-dot-row" id="btn-toets-inplan" title="Toets inplannen" onclick="openToetsInplanModal()" style="display:none;"><div class="csb-icon">📝</div></div>
+      <div class="csb-dot-row" id="btn-toets-inplan" title="Toetsen" onclick="openToetsKeuze()" style="display:none;"><div class="csb-icon csb-toets"><span data-ico="toets"></span><span class="toets-badge" id="toets-badge" style="display:none;" title="Geïmporteerde toetsen nog te plannen"></span></div></div>
     </div>
     </div>
   </div>
@@ -2288,7 +2298,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
     <div class="dash-grid">
       <section class="dash-card dash-toetsen">
         <div class="dash-card-hdr">
-          <span class="dash-ico" data-ico="filepen"></span>
+          <span class="dash-ico" data-ico="toets"></span>
           <div><h3>Toetsen vandaag</h3><p id="dash-toetsen-sub"></p></div>
           <div class="dash-big" id="dash-toetsen-n">0</div>
         </div>
@@ -2318,6 +2328,27 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <div id="dash-verlof-body"></div>
       </section>
     </div>
+  </div>
+</div>
+
+<!-- ══ TOETSEN: KEUZE ═════════════════════════════════ -->
+<div class="overlay" id="modal-toets-keuze" onclick="if(event.target===this) closeToetsKeuze()">
+  <div class="modal-card" style="max-width:520px;">
+    <h2>Toetsen</h2>
+    <p class="modal-sub" style="font-size:.84rem;color:var(--tx3);">Wat wil je doen?</p>
+    <div class="toets-keuze">
+      <button type="button" class="toets-keuze-opt" onclick="closeToetsKeuze(); openToetsInplanModal();">
+        <div class="tk-ico" data-ico="toets"></div>
+        <b>Individuele toets plannen</b>
+        <span>Plan een toets voor één of meer leerlingen, met agenda-uitnodiging.</span>
+      </button>
+      <button type="button" class="toets-keuze-opt" onclick="closeToetsKeuze(); openToetsenModal();">
+        <div class="tk-ico" data-ico="upload"></div>
+        <b>Toetsweek importeren</b>
+        <span id="toets-keuze-import-sub">Importeer het Excel-overzicht van een hele toetsweek.</span>
+      </button>
+    </div>
+    <button class="btn-g" onclick="closeToetsKeuze()">Annuleren</button>
   </div>
 </div>
 
@@ -2642,13 +2673,13 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 
         <!-- Collega uitnodiging (alleen als M365 gekoppeld) -->
         <div id="tip-collega-row" style="display:none;">
-          <div class="tip-panel-title" style="margin-top:.4rem;">📧 Agenda-uitnodiging sturen</div>
+          <div class="tip-panel-title" style="margin-top:.4rem;">📧 Agenda-uitnodiging sturen aan</div>
           <div style="position:relative;">
-            <input id="tip-collega-search" class="tip-form-inp" type="text" placeholder="Naam collega zoeken…" autocomplete="off" oninput="_tipCollegaSearch(this.value)">
+            <input id="tip-collega-search" class="tip-form-inp" type="text" placeholder="Collega toevoegen…" autocomplete="off" oninput="_tipCollegaSearch(this.value)">
             <div id="tip-collega-results" style="display:none;margin-top:.2rem;background:var(--surface);border:1.5px solid var(--brand);border-radius:7px;max-height:130px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);"></div>
           </div>
-          <div id="tip-collega-selected" style="display:none;font-size:.76rem;color:var(--brand);padding:.22rem .5rem;background:var(--brand-light);border-radius:6px;margin-top:.25rem;align-items:center;gap:.4rem;flex-wrap:wrap;"></div>
-          <div style="font-size:.68rem;color:var(--tx3);margin-top:.18rem;">De collega krijgt een Outlook-uitnodiging (accepteren/weigeren); de afspraak komt ook in je eigen agenda.</div>
+          <div id="tip-collega-selected" class="tip-stu-chips"></div>
+          <div style="font-size:.68rem;color:var(--tx3);margin-top:.25rem;">Gekozen leerlingen en collega's krijgen een Outlook-uitnodiging (accepteren/weigeren); de afspraak komt ook in je eigen agenda.</div>
         </div>
 
         <div id="tip-direct-plan-bar" style="display:none;margin:.3rem 0 .1rem;padding:.45rem .6rem;background:var(--brand-light);border:1.5px solid var(--brand);border-radius:8px;font-size:.82rem;">
@@ -7361,6 +7392,15 @@ function updateToetsBadge(){
   _updateToetsInplanBtn();
 }
 
+function openToetsKeuze(){
+  const open=S.toetsenImport.filter(t=>t.status==='open'&&!t._handmatig).length;
+  document.getElementById('toets-keuze-import-sub').textContent=open
+    ?`Importeer het Excel-overzicht van een toetsweek. Nog ${open} geïmporteerde toets${open===1?'':'en'} te plannen.`
+    :'Importeer het Excel-overzicht van een hele toetsweek.';
+  document.getElementById('modal-toets-keuze').classList.add('show');
+}
+function closeToetsKeuze(){ document.getElementById('modal-toets-keuze').classList.remove('show'); }
+
 function _updateToetsInplanBtn(){
   const btn=document.getElementById('btn-toets-inplan');
   if(!btn) return;
@@ -7374,8 +7414,8 @@ let _tipSelectedToetsId = null;
 let _tipSelectedDi = null;
 let _tipSelectedSlotId = null;
 let _tipSelectedDag = null; // 0-4 (Ma-Vr), set via dag-selector
-let _tipCollegaEmail = '';
-let _tipCollegaNaam = '';
+let _tipCollegas = [];          // [{email,naam}] extra genodigden
+let _tipInviteSkip = new Set(); // gekozen leerlingen die géén uitnodiging krijgen
 let _tipStuIds = [];        // gekozen leerlingen; de toets komt alleen in hun rooster
 let _tipViewStuId = null;   // leerling van wie het mini-rooster getoond wordt
 let _tipEditing = null;     // {stuId,key,di,originId} bij aanpassen van een bestaande toets
@@ -7390,7 +7430,7 @@ function openToetsInplanModal(edit){
     _tipWy={week:S.wy.week, year:S.wy.year};
   }
   _tipSelectedToetsId=null; _tipSelectedDi=null; _tipSelectedSlotId=null;
-  _tipSelectedDag=null; _tipCollegaEmail=''; _tipCollegaNaam='';
+  _tipSelectedDag=null; _tipCollegas=[]; _tipInviteSkip=new Set();
 
   // Start met de leerling die nu open staat; meer leerlingen toevoegen kan via zoeken
   const cur=visibleStudents().find(s=>s.id===S.currentStudentId);
@@ -7402,6 +7442,7 @@ function openToetsInplanModal(edit){
   document.getElementById('tip-vak').value='';
   _tipFillVakken();
   _tipRenderStuChips();
+  _tipRenderInviteChips();
   document.getElementById('tip-title').textContent=_tipEditing?'✏️ Toets aanpassen':'📝 Toets inplannen';
   document.getElementById('tip-direct-plan-btn').textContent=_tipEditing?'✓ Wijziging opslaan':'✓ Inplannen';
   document.getElementById('tip-delete-btn').style.display=_tipEditing?'':'none';
@@ -7422,8 +7463,6 @@ function openToetsInplanModal(edit){
   if(cr) cr.style.display=_graphToken?'':'none';
   const cs=document.getElementById('tip-collega-search');
   if(cs) cs.value='';
-  const csel=document.getElementById('tip-collega-selected');
-  if(csel) csel.style.display='none';
   const cres=document.getElementById('tip-collega-results');
   if(cres) cres.style.display='none';
 
@@ -7546,6 +7585,7 @@ function _tipStudentsChanged(){
   if(t && !(_tipStuIds.length===1 && t.matchedStudentId===_tipStuIds[0])) _tipSelectedToetsId=null;
   _tipFillVakken();
   _tipRenderStuChips();
+  _tipRenderInviteChips();
   _tipRenderToetsen();
   _tipFormChange();
 }
@@ -7838,31 +7878,65 @@ function _tipCollegaSearch(q){
   },300);
 }
 
+// E-mailadres van een leerling: het Microsoft-account dat aan deze leerling gekoppeld is
+function _stuEmail(stuId){
+  return Object.keys(S.roleMap||{}).find(e=>S.roleMap[e]?.role==='leerling'&&S.roleMap[e]?.studentId===stuId)||'';
+}
+// Iedereen die een uitnodiging krijgt: gekozen leerlingen (met e-mailadres) + toegevoegde collega's
+function _tipInvitees(){
+  const lijst=[];
+  _tipStuIds.forEach(id=>{
+    const email=_stuEmail(id);
+    if(email&&!_tipInviteSkip.has(id)) lijst.push({email,naam:S.students.find(s=>s.id===id)?.name||email});
+  });
+  _tipCollegas.forEach(c=>{ if(!lijst.some(x=>x.email.toLowerCase()===c.email.toLowerCase())) lijst.push(c); });
+  return lijst;
+}
+function _tipRenderInviteChips(){
+  const ct=document.getElementById('tip-collega-selected');
+  if(!ct) return;
+  ct.innerHTML='';
+  const chip=(naam,title,onDel,cls)=>{
+    const c=document.createElement('span');
+    c.className='tip-stu-chip viewed'+(cls?' '+cls:'');
+    c.textContent=naam; c.title=title;
+    if(onDel){
+      const del=document.createElement('button');
+      del.type='button'; del.textContent='✕'; del.title='Geen uitnodiging sturen';
+      del.addEventListener('click',e=>{ e.stopPropagation(); onDel(); });
+      c.appendChild(del);
+    }
+    ct.appendChild(c);
+  };
+  _tipStuIds.forEach(id=>{
+    if(_tipInviteSkip.has(id)) return;
+    const naam=S.students.find(s=>s.id===id)?.name||id;
+    const email=_stuEmail(id);
+    if(email) chip(naam,email,()=>{ _tipInviteSkip.add(id); _tipRenderInviteChips(); });
+    else chip(naam+' · geen e-mail','Deze leerling heeft geen gekoppeld Microsoft-account en krijgt geen uitnodiging',null,'geen-mail');
+  });
+  _tipCollegas.forEach(c=>chip(c.naam,c.email,()=>{ _tipCollegas=_tipCollegas.filter(x=>x!==c); _tipRenderInviteChips(); }));
+}
+
 function _tipSelectCollega(email, naam){
-  _tipCollegaEmail=email; _tipCollegaNaam=naam;
+  if(!_tipCollegas.some(c=>c.email.toLowerCase()===email.toLowerCase())) _tipCollegas.push({email,naam});
   const res=document.getElementById('tip-collega-results');
   if(res) res.style.display='none';
   const inp=document.getElementById('tip-collega-search');
   if(inp) inp.value='';
-  const sel=document.getElementById('tip-collega-selected');
-  if(sel){
-    sel.style.display='flex';
-    sel.innerHTML=`<span>📧 <strong></strong> <span style="opacity:.7;"></span></span><button onclick="_tipClearCollega()" style="margin-left:auto;border:none;background:none;cursor:pointer;font-size:.85rem;padding:0 .2rem;">✕</button>`;
-    sel.querySelector('strong').textContent=naam;
-    sel.querySelector('span span').textContent=email;
-  }
+  _tipRenderInviteChips();
 }
 
+// Na versturen: collega's leeg, leerling-uitzonderingen terug naar standaard
 function _tipClearCollega(){
-  _tipCollegaEmail=''; _tipCollegaNaam='';
+  _tipCollegas=[]; _tipInviteSkip=new Set();
   const inp=document.getElementById('tip-collega-search');
   if(inp) inp.value='';
-  const sel=document.getElementById('tip-collega-selected');
-  if(sel) sel.style.display='none';
+  _tipRenderInviteChips();
 }
 
-async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen){
-  if(!_graphToken||!_tipCollegaEmail||!dt) return false;
+async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen, invitees){
+  if(!_graphToken||!invitees?.length||!dt) return false;
   const slot=SCHOOL.find(s=>s.id===slotId);
   if(!slot) return false;
   const [startH,startM]=slot.time.split('–')[0].trim().split(':').map(Number);
@@ -7893,7 +7967,7 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen){
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
   const bodyHtml=`<p>Er is een toets ingepland.<br><b>${stuLbl}:</b> ${stuNaam}<br><b>Vak:</b> ${toets.vak}${onderwerp?'<br><b>Onderwerp:</b> '+onderwerp:''}<br><b>Datum:</b> ${dt.toLocaleDateString('nl-NL')}<br><b>Tijd:</b> ${pad(evStartH)}:${pad(evStartM)} – ${pad(evEndH)}:${pad(evEndM)}<br><b>Duur:</b> ${dur} min</p>`;
-  const attendee={emailAddress:{address:_tipCollegaEmail,name:_tipCollegaNaam}};
+  const attendees=invitees.map(p=>({emailAddress:{address:p.email,name:p.naam}}));
 
   // 1. Echte Outlook-afspraak in de eigen agenda met de collega als genodigde;
   //    Outlook stuurt de uitnodiging met Accepteren/Weigeren zelf
@@ -7908,7 +7982,7 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen){
         start:{dateTime:`${ymdDash}T${pad(evStartH)}:${pad(evStartM)}:00`,timeZone:'Europe/Amsterdam'},
         end:{dateTime:`${ymdDash}T${pad(evEndH)}:${pad(evEndM)}:00`,timeZone:'Europe/Amsterdam'},
         ...(toets.lokaal?{location:{displayName:toets.lokaal}}:{}),
-        attendees:[{...attendee,type:'required'}],
+        attendees:attendees.map(a=>({...a,type:'required'})),
         showAs:'busy',
         responseRequested:true
       })
@@ -7927,7 +8001,7 @@ async function _sendCollegaCalendarInvite(toets, dt, slotId, stuNamen){
         message:{
           subject:summary,
           body:{contentType:'HTML',content:bodyHtml},
-          toRecipients:[attendee],
+          toRecipients:attendees,
           attachments:[{'@odata.type':'#microsoft.graph.fileAttachment',name:'toets_uitnodiging.ics',contentType:'text/calendar',contentBytes:icsB64}]
         },
         saveToSentItems:false
@@ -8123,8 +8197,9 @@ function confirmToetsInplan(){
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 
   // Collega-uitnodiging versturen indien geselecteerd
-  const collegaNaam=_tipCollegaEmail?(_tipCollegaNaam||_tipCollegaEmail):'';
-  const invite=_tipCollegaEmail?_sendCollegaCalendarInvite(planned, dt, _tipSelectedSlotId, plannedIds.map(id=>S.students.find(s=>s.id===id)?.name||'leerling').join(', ')):null;
+  const invitees=_graphToken?_tipInvitees():[];
+  const collegaNaam=invitees.length>3?`${invitees.length} personen`:invitees.map(p=>p.naam).join(', ');
+  const invite=invitees.length?_sendCollegaCalendarInvite(planned, dt, _tipSelectedSlotId, plannedIds.map(id=>S.students.find(s=>s.id===id)?.name||'leerling').join(', '), invitees):null;
 
   // Reset modal state
   _tipSelectedDi=null; _tipSelectedSlotId=null; _tipSelectedToetsId=null;
@@ -8276,8 +8351,8 @@ function showMain(){
   if(cew) cew.style.display=canEdit?'':'none';
   const bsr=document.getElementById('btn-std-rooster');
   if(bsr) bsr.style.display=S.role==='coach'?'':'none';
-  // Toets inplannen knop: zichtbaar voor coach en coordinator als er toetsen zijn
-  _updateToetsInplanBtn();
+  // Toets-knop rechts (coach/coördinator) met aantal nog te plannen geïmporteerde toetsen
+  updateToetsBadge();
   const bgp=document.getElementById('btn-gesprek');
   if(bgp) bgp.style.display=S.role==='coach'?'':'none';
   document.getElementById('hdr-docent-zone').style.display=S.role==='docent'?'flex':'none';
@@ -10406,6 +10481,9 @@ const ICO = {
   plus:'<path d="M12 5v14M5 12h14"/>',
   check:'<path d="M20 6 9 17l-5-5"/>',
   pencil:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',
+  // Eigen toets-icoon: toetsblad met twee afgevinkte vragen en een cijferrondje
+  toets:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/><path d="M14 3l5 5h-5z"/><path d="m7.5 10.5 1.3 1.3 2.4-2.4M7.5 15.5l1.3 1.3 2.4-2.4"/><circle cx="17.5" cy="17.5" r="3.5"/><path d="M17.5 16v3"/>',
 };
 function _ico(name){
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[name]||''}</svg>`;
