@@ -1818,6 +1818,18 @@ body.dark .dash-card { border-color: var(--border); }
 .dash-ttime { font-family: ui-monospace, Menlo, monospace; font-size: .75rem; color: var(--tx2); min-width: 3.4rem; white-space: nowrap; flex-shrink: 0; line-height: 1.35; }
 .dash-tinfo { flex: 1; min-width: 0; font-size: .84rem; color: var(--tx); }
 .dash-tinfo span { display: block; font-size: .74rem; color: var(--tx3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-trow.wacht .dash-tinfo { color: #8A6A00; }
+.dash-trow.wacht { border-radius: 8px; animation: dashToetsKnip 10s ease-in-out infinite; }
+@keyframes dashToetsKnip { 0%, 88%, 100% { background: transparent; } 92%, 96% { background: #FFE58A; } 94% { background: #FFF4C2; } }
+.dash-trow.ontvangen .dash-tinfo { color: #2D8B50; }
+.dash-trow.ontvangen .dash-tinfo span { color: #2D8B50; opacity: .8; }
+.dash-tstat { font-size: .66rem; font-weight: 700; padding: .1rem .45rem; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+.dash-tstat.wacht { background: #FFF4C2; color: #8A6A00; }
+.dash-tstat.ontvangen { background: #E3F4EA; color: #2D8B50; }
+.tip-ontv { display: flex; gap: .55rem; align-items: flex-start; margin: .45rem 0 .2rem; padding: .55rem .65rem; border: 1.5px solid #E8C840; background: #FFF9DC; border-radius: 9px; cursor: pointer; font-size: .82rem; color: var(--tx); }
+.tip-ontv input { margin-top: .15rem; accent-color: #2D8B50; width: 16px; height: 16px; flex-shrink: 0; }
+.tip-ontv.aan { border-color: #2D8B50; background: #E3F4EA; }
+.tip-ontv small { display: block; color: var(--tx3); font-size: .7rem; margin-top: .1rem; }
 .dash-mini-btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--tx2); flex-shrink: 0; padding: 0; }
 .dash-mini-btn:hover { border-color: var(--brand); color: var(--brand); }
 .dash-mini-btn svg { width: 14px; height: 14px; }
@@ -2670,6 +2682,12 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
           </div>
           <div id="tip-tijd-preview" style="font-size:.75rem;font-weight:700;color:var(--brand);margin-top:.2rem;min-height:1em;"></div>
         </div>
+
+        <!-- Alleen bij aanpassen: versie van de toets ontvangen -->
+        <label class="tip-ontv" id="tip-ontv-row" style="display:none;">
+          <input type="checkbox" id="tip-ontvangen" onchange="_tipOntvChange()">
+          <span><b>Versie van de toets ontvangen van de docent</b><small id="tip-ontv-sub">Wordt opgeslagen met "Wijziging opslaan".</small></span>
+        </label>
 
         <!-- Collega uitnodiging (alleen als M365 gekoppeld) -->
         <div id="tip-collega-row" style="display:none;">
@@ -7322,6 +7340,7 @@ function _setToetsInPlanner(studentId, weekKey, di, slotId, toets){
   if(!sd.toets[weekKey]) sd.toets[weekKey]={};
   if(!sd.toets[weekKey][di]) sd.toets[weekKey][di]={};
   const rec={subject:toets.vak+(toets.onderwerp?' – '+toets.onderwerp:''), lokaal:toets.lokaal||''};
+  if(toets.ontvangen) rec.ontvangen=toets.ontvangen;
   sd.toets[weekKey][di][slotId]=rec;
   // Uur geel maken; een eigen status van deze week bewaren we, zodat hij zichtbaar blijft onder de kaart
   const _markYellow=sid=>{
@@ -7446,6 +7465,9 @@ function openToetsInplanModal(edit){
   document.getElementById('tip-title').textContent=_tipEditing?'✏️ Toets aanpassen':'📝 Toets inplannen';
   document.getElementById('tip-direct-plan-btn').textContent=_tipEditing?'✓ Wijziging opslaan':'✓ Inplannen';
   document.getElementById('tip-delete-btn').style.display=_tipEditing?'':'none';
+  document.getElementById('tip-ontv-row').style.display=_tipEditing?'':'none';
+  document.getElementById('tip-ontvangen').checked=false;
+  _tipOntvChange();
   document.querySelectorAll('.tip-dur-extra').forEach(l=>l.remove());
 
   // Reset formulier
@@ -7505,8 +7527,21 @@ function _tipPrefillEditing(){
     radio=lbl.querySelector('input');
   }
   radio.checked=true;
+  const ontv=rec.ontvangen||t?.ontvangen||null;
+  document.getElementById('tip-ontvangen').checked=!!ontv;
+  _tipOntvChange(ontv);
   _tipSelectDag(di);
   _tipFormChange();
+}
+
+function _tipOntvChange(ontv){
+  const cb=document.getElementById('tip-ontvangen');
+  document.getElementById('tip-ontv-row').classList.toggle('aan',cb.checked);
+  const sub=document.getElementById('tip-ontv-sub');
+  if(ontv&&cb.checked){
+    const d=new Date(ontv.op);
+    sub.textContent=`Ontvangen op ${d.getDate()} ${MONTHS_FULL[d.getMonth()].toLowerCase()}${ontv.door?' · vastgelegd door '+ontv.door:''}`;
+  } else sub.textContent='Wordt opgeslagen met "Wijziging opslaan".';
 }
 
 function _tipDeleteEditing(){
@@ -8132,9 +8167,19 @@ function confirmToetsInplan(){
 
   if(!_tipSelectedToetsId && !vak){ alert('Kies eerst een vak.'); return; }
   const wasEditing=!!_tipEditing;
+  let ontvangen=null, alleenOntvangen=false;
   if(_tipEditing){
     // Oude toets weghalen; een geïmporteerde toets wordt hieronder bijgewerkt
     const {stuId:eStu,key:eKey,di:eDi,originId:eOrigin}=_tipEditing;
+    const oud=S.studentData[eStu]?.toets?.[eKey]?.[eDi]?.[eOrigin]||{};
+    if(document.getElementById('tip-ontvangen').checked)
+      ontvangen=oud.ontvangen||{op:new Date().toISOString(),door:S.loggedInEmail||''};
+    // Niets verplaatst of gewijzigd behalve "ontvangen": geen nieuwe uitnodiging sturen
+    const oudSlot=SCHOOL.find(s=>s.id===eOrigin);
+    const zelfdeTijd=begintijd&&oud.startTime?_parseTime(begintijd)===_parseTime(oud.startTime):eOrigin===_tipSelectedSlotId;
+    alleenOntvangen=eKey===weekKey&&eDi===_tipSelectedDi&&zelfdeTijd
+      &&(oud.subject||'')===vak+(onderwerp?' – '+onderwerp:'')
+      &&(oud.duration||(oudSlot?_slotDuration(oudSlot):50))===dur;
     _clearToetsInPlanner(eStu,eKey,eDi,eOrigin);
     if(!_tipSelectedToetsId){
       const old=S.toetsenImport.find(x=>x._handmatig&&x.matchedStudentId===eStu&&x.geplandWeekKey===eKey&&x.geplandDi===eDi&&x.geplandSlot===eOrigin);
@@ -8161,6 +8206,7 @@ function confirmToetsInplan(){
     if(onderwerp) t.onderwerp=onderwerp;
     t.tijdstip=effectiefTijdstip;
     t._dur=dur;
+    if(wasEditing) t.ontvangen=ontvangen;
     _setToetsInPlanner(t.matchedStudentId, weekKey, _tipSelectedDi, _tipSelectedSlotId, t);
     t.datum=datum; t.status='gepland'; t.geplandWeekKey=weekKey; t.geplandDi=_tipSelectedDi; t.geplandSlot=_tipSelectedSlotId;
     planned=t; plannedIds=[t.matchedStudentId];
@@ -8184,7 +8230,8 @@ function confirmToetsInplan(){
         geplandDi:_tipSelectedDi,
         geplandSlot:_tipSelectedSlotId,
         _dur:dur,
-        _handmatig:true
+        _handmatig:true,
+        ontvangen
       };
       S.toetsenImport.push(newT);
       _setToetsInPlanner(stuId, weekKey, _tipSelectedDi, _tipSelectedSlotId, newT);
@@ -8197,7 +8244,7 @@ function confirmToetsInplan(){
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 
   // Collega-uitnodiging versturen indien geselecteerd
-  const invitees=_graphToken?_tipInvitees():[];
+  const invitees=_graphToken&&!alleenOntvangen?_tipInvitees():[];
   const collegaNaam=invitees.length>3?`${invitees.length} personen`:invitees.map(p=>p.naam).join(', ');
   const invite=invitees.length?_sendCollegaCalendarInvite(planned, dt, _tipSelectedSlotId, plannedIds.map(id=>S.students.find(s=>s.id===id)?.name||'leerling').join(', '), invitees):null;
 
@@ -10574,10 +10621,12 @@ function renderDashboard(){
 
 function _dashToetsRow(t,metDag){
   const sub=[t.rec.subject||'Toets',`${t.end-t.start} min`].join(' · ');
-  return `<div class="dash-trow">
+  const ontv=!!t.rec.ontvangen;
+  return `<div class="dash-trow ${ontv?'ontvangen':'wacht'}">
     <div class="dash-ttime">${metDag?_fmtDag(t.ds)+'<br>':''}${_fmtMin(t.start)}${metDag?'':'<br>'+_fmtMin(t.end)}</div>
     <div class="dash-tinfo">${_esc(t.stu.name)}<span>${_esc(sub)}</span></div>
-    <button type="button" class="dash-mini-btn" title="Toets aanpassen of verplaatsen"
+    <span class="dash-tstat ${ontv?'ontvangen':'wacht'}" title="${ontv?'Versie van de toets is binnen':'Nog geen versie van de toets ontvangen van de docent'}">${ontv?'✓ ontvangen':'nog niet binnen'}</span>
+    <button type="button" class="dash-mini-btn" title="Toets aanpassen, verplaatsen of als ontvangen markeren"
       onclick="openToetsInplanModal({stuId:'${t.stu.id}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})"><span data-ico="pencil"></span></button>
   </div>`;
 }
