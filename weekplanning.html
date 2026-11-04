@@ -1859,7 +1859,31 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .dash-chips { display: flex; flex-wrap: wrap; gap: .25rem; }
 .dash-chip { font-size: .66rem; font-weight: 700; border-radius: 6px; padding: .08rem .38rem; border: 1.5px solid var(--tx); color: var(--tx); }
 .dash-chip.les { background: var(--tx); color: var(--surface); }
-.dash-vrow { border: 1px solid var(--border); border-radius: 14px; padding: .7rem .85rem; margin-bottom: .6rem; }
+.dash-vrow { border: 1px solid var(--border); border-radius: 14px; padding: .7rem .85rem; margin-bottom: .6rem; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.dash-vrow:hover { border-color: var(--brand); box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+.vo-card { max-width: 980px; width: 100%; max-height: 94vh; overflow-y: auto; }
+.vo-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin-bottom: .8rem; }
+.vo-head h2 { margin: 0; }
+.vo-head p { margin: .2rem 0 0; font-size: .84rem; color: var(--tx2); }
+.vo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+@media (max-width: 760px) { .vo-grid { grid-template-columns: 1fr; } }
+.vo-week { border: 1px solid var(--border); border-radius: 12px; padding: .55rem .6rem .5rem; }
+.vo-week.verlofweek { border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-light); }
+.vo-week h4 { margin: 0 0 .4rem; font-size: .8rem; color: var(--tx); display: flex; justify-content: space-between; gap: .5rem; }
+.vo-week h4 span { font-weight: 500; color: var(--tx3); font-size: .72rem; }
+.vo-tbl { width: 100%; border-collapse: separate; border-spacing: 3px; table-layout: fixed; }
+.vo-tbl th { font-size: .64rem; font-weight: 600; color: var(--tx3); text-align: center; padding: 0; line-height: 1.2; }
+.vo-tbl th small { display: block; font-weight: 400; }
+.vo-tbl th.uur { width: 1.6rem; text-align: right; padding-right: 2px; font-weight: 500; }
+.vo-tbl td { height: 15px; border-radius: 4px; background: var(--surf-2, #F1EEE9); position: relative; padding: 0; }
+.vo-tbl td.vrij { background: repeating-linear-gradient(45deg, #EEE, #EEE 3px, #F8F8F8 3px, #F8F8F8 6px); }
+.vo-tbl td.vl::after { content: ''; position: absolute; inset: -2px; border-radius: 5px; border: 2px dashed var(--vl); background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--vl) 45%, transparent) 0 4px, color-mix(in srgb, #fff 55%, transparent) 4px 8px); }
+.vo-legend { display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .72rem; color: var(--tx2); margin-top: .8rem; }
+.vo-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .3rem; vertical-align: -1px; }
+.vo-legend i.vl { background: repeating-linear-gradient(135deg, rgba(0,0,0,.35) 0 3px, #fff 3px 6px); border: 1.5px dashed #555; }
+.vo-foot { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; padding-top: .8rem; border-top: 1px solid var(--border); }
+.vo-foot .acts { display: flex; gap: .5rem; flex-wrap: wrap; }
+.vo-conf { font-size: .78rem; color: #A65A00; margin-top: .6rem; display: flex; flex-direction: column; gap: .2rem; }
 .dash-vrow-top { display: flex; justify-content: space-between; gap: .6rem; align-items: baseline; }
 .dash-vrow-naam { font-weight: 600; font-size: .9rem; color: var(--tx); }
 .dash-vrow-per { font-size: .78rem; color: var(--tx2); }
@@ -2365,6 +2389,19 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 </div>
 
 <!-- ══ VERLOF AANVRAGEN ══════════════════════════════ -->
+<div class="overlay" id="modal-verlof-overzicht" onclick="if(event.target===this)closeVerlofOverzicht()">
+  <div class="modal-card vo-card">
+    <div class="vo-head">
+      <div><h2 id="vo-title">Verlofaanvraag</h2><p id="vo-sub"></p></div>
+      <button type="button" class="btn-ghost" style="flex:none;width:auto;" onclick="closeVerlofOverzicht()">✕ Sluiten</button>
+    </div>
+    <div class="vo-grid" id="vo-grid"></div>
+    <div id="vo-conf"></div>
+    <div class="vo-legend" id="vo-legend"></div>
+    <div class="vo-foot"><div id="vo-status" style="font-size:.8rem;color:var(--tx2);"></div><div class="acts" id="vo-acts"></div></div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-verlof">
   <div class="modal-card" style="max-width:460px;max-height:92vh;overflow-y:auto;">
     <h2 id="verlof-title">Verlof aanvragen</h2>
@@ -10623,7 +10660,7 @@ function renderDashboard(){
 
 function _dashToetsRow(t,metDag){
   const sub=[t.rec.subject||'Toets',`${t.end-t.start} min`].join(' · ');
-  const ontv=!!t.rec.ontvangen;
+  const ontv=!!_toetsOntvangen(t.stu.id,t.key,t.di,t.originId,t.rec);
   return `<div class="dash-trow ${ontv?'ontvangen':'wacht'}">
     <div class="dash-ttime">${metDag?_fmtDag(t.ds)+'<br>':''}${_fmtMin(t.start)}${metDag?'':'<br>'+_fmtMin(t.end)}</div>
     <div class="dash-tinfo">${_esc(t.stu.name)}<span>${_esc(sub)}</span></div>
@@ -10631,6 +10668,17 @@ function _dashToetsRow(t,metDag){
     <button type="button" class="dash-mini-btn" title="Toets aanpassen, verplaatsen of als ontvangen markeren"
       onclick="openToetsInplanModal({stuId:'${t.stu.id}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})"><span data-ico="pencil"></span></button>
   </div>`;
+}
+// "Versie ontvangen" staat in het rooster én bij de toets in de toetslijst; het rooster komt van
+// SharePoint en kan een oudere versie zijn. Ontbreekt het daar, dan zetten we het terug.
+function _toetsOntvangen(stuId,key,di,originId,rec){
+  if(rec.ontvangen) return rec.ontvangen;
+  const t=S.toetsenImport.find(x=>x.matchedStudentId===stuId&&x.geplandWeekKey===key&&x.geplandDi===di&&x.geplandSlot===originId);
+  if(!t?.ontvangen) return null;
+  rec.ontvangen=t.ontvangen;
+  clearTimeout(window._ontvHerstelTimer);
+  window._ontvHerstelTimer=setTimeout(persist,500);
+  return rec.ontvangen;
 }
 function _renderDashToetsen(v){
   const vandaag=_dashToetsenOp(v.now);
@@ -10659,23 +10707,19 @@ function _renderDashAanw(v,lessen,nuSlot){
   const cur=sel.value;
   sel.innerHTML='<option value="">Alle klassen</option>'+klassen.map(k=>`<option${k===cur?' selected':''}>${_esc(k)}</option>`).join('');
   const stus=alle.filter(s=>!sel.value||s.klass===sel.value).sort((a,b)=>a.name.localeCompare(b.name,'nl'));
-  const dayRec=(S.aanw[v.key]||{})[v.di]||{};
-  const aanwezig=stus.filter(s=>dayRec[s.id]?.status==='ok').length;
-  const nogDoor=stus.filter(s=>!dayRec[s.id]&&_stuExpectedOnDay(s.id,v.key,v.di)).length;
-  const lbl=nuSlot&&nuSlot.kind==='lesson'?nuSlot.label.replace('Uur','Uur'):'Vandaag';
-  document.getElementById('dash-aanw-sub').textContent=`${lbl}: ${aanwezig} aanwezig · nog ${nogDoor} door te geven`;
+  const lbl=nuSlot&&nuSlot.kind==='lesson'?nuSlot.label:'Vandaag';
+  document.getElementById('dash-aanw-sub').textContent=`${lbl} · ${stus.length} leerling${stus.length===1?'':'en'}`;
   if(!stus.length){ document.getElementById('dash-aanw-body').innerHTML='<div class="dash-empty">Geen leerlingen.</div>'; return; }
   const nuId=nuSlot?.kind==='lesson'?nuSlot.id:null;
-  let html=`<table class="dash-aanw-tbl"><thead><tr><th></th>${lessen.map((s,i)=>`<th class="${s.id===nuId?'now':''}">${i+1}</th>`).join('')}<th title="Aanwezig gemeld">${_ico('check')}</th></tr></thead><tbody>`;
+  let html=`<table class="dash-aanw-tbl"><thead><tr><th></th>${lessen.map((s,i)=>`<th class="${s.id===nuId?'now':''}">${i+1}</th>`).join('')}</tr></thead><tbody>`;
   stus.forEach(stu=>{
     const verlof=_verlofOpDag(stu.id,v.ds).length>0;
-    const ok=dayRec[stu.id]?.status==='ok';
     html+=`<tr><td class="dash-aanw-naam" title="${_esc(stu.name)}">${_esc(stu.name)}${verlof?'<span class="dash-tag verlof">verlof</span>':''}</td>`;
     lessen.forEach(s=>{
       const c=_aanwSlotColor(stu.id,v.key,v.di,s.id);
       html+=`<td class="${s.id===nuId?'now':''}"><span class="dash-sq" style="${c&&_DASH_KLEUR[c]?'background:'+_DASH_KLEUR[c]:''}" title="${s.label}: ${c?(COLOR_LBL[c]||c):'leeg'}"></span></td>`;
     });
-    html+=`<td><button type="button" class="dash-chk${ok?' on':''}" title="${ok?'Aanwezig gemeld':'Aanwezig melden'}" onclick="_dashToggleAanw('${stu.id}')">${ok?_ico('check'):''}</button></td></tr>`;
+    html+=`</tr>`;
   });
   html+=`</tbody></table><div class="dash-legend">${[['green','Aanwezig'],['red','Training'],['blue','Rust'],['purple','Wedstrijd'],['yellow','Toets'],['orange','Toernooi'],['rose','Overig']]
     .map(([c,l])=>`<span><i style="background:${_DASH_KLEUR[c]}"></i>${l}</span>`).join('')}</div>`;
@@ -10871,7 +10915,7 @@ function _renderDashVerlof(v){
     } else if(isCoord){
       acts=`<button type="button" class="dash-btn" onclick="beoordeelVerlof('${r.id}','aangevraagd')" title="Terugzetten naar aangevraagd; het rooster gaat terug naar hoe het was">↺ Terugzetten</button>`;
     }
-    return `<div class="dash-vrow">
+    return `<div class="dash-vrow" title="Bekijk de 4 weken rondom dit verlof" onclick="if(!event.target.closest('button'))openVerlofOverzicht('${r.id}')">
       <div class="dash-vrow-top"><span class="dash-vrow-naam">${_esc(naam(r.studentId))}</span><span class="dash-status ${r.status}">${r.status}</span></div>
       <div class="dash-vrow-per">${_verlofPeriode(r)}</div>
       <div class="dash-vrow-reden">${_verlofRedenHtml(r)}</div>
@@ -10883,6 +10927,75 @@ function _renderDashVerlof(v){
   if(komend.length) html+=`<div class="dash-sublbl">Goedgekeurd</div>`+komend.map(r=>blok(r,false)).join('');
   document.getElementById('dash-verlof-body').innerHTML=html||'<div class="dash-empty">Er staat niets open.</div>';
   _updateVerlofBadge();
+}
+// Overzicht van 4 weken rond een verlofaanvraag: week ervoor, verlofweek en de 2 weken erna
+let _voId=null;
+function openVerlofOverzicht(id){
+  const r=(S.verlof||[]).find(x=>x.id===id);
+  if(!r) return;
+  _voId=id;
+  const stu=S.students.find(s=>s.id===r.studentId);
+  const lessen=SCHOOL.filter(s=>s.kind==='lesson');
+  const kleur=_DASH_KLEUR[r.reden]||'#888';
+  const verlofSet=new Set(_verlofLesuren(r).map(x=>x.key+'|'+x.di+'|'+x.slot.id));
+  // Bij goedgekeurd verlof staat de reden al in het rooster; toon wat er daarvoor stond
+  const vooraf={};
+  if(r.status==='goedgekeurd') (r.toegepast||[]).forEach(t=>{ if(!t.originId) vooraf[t.key+'|'+t.di+'|'+t.sid]=t; });
+  const sd=S.studentData[r.studentId]||{std:{},ovr:{}};
+  const celKleur=(key,di,sid)=>{
+    const t=vooraf[key+'|'+di+'|'+sid];
+    if(t) return t.had?t.val:(sd.std?.[di]?.[sid]??null);
+    return _aanwSlotColor(r.studentId,key,di,sid);
+  };
+  const start=new Date(r.van+'T12:00:00');
+  start.setDate(start.getDate()-(start.getDay()+6)%7-7); // maandag van de week ervoor
+  let html='';
+  for(let w=0;w<4;w++){
+    const ma=new Date(start); ma.setDate(start.getDate()+w*7);
+    const {year,week}=weekYear(ma), key=wk(year,week);
+    const dagen=weekDates(year,week).slice(0,5);
+    const vrij=dagen.map(d=>!!specDayType(d)); // vakantie of studiedag
+    const heeftVerlof=dagen.some((d,di)=>lessen.some(sl=>verlofSet.has(key+'|'+di+'|'+sl.id)));
+    const lbl=w===0?'week ervoor':(w===1?'verlofweek':(heeftVerlof?'verlof loopt door':''));
+    html+=`<div class="vo-week${w===1?' verlofweek':''}"><h4>Week ${week}<span>${fmt(dagen[0])} – ${fmt(dagen[4])}${lbl?' · '+lbl:''}</span></h4>
+      <table class="vo-tbl"><thead><tr><th class="uur"></th>${dagen.map(d=>`<th>${_DAGEN[d.getDay()].slice(0,2)}<small>${d.getDate()}</small></th>`).join('')}</tr></thead><tbody>`;
+    lessen.forEach((sl,i)=>{
+      html+=`<tr><th class="uur">${i+1}</th>`;
+      dagen.forEach((d,di)=>{
+        const c=vrij[di]?null:celKleur(key,di,sl.id);
+        const vl=verlofSet.has(key+'|'+di+'|'+sl.id);
+        const cls=[vl?'vl':'',vrij[di]?'vrij':''].filter(Boolean).join(' ');
+        const tip=`${_DAGEN[d.getDay()]} ${fmt(d)} · ${sl.label}: ${vrij[di]?'geen school':(c?(COLOR_LBL[c]||c):'leeg')}${vl?' · verlof ('+(COLOR_LBL[r.reden]||r.reden)+')':''}`;
+        html+=`<td class="${cls}" style="${c&&_DASH_KLEUR[c]?'background:'+_DASH_KLEUR[c]+';':''}${vl?'--vl:'+kleur+';':''}" title="${_esc(tip)}"></td>`;
+      });
+      html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+  }
+  document.getElementById('vo-grid').innerHTML=html;
+  document.getElementById('vo-title').textContent=`Verlof · ${stu?.name||'Onbekende leerling'}`;
+  document.getElementById('vo-sub').innerHTML=`${_verlofPeriode(r)} · ${_verlofRedenHtml(r)}`;
+  const conf=_verlofConflicten(r);
+  document.getElementById('vo-conf').innerHTML=conf.length?`<div class="vo-conf">${conf.map(t=>`<span>⚠ Toets ${_esc(t.rec.subject||'')} op ${_fmtDag(t.ds)} ${_fmtMin(t.start)} valt in dit verlof</span>`).join('')}</div>`:'';
+  document.getElementById('vo-legend').innerHTML=[['green','Aanwezig'],['red','Training'],['blue','Rust'],['purple','Wedstrijd'],['yellow','Toets'],['orange','Toernooi'],['rose','Overig']]
+    .map(([c,l])=>`<span><i style="background:${_DASH_KLEUR[c]}"></i>${l}</span>`).join('')+`<span><i class="vl"></i>Aangevraagd verlof</span><span><i style="background:repeating-linear-gradient(45deg,#DDD,#DDD 2px,#F8F8F8 2px,#F8F8F8 4px);"></i>Vakantie / studiedag</span>`;
+  const isCoord=S.role==='coordinator';
+  document.getElementById('vo-status').innerHTML=`Status: <span class="dash-status ${r.status}">${r.status}</span>`;
+  document.getElementById('vo-acts').innerHTML=isCoord
+    ?(r.status==='aangevraagd'
+      ?`<button type="button" class="dash-btn nok" onclick="_voBeoordeel('afgewezen')">✕ Afwijzen</button><button type="button" class="dash-btn ok" onclick="_voBeoordeel('goedgekeurd')">✓ Goedkeuren</button>`
+      :`<button type="button" class="dash-btn" onclick="_voBeoordeel('aangevraagd')">↺ Terugzetten</button>`)
+    :'';
+  document.getElementById('modal-verlof-overzicht').classList.add('show');
+}
+function closeVerlofOverzicht(){
+  document.getElementById('modal-verlof-overzicht').classList.remove('show');
+  _voId=null;
+}
+function _voBeoordeel(status){
+  const id=_voId;
+  closeVerlofOverzicht();
+  beoordeelVerlof(id,status);
 }
 function beoordeelVerlof(id,status){
   const r=(S.verlof||[]).find(x=>x.id===id);
