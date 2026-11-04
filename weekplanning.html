@@ -1875,9 +1875,9 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .vo-tbl th { font-size: .64rem; font-weight: 600; color: var(--tx3); text-align: center; padding: 0; line-height: 1.2; }
 .vo-tbl th small { display: block; font-weight: 400; }
 .vo-tbl th.uur { width: 1.6rem; text-align: right; padding-right: 2px; font-weight: 500; }
-.vo-tbl td { height: 15px; border-radius: 4px; background: var(--surf-2, #F1EEE9); position: relative; padding: 0; }
+.vo-tbl td { height: 16px; border-radius: 4px; background: var(--surf-2, #F1EEE9); position: relative; padding: 0; font-size: .56rem; font-weight: 800; text-align: center; line-height: 16px; overflow: hidden; }
 .vo-tbl td.vrij { background: repeating-linear-gradient(45deg, #EEE, #EEE 3px, #F8F8F8 3px, #F8F8F8 6px); }
-.vo-tbl td.vl::after { content: ''; position: absolute; inset: -2px; border-radius: 5px; border: 2px dashed var(--vl); background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--vl) 45%, transparent) 0 4px, color-mix(in srgb, #fff 55%, transparent) 4px 8px); }
+.vo-tbl td.vl::after { content: ''; position: absolute; inset: -2px; border-radius: 5px; border: 2px dashed var(--vl); background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--vl) 40%, transparent) 0 4px, transparent 4px 8px); }
 .vo-legend { display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .72rem; color: var(--tx2); margin-top: .8rem; }
 .vo-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .3rem; vertical-align: -1px; }
 .vo-legend i.vl { background: repeating-linear-gradient(135deg, rgba(0,0,0,.35) 0 3px, #fff 3px 6px); border: 1.5px dashed #555; }
@@ -10606,6 +10606,12 @@ function showPlanner(){
 setInterval(()=>{ if(S.mainView==='dash'&&document.getElementById('screen-main').classList.contains('show')) renderDashboard(); },60000);
 
 const _DASH_KLEUR={green:'#2D8B50',red:'#C0392B',blue:'#2471A3',purple:'#7D3C98',yellow:'#E0B000',orange:'#E07010',rose:'#C2185B'};
+// Dezelfde kleuren als in de planner (pastel vlak, donkere rand en tekst; werkt ook in donkere modus)
+const _PL_VAR={green:'g',red:'r',blue:'b',purple:'p',yellow:'y',orange:'o',rose:'ro'};
+function _plKleur(c){
+  const v=_PL_VAR[c];
+  return v?`background:var(--${v}-bg);box-shadow:inset 0 0 0 1px var(--${v}-bd);color:var(--${v}-tx);`:'';
+}
 const _DAGEN=['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
 
 function _dashVandaag(){
@@ -10717,12 +10723,12 @@ function _renderDashAanw(v,lessen,nuSlot){
     html+=`<tr><td class="dash-aanw-naam" title="${_esc(stu.name)}">${_esc(stu.name)}${verlof?'<span class="dash-tag verlof">verlof</span>':''}</td>`;
     lessen.forEach(s=>{
       const c=_aanwSlotColor(stu.id,v.key,v.di,s.id);
-      html+=`<td class="${s.id===nuId?'now':''}"><span class="dash-sq" style="${c&&_DASH_KLEUR[c]?'background:'+_DASH_KLEUR[c]:''}" title="${s.label}: ${c?(COLOR_LBL[c]||c):'leeg'}"></span></td>`;
+      html+=`<td class="${s.id===nuId?'now':''}"><span class="dash-sq" style="${_plKleur(c)}" title="${s.label}: ${c?(COLOR_LBL[c]||c):'leeg'}"></span></td>`;
     });
     html+=`</tr>`;
   });
   html+=`</tbody></table><div class="dash-legend">${[['green','Aanwezig'],['red','Training'],['blue','Rust'],['purple','Wedstrijd'],['yellow','Toets'],['orange','Toernooi'],['rose','Overig']]
-    .map(([c,l])=>`<span><i style="background:${_DASH_KLEUR[c]}"></i>${l}</span>`).join('')}</div>`;
+    .map(([c,l])=>`<span><i style="${_plKleur(c)}"></i>${l}</span>`).join('')}</div>`;
   document.getElementById('dash-aanw-body').innerHTML=html;
 }
 function _dashToggleAanw(stuId){
@@ -10792,7 +10798,7 @@ function _verlofPeriode(r){
 }
 function _verlofRedenHtml(r){
   const c=_DASH_KLEUR[r.reden];
-  return `${c?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};margin-right:.3rem;"></i>`:''}${_esc(_verlofRedenLbl(r))}${r.toelichting?' – '+_esc(r.toelichting):''}`;
+  return `${c?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;${_plKleur(r.reden)}margin-right:.3rem;"></i>`:''}${_esc(_verlofRedenLbl(r))}${r.toelichting?' – '+_esc(r.toelichting):''}`;
 }
 // Toetsen van de leerling die in de verloflesuren vallen
 function _verlofConflicten(r){
@@ -10936,7 +10942,7 @@ function openVerlofOverzicht(id){
   _voId=id;
   const stu=S.students.find(s=>s.id===r.studentId);
   const lessen=SCHOOL.filter(s=>s.kind==='lesson');
-  const kleur=_DASH_KLEUR[r.reden]||'#888';
+  const kleur=_PL_VAR[r.reden]?`var(--${_PL_VAR[r.reden]}-bd)`:'#888';
   const verlofSet=new Set(_verlofLesuren(r).map(x=>x.key+'|'+x.di+'|'+x.slot.id));
   // Bij goedgekeurd verlof staat de reden al in het rooster; toon wat er daarvoor stond
   const vooraf={};
@@ -10966,7 +10972,7 @@ function openVerlofOverzicht(id){
         const vl=verlofSet.has(key+'|'+di+'|'+sl.id);
         const cls=[vl?'vl':'',vrij[di]?'vrij':''].filter(Boolean).join(' ');
         const tip=`${_DAGEN[d.getDay()]} ${fmt(d)} · ${sl.label}: ${vrij[di]?'geen school':(c?(COLOR_LBL[c]||c):'leeg')}${vl?' · verlof ('+(COLOR_LBL[r.reden]||r.reden)+')':''}`;
-        html+=`<td class="${cls}" style="${c&&_DASH_KLEUR[c]?'background:'+_DASH_KLEUR[c]+';':''}${vl?'--vl:'+kleur+';':''}" title="${_esc(tip)}"></td>`;
+        html+=`<td class="${cls}" style="${_plKleur(c)}${vl?'--vl:'+kleur+';':''}" title="${_esc(tip)}">${c?COLOR_LBL[c]||'':''}</td>`;
       });
       html+='</tr>';
     });
@@ -10978,7 +10984,7 @@ function openVerlofOverzicht(id){
   const conf=_verlofConflicten(r);
   document.getElementById('vo-conf').innerHTML=conf.length?`<div class="vo-conf">${conf.map(t=>`<span>⚠ Toets ${_esc(t.rec.subject||'')} op ${_fmtDag(t.ds)} ${_fmtMin(t.start)} valt in dit verlof</span>`).join('')}</div>`:'';
   document.getElementById('vo-legend').innerHTML=[['green','Aanwezig'],['red','Training'],['blue','Rust'],['purple','Wedstrijd'],['yellow','Toets'],['orange','Toernooi'],['rose','Overig']]
-    .map(([c,l])=>`<span><i style="background:${_DASH_KLEUR[c]}"></i>${l}</span>`).join('')+`<span><i class="vl"></i>Aangevraagd verlof</span><span><i style="background:repeating-linear-gradient(45deg,#DDD,#DDD 2px,#F8F8F8 2px,#F8F8F8 4px);"></i>Vakantie / studiedag</span>`;
+    .map(([c,l])=>`<span><i style="${_plKleur(c)}"></i>${l}</span>`).join('')+`<span><i class="vl"></i>Aangevraagd verlof</span><span><i style="background:repeating-linear-gradient(45deg,#DDD,#DDD 2px,#F8F8F8 2px,#F8F8F8 4px);"></i>Vakantie / studiedag</span>`;
   const isCoord=S.role==='coordinator';
   document.getElementById('vo-status').innerHTML=`Status: <span class="dash-status ${r.status}">${r.status}</span>`;
   document.getElementById('vo-acts').innerHTML=isCoord
@@ -11032,7 +11038,7 @@ function openVerlofModal(){
   document.getElementById('verlof-vanuur').value=lessen[0].id;
   document.getElementById('verlof-totuur').value=lessen[lessen.length-1].id;
   document.getElementById('verlof-redenen').innerHTML=VERLOF_REDENEN.map(([c,l])=>
-    `<label class="verlof-reden"><input type="radio" name="verlof-reden" value="${c}"><i style="background:${_DASH_KLEUR[c]}"></i>${l}</label>`).join('');
+    `<label class="verlof-reden"><input type="radio" name="verlof-reden" value="${c}"><i style="${_plKleur(c)}"></i>${l}</label>`).join('');
   const vandaag=toDS(new Date());
   document.getElementById('verlof-van').value=vandaag;
   document.getElementById('verlof-tot').value=vandaag;
