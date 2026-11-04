@@ -1577,6 +1577,13 @@ body.dark .stu-sport-chip {
 .tip-dag-btn.selected { border-color:var(--brand); background:var(--brand); color:#fff; }
 .tip-direct-plan-bar { display:none; }
 .tip-stu-results { margin-top:.2rem; background:var(--surface); border:1.5px solid var(--brand); border-radius:7px; max-height:170px; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.zrm-map { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:.45rem .9rem; }
+.zrm-map label { display:flex; align-items:center; gap:.5rem; font-size:.82rem; }
+.zrm-map label b { min-width:4.2rem; font-family:ui-monospace,Menlo,monospace; font-size:.78rem; }
+.zrm-map .field-inp { margin:0; padding:.35rem .55rem; font-size:.8rem; flex:1; min-width:0; }
+.besch-circle.besch-uitval { opacity:.45; text-decoration:line-through; }
+.dash-chip.uitval { opacity:.45; text-decoration:line-through; }
+.dash-chip small { font-weight:500; opacity:.8; margin-left:.2rem; }
 .tip-stu-chips { display:flex; flex-wrap:wrap; gap:.25rem; margin-top:.3rem; }
 .tip-stu-chip { display:inline-flex; align-items:center; gap:.15rem; font-size:.74rem; font-weight:600; padding:.12rem .25rem .12rem .55rem; border-radius:20px; border:1.5px solid var(--border); background:var(--surf-2); color:var(--tx); cursor:pointer; }
 .tip-stu-chip.viewed { border-color:var(--brand); background:var(--brand-light); color:var(--brand); }
@@ -2469,6 +2476,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
       <button class="btn-g sm" onclick="closeBeschModal()" style="width:auto;padding:.38rem .85rem;font-size:.82rem;">✕ Sluiten</button>
     </div>
     <p class="modal-sub" style="margin-bottom:.9rem;">Dit is jouw vaste weekpatroon voor het hele schooljaar. Klik op een cel om je beschikbaarheid in te stellen.</p>
+    <p id="besch-zrm-note" style="display:none;font-size:.8rem;background:var(--brand-light);color:var(--brand);border-radius:8px;padding:.45rem .7rem;margin:-.4rem 0 .8rem;">📚 Je lessen komen automatisch uit Zermelo. Hier vul je alleen nog in wanneer je beschikbaar bent in een lokaal.</p>
     <div id="besch-grid-ct" style="overflow-x:auto;"></div>
   </div>
 </div>
@@ -2897,14 +2905,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <div style="font-size:.75rem;color:var(--tx2);">of klik om te bladeren &nbsp;·&nbsp; .xlsx of .xls</div>
         <input type="file" id="toetsen-file-inp" accept=".xlsx,.xls" style="display:none;" onchange="handleToetsenFile(this.files[0])">
       </label>
-      <div id="toetsen-col-map-zone" style="display:none;margin-top:.85rem;padding:1rem;background:var(--surf-2);border-radius:10px;border:1px solid var(--border);">
-        <div style="font-size:.78rem;font-weight:700;color:var(--tx2);margin-bottom:.65rem;letter-spacing:.04em;text-transform:uppercase;">Kolommen koppelen</div>
-        <div id="toetsen-col-map-rows"></div>
-        <div style="display:flex;gap:.6rem;margin-top:.8rem;">
-          <button class="btn-save" onclick="confirmToetsenImport()" style="flex:1;">✓ Importeren</button>
-          <button class="btn-g sm" onclick="resetToetsenUpload()" style="width:auto;padding:.38rem .8rem;">✗ Annuleren</button>
-        </div>
-      </div>
+      <div id="toetsen-import-info" style="display:none;margin-top:.6rem;font-size:.74rem;color:var(--tx2);line-height:1.5;"></div>
     </div>
 
     <!-- Status bar -->
@@ -3048,6 +3049,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
     <button class="adm-tab" onclick="switchAdmTab(4)">☁️ Microsoft 365</button>
     <button class="adm-tab" onclick="switchAdmTab(5)">📋 Aanwezigheid</button>
     <button class="adm-tab" onclick="switchAdmTab(6)">🔐 Superadmin</button>
+    <button class="adm-tab" onclick="switchAdmTab(7)">📚 Zermelo</button>
   </div>
 
   <div class="adm-body">
@@ -3385,6 +3387,52 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
       </div>
     </div>
 
+    <!-- Tabblad 9: Zermelo-koppeling -->
+    <div class="adm-panel">
+      <div class="adm-card">
+        <h3>📚 Zermelo — Lesrooster van docenten</h3>
+        <p class="card-note" style="margin-bottom:1rem;">Haal het rooster van gekozen docenten uit Zermelo. Leerlingen zien dan automatisch in hun planner wanneer en in welk lokaal hun vakdocent les geeft aan hun klas, in plaats van dat docenten dit zelf invullen.</p>
+        <div class="adm-fields">
+          <div class="adm-field">
+            <label class="lbl">Portaaladres</label>
+            <input id="zrm-portal" class="field-inp" style="margin:0;" type="text" placeholder="schoolnaam.zportal.nl" oninput="_zrmSaveCfg()">
+          </div>
+          <div class="adm-field">
+            <label class="lbl">Token <span style="font-weight:400;opacity:.6;font-size:.75rem;">(API-token of koppelcode; blijft alleen op dit apparaat)</span></label>
+            <input id="zrm-token" class="field-inp" style="margin:0;" type="password" placeholder="Plak hier het token" autocomplete="off" oninput="_zrmSaveCfg()">
+          </div>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;align-items:center;">
+          <button class="btn-save-sm" onclick="zrmTest()">🔗 Verbinding testen</button>
+          <label style="display:flex;gap:.4rem;align-items:center;font-size:.84rem;cursor:pointer;"><input type="checkbox" id="zrm-actief" onchange="_zrmSaveCfg()"> Zermelo gebruiken in plaats van de handmatige docentbeschikbaarheid</label>
+        </div>
+        <p id="zrm-status" class="card-note" style="margin-top:.7rem;min-height:1.2em;"></p>
+      </div>
+
+      <div class="adm-card" style="margin-top:1rem;">
+        <h3>👩‍🏫 Docenten</h3>
+        <p class="card-note" style="margin-bottom:.7rem;">Kies de docenten van wie het rooster zichtbaar wordt. Zoek op naam of code; lukt het ophalen van de lijst niet, typ dan de Zermelo-code en druk op Enter.</p>
+        <div style="position:relative;max-width:420px;">
+          <input id="zrm-doc-search" class="field-inp" style="margin:0;" type="text" placeholder="Docent zoeken of code typen…" autocomplete="off" oninput="_zrmDocSearch(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();_zrmDocAddCode(this.value);}">
+          <div id="zrm-doc-results" style="display:none;margin-top:.2rem;background:var(--surface);border:1.5px solid var(--brand);border-radius:7px;max-height:180px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.15);position:absolute;left:0;right:0;z-index:5;"></div>
+        </div>
+        <div id="zrm-doc-chips" class="tip-stu-chips" style="margin-top:.6rem;"></div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;align-items:center;">
+          <button class="btn-save-sm" onclick="zrmVernieuw()">⟳ Rooster nu ophalen</button>
+          <span id="zrm-laatst" class="card-note" style="margin:0;"></span>
+        </div>
+        <p class="card-note" style="font-size:.76rem;margin-top:.5rem;">De app haalt deze week en de 3 weken daarna op, en ververst elk uur vanzelf op dit apparaat. Het rooster wordt via Microsoft 365 gedeeld met leerlingen, coaches en coördinatoren; het token niet.</p>
+      </div>
+
+      <div class="adm-card" style="margin-top:1rem;">
+        <h3>🔗 Koppelen aan klassen en vakken</h3>
+        <p class="card-note" style="margin-bottom:.7rem;"><b>Klassen:</b> welke Zermelo-groepen horen bij een klas in de app? Laat leeg voor automatisch (klas H5 herkent bijvoorbeeld groepen als <code>h5a</code>, <code>h5.wisa1</code> en <code>5h</code>). Meerdere groepen scheiden met een komma.</p>
+        <div id="zrm-klas-map" class="zrm-map"></div>
+        <p class="card-note" style="margin:1rem 0 .7rem;"><b>Vakken:</b> welk vak in de app hoort bij een Zermelo-vakcode? Verschijnt na het ophalen van het rooster.</p>
+        <div id="zrm-vak-map" class="zrm-map"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -3537,6 +3585,7 @@ const S = {
              'P3.1':{from:'',to:''},'P3.2':{from:'',to:''},'P3.3':{from:'',to:''}},
   },
   toetsenImport:[],      // [{id,studentNaam,klas,vak,datum,tijdstip,lokaal,status:'open'|'gepland',matchedStudentId,geplandWeekKey,geplandDi,geplandSlot}]
+  zermelo:{actief:false,portal:'',docenten:[],vakMap:{},klasMap:{},rooster:{},laatst:''}, // rooster: {weekKey:{di:{slotId:[{d,s,g,l,x}]}}}; token staat alleen lokaal (wp_zrm_token)
   verlof:[],             // [{id,studentId,van,vanSlot,tot,totSlot,reden:statuskleur,toelichting,status:'aangevraagd'|'goedgekeurd'|'afgewezen',aangevraagdOp,aangevraagdDoor,beoordeeldDoor,beoordeeldOp,gewijzigdOp,toegepast}]
   mainView:null,         // 'dash' | 'planner' — startscherm coach/coördinator is het dashboard
 };
@@ -3638,7 +3687,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo'
 ];
 
 let _graphToken = null;
@@ -4195,6 +4244,7 @@ function persist(){
     localStorage.setItem('wp_displayPw', S.displayPassword||'');
     localStorage.setItem('wp_toetsenImport', JSON.stringify(S.toetsenImport));
     localStorage.setItem('wp_verlof', JSON.stringify(S.verlof));
+    localStorage.setItem('wp_zermelo', JSON.stringify(S.zermelo));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -4221,6 +4271,7 @@ function hydrate(){
     const tpw=localStorage.getItem('wp_teacherPw'); if(tpw) S.teacherPasswords=JSON.parse(tpw);
     const spw=localStorage.getItem('wp_stuPw'); if(spw) S.studentPasswords=JSON.parse(spw);
     const bsc=localStorage.getItem('wp_besch'); if(bsc) S.beschikbaarheid=JSON.parse(bsc);
+    const zrm=localStorage.getItem('wp_zermelo'); if(zrm) S.zermelo={...S.zermelo,...JSON.parse(zrm)};
     const rm=localStorage.getItem('wp_roleMap'); if(rm) S.roleMap=JSON.parse(rm);
     const cl=localStorage.getItem('wp_changeLog'); if(cl) S.changeLog=JSON.parse(cl);
     const cls=localStorage.getItem('wp_coachLastSeen'); if(cls) S.coachLastSeen=cls||null;
@@ -4415,6 +4466,7 @@ function switchAdmTab(idx){
   if(idx===2) renderRollenList();
   if(idx===4) loadM365Cfg();
   if(idx===6){ renderSuperadminList(); renderDisplayPwStatus(); }
+  if(idx===7) renderZrmAdmin();
 }
 
 function showAdmin(){
@@ -5248,6 +5300,262 @@ function _buildEstuAssignSection(stu){
   buildChips(coords,  stu.coordinators||[], 'estu-assign-coords',  '🎓 Gekoppelde coordinatoren');
 }
 
+/* ══ ZERMELO ════════════════════════════════════════ */
+// Veelgebruikte Zermelo-vakcodes → vakken in de app (aan te vullen via Admin → Zermelo)
+const _ZRM_AUTO={ne:'NE',netl:'NE',ned:'NE',en:'EN',entl:'EN',eng:'EN',du:'DU',dutl:'DU',fa:'FA',fatl:'FA',
+  ec:'EC',econ:'EC',bec:'BEC',beco:'BEC',mo:'BEC',bi:'BI',biol:'BI',na:'NA',nat:'NA',sk:'SK',schk:'SK',
+  gs:'GS',ges:'GS',gesch:'GS',ak:'AK',wa:'WiA',wisa:'WiA',wia:'WiA',wb:'WiB',wisb:'WiB',wib:'WiB'};
+function _zrmToken(){ try{ return localStorage.getItem('wp_zrm_token')||''; }catch(e){ return ''; } }
+function _zrmNorm(x){ return String(x||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function _zrmBase(){
+  let p=(S.zermelo.portal||'').trim();
+  if(!p) return '';
+  if(!/^https?:\/\//i.test(p)) p='https://'+p;
+  try{
+    let host=new URL(p).hostname;
+    if(!host.includes('.')) host+='.zportal.nl';
+    return `https://${host}/api/v3`;
+  }catch(e){ return ''; }
+}
+function _zrmWanneer(iso){
+  const d=new Date(iso), min=Math.round((Date.now()-d)/60000);
+  if(min<1) return 'zojuist';
+  if(min<60) return `${min} min geleden`;
+  return `${d.getDate()} ${MONTHS_FULL[d.getMonth()].toLowerCase()} ${_fmtMin(d.getHours()*60+d.getMinutes())}`;
+}
+async function _zrmGet(path,params){
+  const q=new URLSearchParams({...(params||{}),access_token:_zrmToken()});
+  let r;
+  try{ r=await fetch(`${_zrmBase()}${path}?${q}`); }
+  catch(e){ throw new Error('Zermelo is niet bereikbaar. Controleer het portaaladres.'); }
+  if(r.status===401) throw Object.assign(new Error('Het token is ongeldig of verlopen.'),{code:401});
+  if(r.status===403) throw new Error('Dit token heeft geen rechten voor deze gegevens.');
+  if(!r.ok) throw new Error('Zermelo gaf foutcode '+r.status+'.');
+  const j=await r.json();
+  return j.response?.data||[];
+}
+// Een koppelcode (12 cijfers uit het portaal) omwisselen voor een token
+async function _zrmWisselKoppelcode(code){
+  try{
+    const r=await fetch(`${_zrmBase()}/oauth/token`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=authorization_code&code='+encodeURIComponent(code.replace(/\s/g,''))});
+    if(!r.ok) return null;
+    return (await r.json()).access_token||null;
+  }catch(e){ return null; }
+}
+function _zrmStatus(msg,kleur){
+  const el=document.getElementById('zrm-status');
+  if(el){ el.textContent=msg; el.style.color=kleur||''; }
+}
+function _zrmSaveCfg(){
+  S.zermelo.portal=(document.getElementById('zrm-portal')?.value||'').trim();
+  S.zermelo.actief=!!document.getElementById('zrm-actief')?.checked;
+  try{ localStorage.setItem('wp_zrm_token',(document.getElementById('zrm-token')?.value||'').trim()); }catch(e){}
+  persist();
+}
+async function zrmTest(){
+  if(!_zrmBase()){ _zrmStatus('Vul eerst het portaaladres in.','#C0392B'); return; }
+  if(!_zrmToken()){ _zrmStatus('Vul eerst het token in.','#C0392B'); return; }
+  _zrmStatus('Verbinding testen…');
+  try{
+    let me;
+    try{ me=(await _zrmGet('/users/~me',{fields:'code,firstName,prefix,lastName'}))[0]; }
+    catch(e){
+      if(e.code!==401||!/^\d[\d\s]{9,}$/.test(_zrmToken())) throw e;
+      const tok=await _zrmWisselKoppelcode(_zrmToken());
+      if(!tok) throw new Error('De koppelcode is ongeldig of al gebruikt. Maak in Zermelo een nieuwe aan.');
+      localStorage.setItem('wp_zrm_token',tok);
+      document.getElementById('zrm-token').value=tok;
+      me=(await _zrmGet('/users/~me',{fields:'code,firstName,prefix,lastName'}))[0];
+    }
+    _zrmStatus(`✓ Verbonden als ${[me?.firstName,me?.prefix,me?.lastName].filter(Boolean).join(' ')||me?.code||'gebruiker'}.`,'#2D8B50');
+    _zrmMedewerkers=null; _zrmLaadMedewerkers();
+  }catch(e){ _zrmStatus('⚠ '+e.message,'#C0392B'); }
+}
+
+// Docenten kiezen
+let _zrmMedewerkers=null;
+async function _zrmLaadMedewerkers(){
+  if(_zrmMedewerkers||!_zrmToken()||!_zrmBase()) return _zrmMedewerkers;
+  try{
+    _zrmMedewerkers=(await _zrmGet('/users',{isEmployee:'true',archived:'false',fields:'code,firstName,prefix,lastName'}))
+      .map(u=>({code:u.code,naam:[u.firstName,u.prefix,u.lastName].filter(Boolean).join(' ')}));
+  }catch(e){ _zrmMedewerkers=[]; }
+  return _zrmMedewerkers;
+}
+let _zrmZoekTimer=null;
+function _zrmDocSearch(q){
+  clearTimeout(_zrmZoekTimer);
+  const res=document.getElementById('zrm-doc-results');
+  q=q.trim().toLowerCase();
+  if(q.length<2){ res.style.display='none'; return; }
+  _zrmZoekTimer=setTimeout(async()=>{
+    const lijst=(await _zrmLaadMedewerkers())||[];
+    const gekozen=new Set(S.zermelo.docenten.map(d=>d.code));
+    const hits=lijst.filter(u=>!gekozen.has(u.code)&&(u.code.toLowerCase().includes(q)||u.naam.toLowerCase().includes(q))).slice(0,12);
+    res.innerHTML='';
+    if(!hits.length){
+      res.innerHTML=`<div class="tip-collega-result" style="cursor:default;color:var(--tx3);">${lijst.length?'Geen docent gevonden.':'Lijst niet beschikbaar.'} Druk op Enter om code “${_esc(q)}” toe te voegen.</div>`;
+    }
+    hits.forEach(u=>{
+      const el=document.createElement('div');
+      el.className='tip-collega-result';
+      el.innerHTML=`<b>${_esc(u.code)}</b> · ${_esc(u.naam)}`;
+      el.addEventListener('click',()=>_zrmDocAdd(u));
+      res.appendChild(el);
+    });
+    res.style.display='';
+  },250);
+}
+function _zrmDocAddCode(code){
+  code=code.trim();
+  if(!code) return;
+  const u=(_zrmMedewerkers||[]).find(x=>x.code.toLowerCase()===code.toLowerCase());
+  _zrmDocAdd(u||{code:code.toLowerCase(),naam:''});
+}
+function _zrmDocAdd(u){
+  if(!S.zermelo.docenten.some(d=>d.code===u.code)) S.zermelo.docenten.push(u);
+  document.getElementById('zrm-doc-search').value='';
+  document.getElementById('zrm-doc-results').style.display='none';
+  persist(); _zrmRenderDocChips();
+}
+function _zrmDocRemove(code){
+  S.zermelo.docenten=S.zermelo.docenten.filter(d=>d.code!==code);
+  persist(); _zrmRenderDocChips();
+}
+function _zrmRenderDocChips(){
+  const ct=document.getElementById('zrm-doc-chips');
+  if(!ct) return;
+  ct.innerHTML=S.zermelo.docenten.length?'':'<span class="card-note" style="margin:0;">Nog geen docenten gekozen.</span>';
+  S.zermelo.docenten.forEach(d=>{
+    const chip=document.createElement('span');
+    chip.className='tip-stu-chip viewed';
+    chip.innerHTML=`${_esc(d.code)}${d.naam?' · '+_esc(d.naam):''}<button type="button" title="Verwijderen">✕</button>`;
+    chip.querySelector('button').addEventListener('click',()=>_zrmDocRemove(d.code));
+    ct.appendChild(chip);
+  });
+}
+
+// Klas- en vakkoppeling
+function _zrmVak(code){
+  const m=S.zermelo.vakMap?.[code];
+  if(m) return m;
+  const n=_zrmNorm(code);
+  return _ZRM_AUTO[n]||SUBJECTS.find(x=>_normVak(x)===n)||String(code||'').toUpperCase();
+}
+function _zrmKlasPatronen(klas){
+  const eigen=String(S.zermelo.klasMap?.[klas]||'').split(',').map(_zrmNorm).filter(Boolean);
+  if(eigen.length) return eigen;
+  const k=_zrmNorm(klas);
+  if(!k) return [];
+  const m=k.match(/^([a-z]+)(\d+)$/);
+  return m?[k,m[2]+m[1]]:[k]; // H5 → h5 en 5h
+}
+function _zrmLessen(key,di,sid){
+  return S.zermelo?.actief?(S.zermelo.rooster?.[key]?.[di]?.[sid]||[]):[];
+}
+function _zrmVakVoorLeerling(l,stu){
+  const vakken=getActiveVakken(stu);
+  for(const code of String(l.s||'').split('/')){
+    const v=vakken.find(x=>_normVak(x)===_normVak(_zrmVak(code)));
+    if(v) return v;
+  }
+  return null;
+}
+function _zrmVoorLeerling(l,stu){
+  if(!_zrmVakVoorLeerling(l,stu)) return false;
+  const pats=_zrmKlasPatronen(stu.klass||'');
+  return (l.g||[]).some(g=>{ const n=_zrmNorm(g); return pats.some(p=>n.includes(p)); });
+}
+function renderZrmAdmin(){
+  const f=id=>document.getElementById(id);
+  f('zrm-portal').value=S.zermelo.portal||'';
+  f('zrm-token').value=_zrmToken();
+  f('zrm-actief').checked=!!S.zermelo.actief;
+  f('zrm-laatst').textContent=S.zermelo.laatst?'Laatst opgehaald: '+_zrmWanneer(S.zermelo.laatst):'Nog niet opgehaald.';
+  _zrmRenderDocChips();
+  const klassen=[...new Set(S.students.map(s=>s.klass).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'nl'));
+  f('zrm-klas-map').innerHTML=klassen.length?klassen.map(k=>`<label><b>${_esc(k)}</b><input class="field-inp" data-klas="${_esc(k)}" value="${_esc(S.zermelo.klasMap?.[k]||'')}" placeholder="automatisch: ${_esc(_zrmKlasPatronen(k).join(', '))}"></label>`).join('')
+    :'<span class="card-note" style="margin:0;">Nog geen leerlingen met een klas.</span>';
+  f('zrm-klas-map').querySelectorAll('input').forEach(inp=>inp.addEventListener('change',()=>{
+    S.zermelo.klasMap[inp.dataset.klas]=inp.value.trim();
+    if(!inp.value.trim()) delete S.zermelo.klasMap[inp.dataset.klas];
+    persist();
+  }));
+  const codes=new Set();
+  Object.values(S.zermelo.rooster||{}).forEach(w=>Object.values(w).forEach(d=>Object.values(d).forEach(ls=>ls.forEach(l=>String(l.s||'').split('/').filter(Boolean).forEach(c=>codes.add(c))))));
+  const opties=[...new Set([...SUBJECTS,...S.students.flatMap(s=>Array.isArray(s.vakken)?s.vakken:Object.values(s.vakken||{}).flat())])].filter(Boolean).sort((a,b)=>a.localeCompare(b,'nl'));
+  f('zrm-vak-map').innerHTML=codes.size?[...codes].sort().map(c=>{
+    const auto=_ZRM_AUTO[_zrmNorm(c)]||SUBJECTS.find(x=>_normVak(x)===_zrmNorm(c))||'';
+    const cur=S.zermelo.vakMap?.[c]||'';
+    return `<label><b>${_esc(c)}</b><select class="field-inp" data-code="${_esc(c)}"><option value="">${auto?'automatisch: '+_esc(auto):'— niet gekoppeld —'}</option>${opties.map(o=>`<option${o===cur?' selected':''}>${_esc(o)}</option>`).join('')}</select></label>`;
+  }).join(''):'<span class="card-note" style="margin:0;">Haal eerst het rooster op.</span>';
+  f('zrm-vak-map').querySelectorAll('select').forEach(sel=>sel.addEventListener('change',()=>{
+    if(sel.value) S.zermelo.vakMap[sel.dataset.code]=sel.value; else delete S.zermelo.vakMap[sel.dataset.code];
+    persist();
+  }));
+}
+
+// Rooster ophalen: deze week en de 3 weken daarna
+let _zrmBezig=false;
+async function zrmVernieuw(stil){
+  if(_zrmBezig) return;
+  const fout=msg=>{ if(!stil) _zrmStatus('⚠ '+msg,'#C0392B'); };
+  if(!_zrmBase()||!_zrmToken()) return fout('Vul eerst het portaaladres en het token in.');
+  if(!S.zermelo.docenten.length) return fout('Kies eerst een of meer docenten.');
+  _zrmBezig=true;
+  if(!stil) _zrmStatus('Rooster ophalen…');
+  try{
+    const nu=new Date(), {year,week}=weekYear(nu);
+    const start=monday(year,week), eind=new Date(start); eind.setDate(start.getDate()+28);
+    const lessen=SCHOOL.filter(x=>x.kind==='lesson').map(x=>{ const [a,b]=x.time.split('–').map(_parseTime); return {id:x.id,a,b}; });
+    const nieuw={}, gezien=new Set();
+    let aantal=0;
+    for(const doc of S.zermelo.docenten){
+      const data=await _zrmGet('/appointments',{user:doc.code,start:Math.floor(start/1000),end:Math.floor(eind/1000),valid:'true',
+        fields:'start,end,subjects,groups,locations,teachers,cancelled,type'});
+      data.forEach(ap=>{
+        if(ap.type&&!['lesson','exam','activity'].includes(ap.type)) return;
+        const van=new Date(ap.start*1000), tot=new Date(ap.end*1000);
+        const di=(van.getDay()+6)%7;
+        if(di>4) return;
+        const wy=weekYear(van), key=wk(wy.year,wy.week);
+        const a=van.getHours()*60+van.getMinutes(), b=tot.getHours()*60+tot.getMinutes();
+        const rec={d:doc.code,s:(ap.subjects||[]).join('/'),g:ap.groups||[],l:(ap.locations||[]).join(', '),x:ap.cancelled?1:0};
+        lessen.forEach(sl=>{
+          if(Math.min(b,sl.b)-Math.max(a,sl.a)<10) return; // minstens 10 minuten in dit lesuur
+          const uniek=[key,di,sl.id,rec.d,rec.s,rec.g.join(',')].join('|');
+          if(gezien.has(uniek)) return; gezien.add(uniek);
+          (((nieuw[key]=nieuw[key]||{})[di]=nieuw[key][di]||{})[sl.id]=nieuw[key][di][sl.id]||[]).push(rec);
+          aantal++;
+        });
+      });
+    }
+    // Oude weken (meer dan 2 weken terug) opruimen, opgehaalde weken vervangen
+    const grens=new Date(start); grens.setDate(start.getDate()-14);
+    const houd={};
+    Object.entries(S.zermelo.rooster||{}).forEach(([k,v])=>{
+      const [y,w]=k.split('-').map(Number);
+      if(monday(y,w)>=grens&&monday(y,w)<start) houd[k]=v;
+    });
+    S.zermelo.rooster={...houd,...nieuw};
+    S.zermelo.laatst=new Date().toISOString();
+    persist();
+    if(!stil) _zrmStatus(`✓ ${aantal} lesuren opgehaald van ${S.zermelo.docenten.length} docent${S.zermelo.docenten.length===1?'':'en'}.`,'#2D8B50');
+    if(document.getElementById('screen-admin')?.classList.contains('show')) renderZrmAdmin();
+    if(document.getElementById('screen-main')?.classList.contains('show')){
+      if(S.mainView==='dash') renderDashboard(); else renderSchedule();
+    }
+  }catch(e){ fout(e.message); }
+  finally{ _zrmBezig=false; }
+}
+function _zrmAutoVernieuw(){
+  if(!S.zermelo?.actief||!_zrmToken()||!_zrmBase()||!S.zermelo.docenten.length) return;
+  if(S.zermelo.laatst&&Date.now()-new Date(S.zermelo.laatst)<60*60000) return;
+  zrmVernieuw(true);
+}
+setInterval(_zrmAutoVernieuw,10*60000);
+
 /* ══ BESCHIKBAARHEID ════════════════════════════════ */
 // Vast jaarpatroon per vak — geen weeksleutel nodig
 function getBeschVal(vak,di,slotId){
@@ -5307,6 +5615,8 @@ function buildBeschGridEl(vak, editable){
 /* ── Docent beschikbaarheid modal ── */
 function openBeschModal(){
   document.getElementById('besch-vak-title').textContent=S.docentVak||'';
+  const zn=document.getElementById('besch-zrm-note');
+  if(zn) zn.style.display=S.zermelo?.actief?'':'none';
   const ct=document.getElementById('besch-grid-ct'); ct.innerHTML='';
   ct.appendChild(buildBeschGridEl(S.docentVak,true));
   document.getElementById('modal-besch').classList.add('show');
@@ -6893,22 +7203,61 @@ let _toetsenRawRows = [];      // ruwe rijen uit Excel
 let _toetsenHeaders = [];      // kolomnamen uit Excel
 let _herplanToetsId = null;    // id van de toets die herplanned wordt
 
-const TOETS_COL_ALIASES = {
-  naam:     ['naam','leerlingnaam','student','leerling','name','achternaam','leerling naam'],
-  klas:     ['klas','groep','class','leerjaar','klas/groep','klasgroep'],
-  vak:      ['vak','vakcode','subject','vak code','vak/onderdeel','onderdeel','vakken'],
-  datum:    ['datum','date','dag','toetsdatum','datum toets'],
-  tijdstip: ['tijdstip','tijd','time','van','starttijd','aanvangstijd','uur','begintijd','aanvang','start','begin'],
-  lokaal:   ['lokaal','zaal','ruimte','room','locatie'],
+// Kolomnamen die de app herkent in een toetsrooster (kleine letters, zonder leestekens)
+const TOETS_KOPPEN = {
+  klas:   ['klas','klassen','groep','groepen','class','klasgroep','lesgroep','stamklas'],
+  vak:    ['vak','vakken','vakcode','subject','onderdeel','vakonderdeel','toetsvak'],
+  datum:  ['datum','date','toetsdatum','datumtoets','dagdatum'],
+  dag:    ['dag','weekdag','day'],
+  start:  ['start','starttijd','begin','begintijd','aanvang','aanvangstijd','van','vanaf','tijdstip','tijd','time','tijden'],
+  eind:   ['eind','einde','eindtijd','tot','totenmet','tm','einduur','eindetijd'],
+  duur:   ['duur','tijdsduur','minuten','lengte','toetsduur','duurmin','duurinminuten'],
+  lesuur: ['lesuur','uur','blok','lesblok'],
+  lokaal: ['lokaal','lokalen','zaal','ruimte','room','locatie'],
+  onderwerp: ['onderwerp','omschrijving','stof','toetsstof','inhoud','beschrijving','toets'],
 };
-
-function _detectCol(headers, field){
-  const aliases = TOETS_COL_ALIASES[field];
-  for(const h of headers){
-    const norm = h.toLowerCase().trim();
-    if(aliases.some(a => norm.includes(a))) return h;
+function _kopNorm(h){ return String(h||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+// Geeft {veld: kolomindex}; elke kolom hoort bij hoogstens één veld (beste match eerst)
+function _detecteerKolommen(koppen){
+  const kandidaten=[];
+  koppen.forEach((h,i)=>{
+    const n=_kopNorm(h);
+    if(!n) return;
+    Object.entries(TOETS_KOPPEN).forEach(([veld,lijst])=>{
+      let score=0;
+      lijst.forEach(a=>{
+        if(n===a) score=Math.max(score,3);
+        else if(a.length>=4&&n.startsWith(a)) score=Math.max(score,2);
+        else if(a.length>=4&&n.includes(a)) score=Math.max(score,1);
+      });
+      if(score) kandidaten.push({veld,i,score});
+    });
+  });
+  kandidaten.sort((x,y)=>y.score-x.score);
+  const map={}, bezet=new Set();
+  kandidaten.forEach(k=>{ if(map[k.veld]===undefined&&!bezet.has(k.i)){ map[k.veld]=k.i; bezet.add(k.i); } });
+  return map;
+}
+const _MAANDEN=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const _WEEKDAGEN={ma:0,maandag:0,di:1,dinsdag:1,wo:2,woensdag:2,do:3,donderdag:3,vr:4,vrijdag:4,za:5,zaterdag:5,zo:6,zondag:6};
+// Jaar bij een datum zonder jaartal: binnen het schooljaar, anders het dichtst bij vandaag
+function _raadJaar(dag,maand){
+  const van=S.schoolYearFrom?new Date(S.schoolYearFrom):null;
+  if(van&&!isNaN(van)){
+    const j=van.getFullYear();
+    return (maand-1)>=van.getMonth()?j:j+1;
   }
-  return '';
+  const nu=new Date(), j=nu.getFullYear();
+  const opties=[j-1,j,j+1].map(y=>({y,d:Math.abs(new Date(y,maand-1,dag)-nu)}));
+  return opties.sort((a,b)=>a.d-b.d)[0].y;
+}
+function _isGeldigeDatum(ds){ return /^\d{4}-\d{2}-\d{2}$/.test(ds)&&!isNaN(new Date(ds+'T12:00:00')); }
+// Start en eind uit één cel als "13:15 - 15:15" of "13.15–15.15"
+function _parseTijdBereik(raw){
+  const m=String(raw||'').match(/(\d{1,2})[:.](\d{2})\s*(?:-|–|—|tot|t\/m)\s*(\d{1,2})[:.](\d{2})/i);
+  if(!m) return null;
+  const f=(h,mm)=>`${String(parseInt(h)).padStart(2,'0')}:${mm}`;
+  return {start:f(m[1],m[2]),eind:f(m[3],m[4])};
 }
 
 function openToetsenModal(){
@@ -6949,13 +7298,11 @@ function handleToetsenFile(file){
     const reader = new FileReader();
     reader.onload = e => {
       try{
-        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
         if(!rows.length){ alert('Leeg bestand.'); return; }
-        _toetsenHeaders = rows[0].map(String);
-        _toetsenRawRows = rows.slice(1);
-        showToetsenColMap();
+        _toetsenAutoImport(rows, file.name);
       }catch(err){ alert('Fout bij lezen: '+err.message); }
     };
     reader.readAsArrayBuffer(file);
@@ -6968,54 +7315,44 @@ function handleToetsenFile(file){
   document.head.appendChild(s);
 }
 
-function showToetsenColMap(){
-  const zone = document.getElementById('toetsen-col-map-zone');
-  const rows = document.getElementById('toetsen-col-map-rows');
-  // Naam is niet nodig: app koppelt leerlingen via klas + vak
-  const fields = ['klas','vak','datum','tijdstip','lokaal'];
-  const labels = {klas:'Klas *',vak:'Vak *',datum:'Datum',tijdstip:'Tijdstip',lokaal:'Lokaal (optioneel)'};
-  rows.innerHTML = fields.map(f=>{
-    const detected = _detectCol(_toetsenHeaders, f);
-    const opts = ['<option value="">— niet aanwezig —</option>',
-      ..._toetsenHeaders.map(h=>`<option value="${h}"${h===detected?' selected':''}>${h}</option>`)
-    ].join('');
-    return `<div class="col-map-row">
-      <label>${labels[f]}</label>
-      <select class="inp" id="colmap-${f}" style="font-size:.74rem;padding:.22rem .4rem;">${opts}</select>
-    </div>`;
-  }).join('');
-  zone.style.display='';
-}
-
 function resetToetsenUpload(){
   _toetsenRawRows=[]; _toetsenHeaders=[];
-  document.getElementById('toetsen-col-map-zone').style.display='none';
   document.getElementById('toetsen-file-inp').value='';
 }
 
 function _parseToetsDate(raw){
-  if(!raw) return '';
-  // Excel date serial number (number)
+  if(!raw&&raw!==0) return '';
+  // Excel-datumgetal (eventueel met tijd erachter)
   if(typeof raw === 'number'){
-    const d = new Date(Math.round((raw - 25569) * 864e5));
-    return toDS(d);
+    if(raw<20000||raw>80000) return '';
+    const d = new Date(Date.UTC(1899,11,30)+Math.floor(raw)*864e5);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
   }
-  // Already a JS Date (cellDates:true)
-  if(raw instanceof Date) return toDS(raw);
-  const s = String(raw).trim();
-  // DD-MM-YYYY or D-M-YYYY
-  if(/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(s)){
-    const [d,m,y] = s.split(/[-\/]/);
-    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  }
+  if(raw instanceof Date) return toDS(new Date(raw.getTime()+12*3600e3));
+  const s = String(raw).trim().toLowerCase();
+  const p2=n=>String(n).padStart(2,'0');
+  let m;
   // YYYY-MM-DD
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  return s;
+  if((m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/))) return `${m[1]}-${p2(m[2])}-${p2(m[3])}`;
+  // D-M-YYYY, D/M/YY, "ma 9-11-2026"
+  if((m=s.match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/))){
+    const y=m[3].length===2?'20'+m[3]:m[3];
+    return `${y}-${p2(m[2])}-${p2(m[1])}`;
+  }
+  // "9 november 2026", "ma 9 nov"
+  if((m=s.match(/(\d{1,2})\s+([a-z]{3,})\.?(?:\s+(\d{4}))?/))){
+    const mi=_MAANDEN.findIndex(x=>m[2].startsWith(x)||(x==='mrt'&&m[2].startsWith('maa')));
+    if(mi>=0){ const y=m[3]||_raadJaar(+m[1],mi+1); return `${y}-${p2(mi+1)}-${p2(m[1])}`; }
+  }
+  // D-M zonder jaar
+  if((m=s.match(/^(?:[a-z]+\s+)?(\d{1,2})[-\/](\d{1,2})$/))) return `${_raadJaar(+m[1],+m[2])}-${p2(m[2])}-${p2(m[1])}`;
+  return '';
 }
 
 function _parseToetsTime(raw){
   if(!raw) return '';
   if(typeof raw === 'number'){
+    if(raw >= 1 && raw % 1 > 0) raw = raw % 1; // datum + tijd in één cel
     if(raw < 1){
       // Excel fraction of day (e.g. 0.354166... = 8:30)
       const totalMin = Math.round(raw * 1440);
@@ -7087,6 +7424,7 @@ function _normVak(v){ return String(v||'').toLowerCase().replace(/[\s\/\-\.]/g,'
 function _stuVolgtVak(stu, vakNorm){
   // Check of een leerling dit vak volgt in enige periode
   const vakken = stu.vakken || {};
+  if(Array.isArray(vakken)) return vakken.some(v => _normVak(v) === vakNorm); // oude platte lijst
   return Object.values(vakken).some(arr =>
     Array.isArray(arr) && arr.some(v => _normVak(v) === vakNorm)
   );
@@ -7106,49 +7444,212 @@ function _toetsMatchesVak(toetsVak, stuVak){
     .map(p=>_normVak(p.trim())).some(p => p === norm);
 }
 
-function confirmToetsenImport(){
-  const get = f => {
-    const sel=document.getElementById('colmap-'+f); return sel?sel.value:'';
-  };
-  const colKlas=get('klas'), colVak=get('vak'),
-        colDatum=get('datum'), colTijd=get('tijdstip'), colLokaal=get('lokaal');
-  if(!colKlas||!colVak){ alert('Kies minimaal de kolommen Klas en Vak.'); return; }
-  const idx = f => _toetsenHeaders.indexOf(f);
-  const iKlas=idx(colKlas), iVak=idx(colVak),
-        iDatum=idx(colDatum), iTijd=idx(colTijd), iLokaal=idx(colLokaal);
-
-  const imported = [];
-  for(const row of _toetsenRawRows){
-    const klas = String(row[iKlas]||'').trim();
-    const vak  = String(row[iVak] ||'').trim();
-    if(!klas||!vak) continue;
-    const datum    = _parseToetsDate(iDatum>=0  ? row[iDatum]  : '');
-    const tijdstip = iTijd>=0    ? _parseToetsTime(row[iTijd])          : '';
-    const lokaal   = iLokaal>=0  ? String(row[iLokaal]||'').trim()      : '';
-    // Zoek alle leerlingen in deze klas die dit vak (of één van de onderdelen) volgen
-    const matches = S.students.filter(s => s.klass===klas && _stuVolgtVakExcel(s, vak));
-
-    if(matches.length === 0){
-      // Toch toevoegen zodat het zichtbaar is (geen match)
-      imported.push({ id:uid(), studentNaam:`(geen leerling in ${klas})`, klas, vak, datum, tijdstip, lokaal,
-        status:'open', matchedStudentId:null, geplandWeekKey:null, geplandDi:null, geplandSlot:null });
-    } else {
-      for(const stu of matches){
-        imported.push({ id:uid(), studentNaam:stu.name, klas, vak, datum, tijdstip, lokaal,
-          status:'open', matchedStudentId:stu.id, geplandWeekKey:null, geplandDi:null, geplandSlot:null });
-      }
+// Lijstvorm: één toets per rij met kolomnamen (Klas, Vak, Datum, Dag, Start, Einde …)
+function _toetsenRegelsUitLijst(rows){
+  let kopRij=-1, kol={}, best=0;
+  rows.slice(0,20).forEach((r,i)=>{
+    const m=_detecteerKolommen(r.map(String));
+    if(m.klas===undefined||m.vak===undefined) return;
+    const n=Object.keys(m).length;
+    if(n>best){ best=n; kopRij=i; kol=m; }
+  });
+  if(kopRij<0) return null;
+  const koppen=rows[kopRij].map(String);
+  const data=rows.slice(kopRij+1).filter(r=>r.some(c=>String(c).trim()!==''));
+  // Geen datumkolom gevonden: kijk naar de inhoud
+  if(kol.datum===undefined){
+    for(let i=0;i<koppen.length;i++){
+      if(Object.values(kol).includes(i)) continue;
+      const w=data.map(r=>r[i]).filter(v=>v!=='');
+      if(w.length&&w.filter(v=>_isGeldigeDatum(_parseToetsDate(v))).length>=w.length*.6){ kol.datum=i; break; }
     }
   }
-  if(!imported.length){ alert('Geen geldige rijen gevonden. Controleer de kolomkeuze.'); return; }
+  const cel=(r,veld)=>kol[veld]!==undefined?r[kol[veld]]:'';
+  const lessen=SCHOOL.filter(x=>x.kind==='lesson');
+  const regels=[];
+  for(const row of data){
+    const klas=String(cel(row,'klas')||'').trim();
+    const vak=String(cel(row,'vak')||'').trim();
+    if(!klas||!vak) continue;
+    let datum=_parseToetsDate(cel(row,'datum'));
+    if(!_isGeldigeDatum(datum)) datum=_parseToetsDate(cel(row,'dag')); // "ma 9 nov" in de dagkolom
+    if(!_isGeldigeDatum(datum)) datum='';
+    let start='', eind='';
+    const bereik=_parseTijdBereik(cel(row,'start'))||_parseTijdBereik(cel(row,'eind'));
+    if(bereik){ start=bereik.start; eind=bereik.eind; }
+    else { start=_parseToetsTime(cel(row,'start')); eind=_parseToetsTime(cel(row,'eind')); }
+    if(!/^\d{2}:\d{2}$/.test(start)) start='';
+    if(!/^\d{2}:\d{2}$/.test(eind)) eind='';
+    const lu=parseInt(cel(row,'lesuur'));
+    if(!start&&lu>=1&&lu<=lessen.length) start=_fmtMin(_parseTime(lessen[lu-1].time.split('–')[0]));
+    let dur=start&&eind?_parseTime(eind)-_parseTime(start):0;
+    if(!(dur>0)) dur=_duurUitTekst(String(cel(row,'duur')||''),true);
+    const rawDatum=cel(row,'datum')||cel(row,'dag');
+    regels.push({klas,vak,datum,dag:String(cel(row,'dag')||''),start,dur,jaarBekend:typeof rawDatum==='number'||/\d{4}/.test(String(rawDatum)),
+      lokaal:String(cel(row,'lokaal')||'').trim(),
+      onderwerp:kol.onderwerp!==undefined?String(cel(row,'onderwerp')||'').trim():''});
+  }
+  const namen={klas:'Klas',vak:'Vak',datum:'Datum',dag:'Dag',start:'Start',eind:'Einde',duur:'Duur',lesuur:'Lesuur',lokaal:'Lokaal',onderwerp:'Onderwerp'};
+  const herkend=Object.keys(namen).filter(v=>kol[v]!==undefined).map(v=>`${namen[v]} = “${_esc(koppen[kol[v]])}”`);
+  return {regels,uitleg:'Herkend als lijst: '+herkend.join(' · ')+'.',zonderTijd:kol.start===undefined&&kol.lesuur===undefined};
+}
+// "150 min", "3uur", "50" → minuten (getal zonder eenheid alleen als dat mag)
+function _duurUitTekst(t,kaalGetal){
+  let m=String(t).match(/(\d+(?:[.,]\d+)?)\s*(?:min|minuten|m\b)/i);
+  if(m) return Math.round(parseFloat(m[1].replace(',','.')));
+  m=String(t).match(/(\d+(?:[.,]\d+)?)\s*(?:uur|u\b|hr|h\b)/i);
+  if(m) return Math.round(parseFloat(m[1].replace(',','.'))*60);
+  if(kaalGetal&&(m=String(t).match(/^\s*(\d{2,3})\s*$/))) return +m[1];
+  return 0;
+}
+// Blokkenschema: per dag een blok met de datum, daaronder de klassen als kolommen,
+// tijden in de rijen en het vak in de cel (meerdere vakken onder elkaar mag)
+function _toetsenRegelsUitBlokschema(rows){
+  const isTijd=v=>/^\s*\d{1,2}[.:]\d{2}\s*u?\s*$/i.test(String(v));
+  const isDatumKop=v=>{
+    if(typeof v==='number') return v>20000&&v<80000;
+    const t=String(v).toLowerCase();
+    return /\d/.test(t)&&(/(ma|di|wo|do|vr|za|zo)[a-z]*\.?\s+\d/.test(t)||_MAANDEN.some(m=>t.includes(m)))&&_isGeldigeDatum(_parseToetsDate(v));
+  };
+  const regels=[];
+  let dagen=[], klasKol={}, wachtOpKlassen=false, tijdRijen=[];
+  // Eerst alle tijdrijen per blok verzamelen om de standaardduur te bepalen
+  const blokken=[];
+  rows.forEach((r,i)=>{
+    const datumCellen=r.map((v,j)=>({v,j})).filter(x=>x.v!==''&&isDatumKop(x.v));
+    if(datumCellen.length){
+      dagen=datumCellen.map(x=>({col:x.j,datum:_parseToetsDate(x.v),tekst:String(x.v)}));
+      wachtOpKlassen=true; blokken.push({dagen,klasKol:{},rijen:[]});
+      return;
+    }
+    const blok=blokken[blokken.length-1];
+    if(!blok) return;
+    if(wachtOpKlassen){
+      const cellen=r.map((v,j)=>({v:String(v).trim(),j})).filter(x=>x.v);
+      if(!cellen.length) return;
+      cellen.forEach(x=>{
+        const dag=[...blok.dagen].reverse().find(d=>d.col<=x.j);
+        if(dag) blok.klasKol[x.j]={klas:x.v,dag};
+      });
+      wachtOpKlassen=false;
+      return;
+    }
+    if(/^legenda/i.test(String(r.find(v=>String(v).trim())||'').trim())){ blokken.push({dagen:[],klasKol:{},rijen:[],stop:true}); return; }
+    // De kolom met tijden ligt per blok vast; losse tijden elders in de rij tellen niet
+    if(blok.tijdKol===undefined){ const t=r.findIndex(isTijd); if(t>=0) blok.tijdKol=t; }
+    const tj=blok.tijdKol!==undefined&&isTijd(r[blok.tijdKol])?blok.tijdKol:-1;
+    const isPauze=v=>/^\s*p(auze)?\s*$/i.test(String(v));
+    if(tj>=0) blok.rijen.push({i,tijd:_parseToetsTime(String(r[tj]).replace(/u/i,'').replace('.',':')),tj,r});
+    else if(blok.tijdKol!==undefined?isPauze(r[blok.tijdKol]):r.some(isPauze)) blok.rijen.push({i,pauze:true});
+    else if(r.some(v=>String(v).trim())&&blok.rijen.length&&!blok.rijen[blok.rijen.length-1].pauze){
+      // Tweede regel onder een tijd (vak dat in de rij eronder staat)
+      const vorige=blok.rijen[blok.rijen.length-1];
+      blok.rijen.push({i,tijd:vorige.tijd,tj:-1,r,vervolg:true});
+    }
+  });
+  blokken.filter(b=>!b.stop).forEach(blok=>{
+    const tijden=blok.rijen;
+    let laatsteStd=60;
+    tijden.forEach((rij,n)=>{
+      if(rij.pauze) return;
+      // Standaardduur: tot de volgende tijd, min 30 minuten pauze als die ertussen staat
+      let std=rij.vervolg?laatsteStd:60;
+      const volgende=rij.vervolg?null:tijden.slice(n+1).find(x=>!x.pauze&&!x.vervolg);
+      if(volgende){
+        const pauze=tijden.slice(n+1,tijden.indexOf(volgende)).some(x=>x.pauze);
+        std=_parseTime(volgende.tijd)-_parseTime(rij.tijd)-(pauze?30:0);
+        if(!(std>=30)) std=60;
+      }
+      if(!rij.vervolg) laatsteStd=std;
+      rij.r.forEach((v,j)=>{
+        if(j===rij.tj||String(v).trim()==='') return;
+        const k=blok.klasKol[j];
+        if(!k||!k.dag.datum) return;
+        const regelsCel=String(v).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+        const celDuur=regelsCel.map(x=>_duurUitTekst(x,false)).find(Boolean)||0;
+        // Lange regels zijn een omschrijving (bijv. "Inhaal / Schrijfvaardig / heid"), geen vak
+        const isOmschr=x=>!isTijd(x)&&!_duurUitTekst(x,false)&&_normVak(x.replace(/\b(po|pta|sv|so)\b\.?|\*/gi,'')).length>5;
+        let omschr='', vorigeOmschr=false;
+        const vakRegels=[];
+        regelsCel.forEach(x=>{
+          if(isOmschr(x)||(vorigeOmschr&&/^[a-z]/.test(x))){
+            omschr+=(omschr&&!/^[a-z]/.test(x)?' ':'')+x; vorigeOmschr=true; // "Schrijfvaardig" + "heid"
+          } else { vakRegels.push(x); vorigeOmschr=false; }
+        });
+        if(!vakRegels.some(x=>!isTijd(x)&&!_duurUitTekst(x,false))&&omschr) vakRegels.push(omschr);
+        vakRegels.forEach(txt=>{
+          if(isTijd(txt)) return;
+          // Regel met alleen een duur ("150 min", "3uur") is geen vak
+          if(_duurUitTekst(txt,false)&&!txt.replace(/(\d+(?:[.,]\d+)?)\s*(min(uten)?\.?|uur|u)\b/gi,'').replace(/[^a-z]/gi,'')) return;
+          const eigenDuur=_duurUitTekst(txt,false);
+          const schoon=txt.replace(/(\d+(?:[.,]\d+)?)\s*(min(uten)?\.?|uur)\b/gi,'').trim();
+          // Toevoegingen als PO, sv., PTA en * gaan naar het onderwerp; het vak blijft over
+          const extra=(schoon.match(/\b(po|pta|sv|mondeling|herkansing|so)\b/gi)||[]).map(x=>x.toUpperCase());
+          const vak=schoon.replace(/\b(po|pta|sv|mondeling|herkansing|so)\b\.?|\*/gi,'').replace(/\s+/g,' ').replace(/^[\s.,;:-]+|[\s.,;:-]+$/g,'').trim();
+          if(!vak) return;
+          regels.push({klas:k.klas,vak,datum:k.dag.datum,dag:k.dag.tekst,jaarBekend:/\d{4}/.test(k.dag.tekst),start:rij.tijd,dur:eigenDuur||celDuur||std,lokaal:'',
+            onderwerp:[...extra,txt===omschr?'':omschr].filter(Boolean).join(' · ')});
+        });
+      });
+    });
+  });
+  if(!regels.length) return null;
+  const nDagen=new Set(regels.map(r=>r.datum)).size, nKlassen=new Set(regels.map(r=>r.klas)).size;
+  return {regels,uitleg:`Herkend als blokkenschema: ${nDagen} dag${nDagen===1?'':'en'}, ${nKlassen} klassen.`,zonderTijd:false};
+}
 
-  // Merge: bewaar al geplande entries voor dezelfde student+vak+datum
-  const keep = S.toetsenImport.filter(t=>t.status==='gepland');
-  S.toetsenImport = [
+// Leest het toetsrooster zonder kolommen te kiezen en maakt per leerling een overzicht
+function _toetsenAutoImport(rows, bestandsnaam){
+  const res=_toetsenRegelsUitLijst(rows)||_toetsenRegelsUitBlokschema(rows);
+  if(!res||!res.regels.length){
+    alert('De app kon in dit bestand geen toetsen vinden.\nGebruik een lijst met kolommen als Klas, Vak, Datum, Dag, Start en Einde, of het blokkenschema van de toetsweek.');
+    return;
+  }
+  const imported=[]; let zonderDatum=0;
+  // Klassen vergelijken met en zonder de J ervoor (JH5 = H5)
+  const klasSleutel=k=>_kopNorm(k).replace(/^j(?=[a-z]+\d)/,'');
+  const appKlassen=new Set(S.students.map(st=>klasSleutel(st.klass)).filter(Boolean));
+  const andereKlassen=new Set();
+  res.regels.forEach(rg=>{
+    // Klassen zonder leerlingen in de app overslaan
+    const klassen=rg.klas.split(/[,;\/]|\s+en\s+/i).map(klasSleutel).filter(Boolean);
+    if(!klassen.some(k=>appKlassen.has(k))){ andereKlassen.add(rg.klas); return; }
+    if(!rg.datum) zonderDatum++;
+    const dagTxt=_kopNorm(String(rg.dag||'').split(/\s/)[0]);
+    const dagNr=_WEEKDAGEN[dagTxt]??_WEEKDAGEN[dagTxt.slice(0,2)]??null;
+    const wd=ds=>(new Date(ds+'T12:00:00').getDay()+6)%7;
+    // Datum zonder jaartal: kies het jaar waarin de weekdag klopt
+    if(rg.datum&&dagNr!==null&&!rg.jaarBekend&&wd(rg.datum)!==dagNr){
+      const y=+rg.datum.slice(0,4);
+      const alt=[y-1,y+1].map(j=>j+rg.datum.slice(4)).find(ds=>wd(ds)===dagNr);
+      if(alt) rg.datum=alt;
+    }
+    const dagKlopt=!(rg.datum&&dagNr!==null&&wd(rg.datum)!==dagNr);
+    const eind=rg.start&&rg.dur?_fmtMin(_parseTime(rg.start)+rg.dur):'';
+    const matches=S.students.filter(st=>klassen.includes(klasSleutel(st.klass))&&_stuVolgtVakExcel(st,rg.vak));
+    const basis={klas:rg.klas,vak:rg.vak,onderwerp:rg.onderwerp||'',datum:rg.datum,tijdstip:rg.start,eindtijd:eind,lokaal:rg.lokaal||'',
+      status:'open',geplandWeekKey:null,geplandDi:null,geplandSlot:null,...(rg.start&&rg.dur>0?{_dur:rg.dur}:{}),...(dagKlopt?{}:{dagAfwijkend:rg.dag})};
+    if(!matches.length) imported.push({id:uid(),studentNaam:`(geen leerling in ${rg.klas})`,matchedStudentId:null,...basis});
+    else matches.forEach(st=>imported.push({id:uid(),studentNaam:st.name,matchedStudentId:st.id,...basis}));
+  });
+
+  // Samenvoegen: al geplande toetsen voor dezelfde leerling + vak + datum blijven staan
+  const keep=S.toetsenImport.filter(t=>t.status==='gepland');
+  S.toetsenImport=[
     ...keep.filter(k=>!imported.find(i=>i.matchedStudentId&&i.matchedStudentId===k.matchedStudentId&&i.vak===k.vak&&i.datum===k.datum)),
     ...imported
   ];
   persist();
   resetToetsenUpload();
+  const gekoppeld=imported.filter(t=>t.matchedStudentId);
+  const leerlingen=new Set(gekoppeld.map(t=>t.matchedStudentId)).size;
+  const info=document.getElementById('toetsen-import-info');
+  info.innerHTML=`✓ <b>${_esc(bestandsnaam||'Bestand')}</b>: ${gekoppeld.length} toetsen voor ${leerlingen} leerling${leerlingen===1?'':'en'}`
+    +`${imported.length>gekoppeld.length?` (${imported.length-gekoppeld.length} zonder leerling die dit vak volgt)`:''}. ${res.uitleg}`
+    +(andereKlassen.size?` ${andereKlassen.size} klas${andereKlassen.size===1?'':'sen'} zonder leerlingen in de app overgeslagen.`:'')
+    +(zonderDatum?` <span style="color:#C05818;">${zonderDatum} toets${zonderDatum===1?'':'en'} zonder herkenbare datum.</span>`:'')
+    +(res.zonderTijd?` <span style="color:#C05818;">Geen starttijd gevonden; de toetsen beslaan een heel lesuur.</span>`:'');
+  info.style.display='';
   document.getElementById('toetsen-list-zone').style.display='';
   renderToetsenCards();
   updateToetsBadge();
@@ -7248,19 +7749,17 @@ function renderToetsenCards(){
 function _toetsRowHtml(toets, label, zonderLeerling){
   const datumLabel = toets.datum    ? fmtDate(toets.datum) : '—';
   const slot       = toets.datum && toets.tijdstip ? _findSlotByTime(toets.tijdstip) : null;
-  // Toon echte Excel-starttijd + eindtijd (+50 min = 1 blok standaard)
+  // Start en einde uit het rooster; zonder einde of duur één lesuur
   let tijdLabel = toets.tijdstip || '—';
   if(toets.tijdstip){
-    const [hh,mm] = toets.tijdstip.split(':').map(Number);
-    const endMin  = hh*60 + mm + 50;
-    const endStr  = `${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`;
-    tijdLabel = `${toets.tijdstip} – ${endStr}`;
+    const eind = toets.eindtijd || _fmtMin(_parseTime(toets.tijdstip)+(toets._dur||50));
+    tijdLabel = `${toets.tijdstip} – ${eind}${toets._dur?' ('+toets._dur+' min)':''}`;
   }
   const slotLabel  = slot ? slot.label : '';
 
   const statusEl = toets.status==='gepland'
     ? `<span class="toets-stu-status toets-stu-gepland">✓ Gepland · week ${toets.geplandWeekKey?.split('-')[1]||''}</span>`
-    : `<span class="toets-stu-status toets-stu-open">📅 ${datumLabel} · 🕐 ${tijdLabel}${slotLabel?' ('+slotLabel+')':''}</span>`;
+    : `<span class="toets-stu-status toets-stu-open">📅 ${toets.datum?_DAGEN[new Date(toets.datum+'T12:00:00').getDay()].toLowerCase()+' ':''}${datumLabel} · 🕐 ${tijdLabel}${slotLabel&&!toets._dur?' ('+slotLabel+')':''}${toets.dagAfwijkend?` <b style="color:#C05818;" title="In het bestand staat als dag: ${_esc(toets.dagAfwijkend)}">⚠ dag klopt niet</b>`:''}</span>`;
 
   const delBtn = `<button class="toets-stu-btn del" title="Verwijderen" onclick="removeToets('${toets.id}')">✕</button>`;
   // Inplannen altijd tonen als er een datum is (planToets toont zelf een melding als slot ontbreekt)
@@ -8404,6 +8903,7 @@ function _doAanwExport(){
 
 /* ══ MAIN SCREEN ════════════════════════════════════ */
 function showMain(){
+  setTimeout(_zrmAutoVernieuw,1500);
   const now=new Date();
   // Clamp start to school year boundaries
   let start=now;
@@ -9487,11 +9987,13 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
               ? Object.keys(S.beschikbaarheid).filter(v=>v===S.docentVak)
               : Object.keys(S.beschikbaarheid);
             const circs=[];
+            const zrmAan=!!S.zermelo?.actief;
             beschVakken.forEach(vak=>{
               const bdi=S.beschikbaarheid[vak]?.[di];
               if(!bdi) return;
               const bval=bdi[slot.id];
               if(!bval) return;
+              if(zrmAan&&bval.startsWith('les-')) return; // lessen komen uit Zermelo
               if((bval==='lokaal107'||bval.startsWith('lokaal-')) && stuVakken.includes(vak)){
                 const lokaalNr=bval==='lokaal107'?'107':bval.slice(7);
                 circs.push({type:'lokaal',vak,lokaal:lokaalNr,cellColor:c});
@@ -9505,15 +10007,18 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
                 }
               }
             });
+            _zrmLessen(key,di,slot.id).filter(l=>_zrmVoorLeerling(l,stu)).forEach(l=>{
+              circs.push({type:'les',vak:_zrmVakVoorLeerling(l,stu),klassen:l.g||[],lokaal:l.l,docent:l.d,uitval:!!l.x});
+            });
             if(circs.length){
               const wrap=document.createElement('div');
               wrap.className='besch-circles-wrap';
               circs.forEach(cd=>{
                 const circ=document.createElement('div');
                 if(cd.type==='les'){
-                  circ.className='besch-circle besch-les';
+                  circ.className='besch-circle besch-les'+(cd.uitval?' besch-uitval':'');
                   circ.textContent=cd.vak;
-                  const tip=[cd.vak+' geeft les'];
+                  const tip=[cd.vak+(cd.docent?' ('+cd.docent+')':'')+(cd.uitval?' — les vervalt':' geeft les')];
                   if(cd.klassen&&cd.klassen.length) tip.push(cd.klassen.join(', '));
                   if(cd.lokaal) tip.push('lokaal '+cd.lokaal);
                   circ.dataset.tip=tip.join(' — ');
@@ -10744,9 +11249,18 @@ function _renderDashDocenten(v,nuSlot){
   let iets=false;
   let html=lessen.map((s,i)=>{
     const chips=[];
+    if(S.zermelo?.actief){
+      const gezien=new Set();
+      _zrmLessen(v.key,v.di,s.id).forEach(l=>{
+        if(gezien.has(l.d)) return; gezien.add(l.d);
+        const vak=String(l.s||'').split('/').map(_zrmVak).join('/');
+        chips.push(`<span class="dash-chip les${l.x?' uitval':''}" title="${_esc(l.d)} · ${_esc(vak)} · ${_esc((l.g||[]).join(', '))}${l.l?' · lokaal '+_esc(l.l):''}${l.x?' · vervalt':''}">${_esc(l.d)}${l.l?`<small>${_esc(l.l)}</small>`:''}</span>`);
+      });
+    }
     Object.keys(besch).sort((a,b)=>a.localeCompare(b,'nl')).forEach(vak=>{
       const val=besch[vak]?.[v.di]?.[s.id];
       if(!val) return;
+      if(S.zermelo?.actief&&val.startsWith('les-')) return;
       if(val.startsWith('les-')){
         const lok=val.includes('|')?val.split('|')[1]:'';
         chips.push(`<span class="dash-chip les" title="${_esc(vak)} geeft les${lok?' in '+_esc(lok):''}">${_esc(vak)}</span>`);
@@ -10759,7 +11273,8 @@ function _renderDashDocenten(v,nuSlot){
     return `<div class="dash-drow${nuSlot&&nuSlot.id===s.id?' now':''}"><span class="n">${i+1}</span><span class="t">${s.time}</span><div class="dash-chips">${chips.join('')}</div></div>`;
   }).join('');
   html+=`<div class="dash-legend"><span><span class="dash-chip les">NE</span> geeft les</span><span><span class="dash-chip">NE</span> beschikbaar in lokaal</span></div>`;
-  if(!iets) html+=`<div class="dash-empty" style="margin-top:.8rem;">Er is voor vandaag nog geen beschikbaarheid ingevuld door docenten.</div>`;
+  if(!iets) html+=`<div class="dash-empty" style="margin-top:.8rem;">${S.zermelo?.actief?'Geen lessen van de gekozen docenten vandaag in Zermelo.':'Er is voor vandaag nog geen beschikbaarheid ingevuld door docenten.'}</div>`;
+  if(S.zermelo?.actief&&S.zermelo.laatst) html+=`<div class="dash-empty" style="margin-top:.5rem;font-size:.72rem;">Uit Zermelo · bijgewerkt ${_zrmWanneer(S.zermelo.laatst)}</div>`;
   document.getElementById('dash-doc-body').innerHTML=html;
 }
 
