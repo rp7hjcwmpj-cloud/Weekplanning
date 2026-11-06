@@ -1832,7 +1832,8 @@ body.dark .dash-card { border-color: var(--border); }
 .dash-trow.ontvangen .dash-tinfo span { color: #2D8B50; opacity: .8; }
 .dash-tstat { font-size: .66rem; font-weight: 700; padding: .1rem .45rem; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
 .dash-tstat.wacht { background: #FFF4C2; color: #8A6A00; }
-.dash-tstat.ontvangen { background: #E3F4EA; color: #2D8B50; }
+.dash-tstat.ontvangen { background: #E3F4EA; color: #2D8B50; text-align: center; line-height: 1.25; padding: .15rem .5rem; border-radius: 9px; }
+.dash-tstat small { display: block; font-size: .6rem; font-weight: 600; opacity: .85; }
 .tip-ontv { display: flex; gap: .55rem; align-items: flex-start; margin: .45rem 0 .2rem; padding: .55rem .65rem; border: 1.5px solid #E8C840; background: #FFF9DC; border-radius: 9px; cursor: pointer; font-size: .82rem; color: var(--tx); }
 .tip-ontv input { margin-top: .15rem; accent-color: #2D8B50; width: 16px; height: 16px; flex-shrink: 0; }
 .tip-ontv.aan { border-color: #2D8B50; background: #E3F4EA; }
@@ -2729,10 +2730,16 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         </div>
 
         <!-- Alleen bij aanpassen: versie van de toets ontvangen -->
-        <label class="tip-ontv" id="tip-ontv-row" style="display:none;">
-          <input type="checkbox" id="tip-ontvangen" onchange="_tipOntvChange()">
-          <span><b>Versie van de toets ontvangen van de docent</b><small id="tip-ontv-sub">Wordt opgeslagen met "Wijziging opslaan".</small></span>
-        </label>
+        <div id="tip-ontv-row" style="display:none;">
+          <label class="tip-ontv" id="tip-ontv-docent-row">
+            <input type="checkbox" id="tip-ontvangen" onchange="_tipOntvChange(null,this)">
+            <span><b>Versie van de toets ontvangen van de docent</b><small id="tip-ontv-sub">Losse toets · wordt opgeslagen met "Wijziging opslaan".</small></span>
+          </label>
+          <label class="tip-ontv" id="tip-ontv-admin-row">
+            <input type="checkbox" id="tip-ontv-admin" onchange="_tipOntvChange(null,this)">
+            <span><b>Regulier, toets aangeleverd via administratie</b><small id="tip-ontv-admin-sub">Wordt opgeslagen met "Wijziging opslaan".</small></span>
+          </label>
+        </div>
 
         <!-- Collega uitnodiging (alleen als M365 gekoppeld) -->
         <div id="tip-collega-row" style="display:none;">
@@ -8003,6 +8010,7 @@ function openToetsInplanModal(edit){
   document.getElementById('tip-delete-btn').style.display=_tipEditing?'':'none';
   document.getElementById('tip-ontv-row').style.display=_tipEditing?'':'none';
   document.getElementById('tip-ontvangen').checked=false;
+  document.getElementById('tip-ontv-admin').checked=false;
   _tipOntvChange();
   document.querySelectorAll('.tip-dur-extra').forEach(l=>l.remove());
 
@@ -8066,20 +8074,27 @@ function _tipPrefillEditing(){
   }
   radio.checked=true;
   const ontv=rec.ontvangen||t?.ontvangen||null;
-  document.getElementById('tip-ontvangen').checked=!!ontv;
+  const via=ontv?(ontv.via||'docent'):null; // oude registraties zonder bron: van de docent
+  document.getElementById('tip-ontvangen').checked=via==='docent';
+  document.getElementById('tip-ontv-admin').checked=via==='administratie';
   _tipOntvChange(ontv);
   _tipSelectDag(di);
   _tipFormChange();
 }
 
-function _tipOntvChange(ontv){
-  const cb=document.getElementById('tip-ontvangen');
-  document.getElementById('tip-ontv-row').classList.toggle('aan',cb.checked);
-  const sub=document.getElementById('tip-ontv-sub');
-  if(ontv&&cb.checked){
-    const d=new Date(ontv.op);
-    sub.textContent=`Ontvangen op ${d.getDate()} ${MONTHS_FULL[d.getMonth()].toLowerCase()}${ontv.door?' · vastgelegd door '+ontv.door:''}`;
-  } else sub.textContent='Wordt opgeslagen met "Wijziging opslaan".';
+// Twee manieren van aanleveren; er kan er maar één aan staan
+function _tipOntvChange(ontv,bron){
+  const doc=document.getElementById('tip-ontvangen'), adm=document.getElementById('tip-ontv-admin');
+  if(bron===doc&&doc.checked) adm.checked=false;
+  if(bron===adm&&adm.checked) doc.checked=false;
+  document.getElementById('tip-ontv-docent-row').classList.toggle('aan',doc.checked);
+  document.getElementById('tip-ontv-admin-row').classList.toggle('aan',adm.checked);
+  const wanneer=o=>{ const d=new Date(o.op); return `${d.getDate()} ${MONTHS_FULL[d.getMonth()].toLowerCase()}${o.door?' · vastgelegd door '+o.door:''}`; };
+  const via=ontv?(ontv.via||'docent'):null;
+  document.getElementById('tip-ontv-sub').textContent=ontv&&via==='docent'&&doc.checked
+    ?`Losse toets · ontvangen op ${wanneer(ontv)}`:'Losse toets · wordt opgeslagen met "Wijziging opslaan".';
+  document.getElementById('tip-ontv-admin-sub').textContent=ontv&&via==='administratie'&&adm.checked
+    ?`Aangeleverd op ${wanneer(ontv)}`:'Wordt opgeslagen met "Wijziging opslaan".';
 }
 
 function _tipDeleteEditing(){
@@ -8710,8 +8725,10 @@ function confirmToetsInplan(){
     // Oude toets weghalen; een geïmporteerde toets wordt hieronder bijgewerkt
     const {stuId:eStu,key:eKey,di:eDi,originId:eOrigin}=_tipEditing;
     const oud=S.studentData[eStu]?.toets?.[eKey]?.[eDi]?.[eOrigin]||{};
-    if(document.getElementById('tip-ontvangen').checked)
-      ontvangen=oud.ontvangen||{op:new Date().toISOString(),door:S.loggedInEmail||''};
+    const via=document.getElementById('tip-ontvangen').checked?'docent'
+      :document.getElementById('tip-ontv-admin').checked?'administratie':null;
+    if(via) ontvangen=oud.ontvangen&&(oud.ontvangen.via||'docent')===via
+      ?{...oud.ontvangen,via}:{op:new Date().toISOString(),door:S.loggedInEmail||'',via};
     // Niets verplaatst of gewijzigd behalve "ontvangen": geen nieuwe uitnodiging sturen
     const oudSlot=SCHOOL.find(s=>s.id===eOrigin);
     const zelfdeTijd=begintijd&&oud.startTime?_parseTime(begintijd)===_parseTime(oud.startTime):eOrigin===_tipSelectedSlotId;
@@ -11171,11 +11188,12 @@ function renderDashboard(){
 
 function _dashToetsRow(t,metDag){
   const sub=[t.rec.subject||'Toets',`${t.end-t.start} min`].join(' · ');
-  const ontv=!!_toetsOntvangen(t.stu.id,t.key,t.di,t.originId,t.rec);
+  const ontvRec=_toetsOntvangen(t.stu.id,t.key,t.di,t.originId,t.rec), ontv=!!ontvRec;
+  const regulier=ontv&&ontvRec.via==='administratie';
   return `<div class="dash-trow ${ontv?'ontvangen':'wacht'}">
     <div class="dash-ttime">${metDag?_fmtDag(t.ds)+'<br>':''}${_fmtMin(t.start)}${metDag?'':'<br>'+_fmtMin(t.end)}</div>
     <div class="dash-tinfo">${_esc(t.stu.name)}<span>${_esc(sub)}</span></div>
-    <span class="dash-tstat ${ontv?'ontvangen':'wacht'}" title="${ontv?'Versie van de toets is binnen':'Nog geen versie van de toets ontvangen van de docent'}">${ontv?'✓ ontvangen':'nog niet binnen'}</span>
+    <span class="dash-tstat ${ontv?'ontvangen':'wacht'}" title="${ontv?(regulier?'Reguliere toets, aangeleverd via de administratie':'Losse toets, versie ontvangen van de docent'):'Nog geen versie van de toets ontvangen'}">${ontv?`✓ ontvangen<small>${regulier?'Regulier':'Losse toets'}</small>`:'nog niet binnen'}</span>
     <button type="button" class="dash-mini-btn" title="Toets aanpassen, verplaatsen of als ontvangen markeren"
       onclick="openToetsInplanModal({stuId:'${t.stu.id}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})"><span data-ico="pencil"></span></button>
   </div>`;
