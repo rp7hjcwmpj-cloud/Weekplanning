@@ -1947,6 +1947,68 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .toets-keuze-opt:hover { border-color: var(--brand); background: var(--brand-light); }
 .toets-keuze-opt .tk-ico { width: 40px; height: 40px; border-radius: 12px; background: var(--brand-light); color: var(--brand); display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
 .toets-keuze-opt .tk-ico svg { width: 22px; height: 22px; }
+.toets-keuze-opt.tk-breed { grid-column: 1 / -1; }
+.dash-tl-btn { justify-content: center; margin-top: .6rem; width: 100%; display: inline-flex; align-items: center; gap: .3rem; border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: .45rem .6rem; font: inherit; font-size: .76rem; font-weight: 600; color: var(--tx2); cursor: pointer; flex-shrink: 0; }
+.dash-tl-btn:hover { border-color: var(--brand); color: var(--brand); }
+.dash-tl-btn svg { width: 15px; height: 15px; }
+.tip-lokaal-hint { font-size: .74rem; margin-top: .3rem; padding: .3rem .5rem; border-radius: 7px; background: var(--g-bg); color: var(--g-tx); border: 1px solid var(--g-bd); cursor: pointer; }
+.tip-lokaal-hint.krap { background: var(--o-bg); color: var(--o-tx); border-color: var(--o-bd); }
+.tip-lokaal-hint.vol { background: var(--r-bg); color: var(--r-tx); border-color: var(--r-bd); }
+#modal-toetslokaal { z-index: 450; }
+.tl-card { max-width: 1080px; width: 96vw; max-height: 94vh; display: flex; flex-direction: column; padding: 1.1rem 1.2rem; }
+.tl-head { display: flex; align-items: flex-start; gap: .8rem; margin-bottom: .7rem; }
+.tl-head > div:first-child { flex: 1; min-width: 0; }
+.tl-head h2 { margin: 0; }
+.tl-head p { margin: .15rem 0 0; font-size: .82rem; color: var(--tx3); }
+.tl-plek-set { display: flex; align-items: center; gap: .35rem; font-size: .76rem; color: var(--tx3); }
+.tl-plek-set input { width: 58px; padding: .3rem .4rem; border: 1.5px solid var(--border); border-radius: 7px; font: inherit; font-size: .82rem; background: var(--surface); color: var(--tx); }
+.tl-nav { display: flex; align-items: center; gap: .4rem; margin-bottom: .7rem; flex-wrap: wrap; }
+.tl-pijl { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--tx); font-size: 1.1rem; cursor: pointer; flex: none; }
+.tl-pijl:hover, .tl-vandaag:hover { border-color: var(--brand); color: var(--brand); }
+.tl-week { display: flex; gap: .3rem; flex: 1; min-width: 0; }
+.tl-dag { flex: 1; min-width: 0; border: 1px solid var(--border); background: var(--surface); border-radius: 9px; padding: .3rem .4rem; cursor: pointer; text-align: left; font: inherit; color: var(--tx); }
+.tl-dag b { display: block; font-size: .78rem; }
+.tl-dag small { display: block; font-size: .68rem; color: var(--tx3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-dag.on { border-color: var(--brand); background: var(--brand-light); }
+.tl-dag.vol small { color: var(--r-tx); font-weight: 700; }
+.tl-dag.vrij { opacity: .55; }
+.tl-vandaag { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: .4rem .7rem; font: inherit; font-size: .78rem; font-weight: 600; color: var(--tx2); cursor: pointer; }
+.tl-datum { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: .32rem .45rem; font: inherit; font-size: .78rem; color: var(--tx); }
+.tl-body { flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.tl-kop { display: grid; position: sticky; top: 0; z-index: 3; background: var(--surf-2); border-bottom: 1px solid var(--border); font-size: .7rem; font-weight: 700; color: var(--tx3); text-transform: uppercase; letter-spacing: .03em; }
+.tl-kop > div { padding: .4rem .3rem; text-align: center; border-left: 1px solid var(--border); white-space: nowrap; overflow: hidden; }
+.tl-kop > div:first-child { border-left: none; text-align: left; padding-left: .6rem; }
+.tl-kop > div.extra { color: var(--r-tx); background: var(--r-bg); }
+.tl-tijdlijn { position: relative; }
+.tl-rij { position: absolute; left: 0; right: 0; border-top: 1px solid var(--border); display: flex; }
+.tl-rij.pauze { background: repeating-linear-gradient(135deg, var(--surf-2) 0 6px, transparent 6px 12px); }
+.tl-uur { width: var(--tl-lbl); flex: none; padding: .25rem .5rem; font-size: .74rem; line-height: 1.25; color: var(--tx2); border-right: 1px solid var(--border); box-sizing: border-box; overflow: hidden; }
+.tl-uur b { display: block; color: var(--tx); font-size: .78rem; white-space: nowrap; }
+.tl-uur b small { font-weight: 500; color: var(--tx3); font-size: .68rem; }
+.tl-uur .tl-bez { display: inline-block; margin-top: .15rem; font-size: .68rem; font-weight: 700; padding: 0 .35rem; border-radius: 99px; background: var(--g-bg); color: var(--g-tx); }
+.tl-uur .tl-bez.leeg { background: transparent; color: var(--tx3); font-weight: 500; padding: 0; }
+.tl-uur .tl-bez.krap { background: var(--o-bg); color: var(--o-tx); }
+.tl-uur .tl-bez.vol { background: var(--r-bg); color: var(--r-tx); }
+.tl-rij.pauze .tl-uur { font-size: .68rem; color: var(--tx3); padding-top: .1rem; }
+.tl-kolom { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--border); pointer-events: none; }
+.tl-kolom.extra { background: color-mix(in srgb, var(--r-bg) 45%, transparent); }
+.tl-blok { position: absolute; z-index: 2; border-radius: 7px; border: 1px solid var(--y-bd); background: var(--y-bg); color: var(--y-tx); padding: .2rem .35rem; font-size: .7rem; line-height: 1.2; overflow: hidden; box-sizing: border-box; cursor: default; }
+.tl-blok.ontvangen { background: var(--g-bg); border-color: var(--g-bd); color: var(--g-tx); }
+.tl-blok.te-veel { background: var(--r-bg); border-color: var(--r-bd); color: var(--r-tx); }
+.tl-blok.klik { cursor: pointer; }
+.tl-blok.klik:hover { box-shadow: 0 2px 8px rgba(0,0,0,.15); z-index: 4; }
+.tl-blok b { display: block; font-size: .73rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-blok span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85; }
+.tl-nu { position: absolute; left: 0; right: 0; border-top: 2px solid var(--brand); z-index: 3; pointer-events: none; }
+.tl-nu::before { content: 'nu'; position: absolute; left: 4px; top: -9px; font-size: .62rem; font-weight: 700; color: #fff; background: var(--brand); border-radius: 4px; padding: 0 .25rem; }
+.tl-leeg { padding: 1.5rem; text-align: center; color: var(--tx3); font-size: .86rem; }
+.tl-legenda { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: .55rem; font-size: .72rem; color: var(--tx3); }
+.tl-legenda i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; border: 1px solid; margin-right: .3rem; vertical-align: -1px; }
+@media (max-width: 720px) {
+  .tl-card { padding: .8rem; width: 100vw; max-height: 100vh; border-radius: 0; }
+  .tl-week { order: 5; flex-basis: 100%; overflow-x: auto; }
+  .tl-dag { min-width: 72px; }
+}
 .toets-keuze-opt b { display: block; font-size: .92rem; margin-bottom: .2rem; }
 .toets-keuze-opt span { font-size: .76rem; color: var(--tx3); line-height: 1.35; }
 @media (max-width: 520px) { .toets-keuze { grid-template-columns: 1fr; } }
@@ -2382,6 +2444,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
           <div class="dash-big" id="dash-toetsen-n">0</div>
         </div>
         <div id="dash-toetsen-body"></div>
+        <button type="button" class="dash-tl-btn" onclick="openToetslokaal()" title="Bezetting van het toetslokaal per lesuur"><span data-ico="users"></span> Toetslokaal bekijken</button>
       </section>
       <section class="dash-card dash-aanw">
         <div class="dash-card-hdr">
@@ -2426,8 +2489,40 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <b>Toetsweek importeren</b>
         <span id="toets-keuze-import-sub">Importeer het Excel-overzicht van een hele toetsweek.</span>
       </button>
+      <button type="button" class="toets-keuze-opt tk-breed" onclick="closeToetsKeuze(); openToetslokaal();">
+        <div class="tk-ico" data-ico="users"></div>
+        <b>Toetslokaal bekijken</b>
+        <span>Zie per lesuur welke toetsen er in het toetslokaal worden gemaakt en hoeveel plekken er nog vrij zijn. Voor alle klassen samen.</span>
+      </button>
     </div>
     <button class="btn-g" onclick="closeToetsKeuze()">Annuleren</button>
+  </div>
+</div>
+
+<!-- ══ TOETSLOKAAL ═══════════════════════════════════ -->
+<div class="overlay" id="modal-toetslokaal" onclick="if(event.target===this) closeToetslokaal()">
+  <div class="modal-card tl-card">
+    <div class="tl-head">
+      <div><h2 id="tl-title">Toetslokaal</h2><p id="tl-sub"></p></div>
+      <div class="tl-plek-set" id="tl-plek-set" style="display:none;">
+        <label for="tl-plekken">Plekken</label>
+        <input type="number" id="tl-plekken" min="1" max="60" onchange="_tlZetPlekken(this.value)">
+      </div>
+      <button type="button" class="btn-ghost" style="flex:none;width:auto;" onclick="closeToetslokaal()">✕ Sluiten</button>
+    </div>
+    <div class="tl-nav">
+      <button type="button" class="tl-pijl" onclick="tlNavDag(-1)" title="Vorige dag">‹</button>
+      <div class="tl-week" id="tl-week"></div>
+      <button type="button" class="tl-pijl" onclick="tlNavDag(1)" title="Volgende dag">›</button>
+      <button type="button" class="tl-vandaag" onclick="tlNaarDatum(new Date())">Vandaag</button>
+      <input type="date" class="tl-datum" id="tl-datum" onchange="if(this.value) tlNaarDatum(new Date(this.value+'T12:00:00'))">
+    </div>
+    <div class="tl-body" id="tl-body"></div>
+    <div class="tl-legenda">
+      <span><i style="background:var(--y-bg);border-color:var(--y-bd);"></i>Toets nog niet binnen</span>
+      <span><i style="background:var(--g-bg);border-color:var(--g-bd);"></i>Toets ontvangen</span>
+      <span><i style="background:var(--r-bg);border-color:var(--r-bd);"></i>Geen plek meer vrij</span>
+    </div>
   </div>
 </div>
 
@@ -2777,6 +2872,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
             <label class="tip-dur-opt"><input type="radio" name="tip-dur" value="120" onchange="_tipFormChange()"> 120 min</label>
           </div>
           <div id="tip-tijd-preview" style="font-size:.75rem;font-weight:700;color:var(--brand);margin-top:.2rem;min-height:1em;"></div>
+          <div id="tip-lokaal-hint" class="tip-lokaal-hint" style="display:none;"></div>
         </div>
 
         <!-- Alleen bij aanpassen: versie van de toets ontvangen -->
@@ -3631,6 +3727,7 @@ const S = {
   huiswerk:[],           // [{id,studentId,week,les,opmerking,weekKey,di,slotId,ts}] — weekKey/di/slotId null = ongeplaatst
   klassen:[],            // [{id,naam,mentoren:[email]}] — klassenindeling; leerling.klasId verwijst hiernaar
   klassenGemigreerd:false,
+  toetslokaal:{plekken:10}, // gedeeld toetslokaal: aantal plekken
   superadmins:[],        // [email, ...] — wie de Admin-knop ziet; leeg = alle coaches/coordinatoren (backward compat)
   displayPassword:'',    // wachtwoord voor Display-rol (leeg = knop verborgen)
   schoolLogo:'',         // base64 data URL van het schoollogo
@@ -3743,7 +3840,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo','wp_klassen'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo','wp_klassen','wp_toetslokaal'
 ];
 
 let _graphToken = null;
@@ -4302,6 +4399,7 @@ function persist(){
     localStorage.setItem('wp_verlof', JSON.stringify(S.verlof));
     localStorage.setItem('wp_zermelo', JSON.stringify(S.zermelo));
     localStorage.setItem('wp_klassen', JSON.stringify({lijst:S.klassen,gemigreerd:S.klassenGemigreerd}));
+    localStorage.setItem('wp_toetslokaal', JSON.stringify(S.toetslokaal));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -4329,6 +4427,7 @@ function hydrate(){
     const spw=localStorage.getItem('wp_stuPw'); if(spw) S.studentPasswords=JSON.parse(spw);
     const bsc=localStorage.getItem('wp_besch'); if(bsc) S.beschikbaarheid=JSON.parse(bsc);
     const zrm=localStorage.getItem('wp_zermelo'); if(zrm) S.zermelo={...S.zermelo,...JSON.parse(zrm)};
+    const tl=localStorage.getItem('wp_toetslokaal'); if(tl) S.toetslokaal={...S.toetslokaal,...JSON.parse(tl)};
     const kls=localStorage.getItem('wp_klassen'); if(kls){ const k=JSON.parse(kls); S.klassen=k.lijst||[]; S.klassenGemigreerd=!!k.gemigreerd; }
     const rm=localStorage.getItem('wp_roleMap'); if(rm) S.roleMap=JSON.parse(rm);
     const cl=localStorage.getItem('wp_changeLog'); if(cl) S.changeLog=JSON.parse(cl);
@@ -5541,6 +5640,155 @@ function _buildEstuAssignSection(stu){
     </div>
     <p class="card-note" style="margin-top:.3rem;">Ouders loggen in als 'Ouder', kiezen het kind en voeren deze code in. De leerling kan de code ook zelf instellen.</p>
     <button type="button" class="btn-danger" style="font-size:.78rem;padding:.35rem .8rem;margin-top:.6rem;" onclick="closeEditStu();deleteStudent('${stu.id}')">🗑 Leerling verwijderen</button>`;
+}
+
+
+/* ══ TOETSLOKAAL ════════════════════════════════════ */
+// Eén gedeeld toetslokaal voor alle klassen: we tellen de toetsen van álle leerlingen, niet alleen de zichtbare.
+let _tlDatum=null;
+const _TL_PX=1.6; // pixels per minuut
+function _tlPlekken(){ return Math.max(1,parseInt(S.toetslokaal?.plekken)||10); }
+function _tlToetsenOp(dt){
+  const {year,week}=weekYear(dt);
+  const key=wk(year,week), di=(dt.getDay()+6)%7;
+  const out=[];
+  S.students.forEach(stu=>{
+    const sd=S.studentData[stu.id];
+    if(sd) _toetsTijden(key,di,sd).forEach(t=>out.push({...t,stu,key,di,ds:toDS(dt)}));
+  });
+  return out.sort((a,b)=>a.start-b.start||b.end-a.end||a.stu.name.localeCompare(b.stu.name,'nl'));
+}
+// Elke toets krijgt de eerste plek die op dat moment vrij is; geeft het aantal benodigde plekken terug
+function _tlIndeling(toetsen){
+  const vrijVanaf=[];
+  toetsen.forEach(t=>{
+    let p=vrijVanaf.findIndex(e=>e<=t.start);
+    if(p<0){ p=vrijVanaf.length; vrijVanaf.push(0); }
+    vrijVanaf[p]=t.end; t.plek=p;
+  });
+  return vrijVanaf.length;
+}
+// Hoogste aantal toetsen tegelijk binnen [van, tot)
+function _tlBezetting(toetsen,van,tot){
+  const momenten=[van,...toetsen.map(t=>t.start).filter(m=>m>van&&m<tot)];
+  return Math.max(0,...momenten.map(m=>toetsen.filter(t=>t.start<=m&&t.end>m).length));
+}
+function _tlWerkdag(dt,richting){
+  const d=new Date(dt); d.setHours(12,0,0,0);
+  while(d.getDay()===0||d.getDay()===6) d.setDate(d.getDate()+(richting<0?-1:1));
+  return d;
+}
+function openToetslokaal(datum){
+  _tlDatum=_tlWerkdag(datum||new Date(),1);
+  const set=document.getElementById('tl-plek-set');
+  set.style.display=_magAdmin()?'':'none';
+  document.getElementById('tl-plekken').value=_tlPlekken();
+  document.getElementById('modal-toetslokaal').classList.add('show');
+  renderToetslokaal();
+  // Scroll naar het huidige uur als het vandaag is
+  const nu=document.querySelector('#tl-body .tl-nu');
+  if(nu) document.getElementById('tl-body').scrollTop=Math.max(0,nu.offsetTop-120);
+}
+function closeToetslokaal(){ document.getElementById('modal-toetslokaal').classList.remove('show'); }
+function tlNavDag(r){ const d=new Date(_tlDatum); d.setDate(d.getDate()+r); _tlDatum=_tlWerkdag(d,r); renderToetslokaal(); }
+function tlNaarDatum(d){ _tlDatum=_tlWerkdag(d,1); renderToetslokaal(); }
+function _tlZetPlekken(v){
+  const n=Math.max(1,Math.min(60,parseInt(v)||10));
+  S.toetslokaal={...S.toetslokaal,plekken:n};
+  persist(); renderToetslokaal();
+  if(document.getElementById('modal-toets-inplan')?.classList.contains('show')) _tipLokaalHint();
+}
+function _tlBezKlasse(n,N){ return !n?'leeg':(n>=N?'vol':(n>=N*.8?'krap':'')); }
+
+function renderToetslokaal(){
+  const N=_tlPlekken(), dt=_tlDatum;
+  const vandaag=toDS(new Date());
+  // Weekstrook Ma–Vr met aantal toetsen en drukste moment
+  const ma=new Date(dt); ma.setDate(ma.getDate()-((ma.getDay()+6)%7));
+  document.getElementById('tl-week').innerHTML=[0,1,2,3,4].map(i=>{
+    const d=new Date(ma); d.setDate(ma.getDate()+i);
+    const ts=_tlToetsenOp(d), spec=specDayType(d);
+    const piek=ts.length?_tlBezetting(ts,0,24*60):0;
+    const cls=[toDS(d)===toDS(dt)?'on':'',piek>N?'vol':'',spec?'vrij':''].join(' ');
+    const info=spec?(spec==='vakantie'?'vakantie':'studiedag'):(ts.length?`${ts.length} toets${ts.length===1?'':'en'} · max ${piek}/${N}`:'geen toetsen');
+    return `<button type="button" class="tl-dag ${cls}" onclick="tlNaarDatum(new Date('${toDS(d)}T12:00:00'))">
+      <b>${DAYS_SHORT[i]} ${d.getDate()} ${MONTHS[d.getMonth()]}${toDS(d)===vandaag?' · vandaag':''}</b><small>${info}</small></button>`;
+  }).join('');
+  document.getElementById('tl-datum').value=toDS(dt);
+
+  const toetsen=_tlToetsenOp(dt);
+  const nodig=_tlIndeling(toetsen);
+  const kolommen=Math.max(N,nodig);
+  const {week}=weekYear(dt);
+  const spec=specDayType(dt);
+  document.getElementById('tl-title').textContent=`Toetslokaal · ${_DAGEN[dt.getDay()]} ${dt.getDate()} ${MONTHS_FULL[dt.getMonth()].toLowerCase()}`;
+  document.getElementById('tl-sub').textContent=`Week ${week} · ${N} plekken · `+(toetsen.length
+    ?`${toetsen.length} toets${toetsen.length===1?'':'en'}, drukste moment ${_tlBezetting(toetsen,0,24*60)}/${N}`+(nodig>N?' — te veel toetsen tegelijk!':'')
+    :'geen toetsen gepland')+(spec?` · ${spec==='vakantie'?'vakantie':'studiedag'}`:'');
+
+  // Tijdlijn: lesuren en pauzes uit het rooster, aangevuld met toetsen die eerder of later vallen
+  const slots=SCHOOL.filter(s=>s.time.includes('–')).map(s=>{ const [a,b]=s.time.split('–').map(_parseTime); return {...s,a,b}; });
+  const begin=Math.min(slots[0].a,...toetsen.map(t=>t.start));
+  const eind=Math.max(slots[slots.length-1].b,...toetsen.map(t=>t.end));
+  const y=m=>Math.round((m-begin)*_TL_PX);
+  const LBL=122;
+  const kolW=`((100% - ${LBL}px) / ${kolommen})`;
+  const links=p=>`calc(${LBL}px + ${kolW} * ${p})`;
+  const mag=new Set(visibleStudents().map(s=>s.id));
+  const kanAanpassen=S.role==='coach'||S.role==='coordinator';
+
+  const minW=`min-width:${LBL+kolommen*66}px;`;
+  let html=`<div class="tl-kop" style="${minW}grid-template-columns:${LBL}px repeat(${kolommen},minmax(0,1fr));"><div>Lesuur</div>`+
+    Array.from({length:kolommen},(_,p)=>`<div class="${p>=N?'extra':''}">${p>=N?'Geen plek':'Plek '+(p+1)}</div>`).join('')+`</div>`;
+  html+=`<div class="tl-tijdlijn" style="${minW}--tl-lbl:${LBL}px;height:${y(eind)}px;">`;
+  slots.forEach(s=>{
+    const bez=s.kind==='lesson'?_tlBezetting(toetsen,s.a,s.b):0;
+    html+=`<div class="tl-rij ${s.kind==='pause'?'pauze':''}" style="top:${y(s.a)}px;height:${y(s.b)-y(s.a)}px;">
+      <div class="tl-uur">${s.kind==='pause'?`Pauze ${s.time}`:`<b>${_esc(s.label)} <small>${s.time}</small></b><span class="tl-bez ${_tlBezKlasse(bez,N)}">${bez?`${bez}/${N} bezet`:'vrij'}</span>`}</div></div>`;
+  });
+  for(let p=1;p<kolommen;p++) html+=`<div class="tl-kolom ${p>=N?'extra':''}" style="left:${links(p)};"></div>`;
+  toetsen.forEach(t=>{
+    const ontv=!!_toetsOntvangen(t.stu.id,t.key,t.di,t.originId,t.rec);
+    const klik=kanAanpassen&&mag.has(t.stu.id);
+    const klas=_klasNaam(t.stu.klasId);
+    const vak=t.rec.subject||'Toets';
+    const tip=`${t.stu.name} · ${vak} · ${_fmtMin(t.start)}–${_fmtMin(t.end)}${klas?' · '+klas:''}${t.stu.klass?' ('+t.stu.klass+')':''}`;
+    html+=`<div class="tl-blok ${t.plek>=N?'te-veel':(ontv?'ontvangen':'')} ${klik?'klik':''}" title="${_esc(tip)}"
+      style="top:${y(t.start)+1}px;height:${Math.max(18,y(t.end)-y(t.start)-2)}px;left:calc(${links(t.plek)} + 2px);width:calc(${kolW} - 4px);"
+      ${klik?`onclick="closeToetslokaal();openToetsInplanModal({stuId:'${t.stu.id}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})"`:''}>
+      <b>${_esc(t.stu.name)}</b><span>${_esc(vak)}</span><span>${_fmtMin(t.start)}–${_fmtMin(t.end)}</span><span>${_esc(klas||t.stu.klass||'')}</span></div>`;
+  });
+  if(toDS(dt)===vandaag){
+    const n=new Date(), m=n.getHours()*60+n.getMinutes();
+    if(m>=begin&&m<=eind) html+=`<div class="tl-nu" style="top:${y(m)}px;"></div>`;
+  }
+  html+=`</div>`;
+  if(!toetsen.length) html+=`<div class="tl-leeg">Er zijn op deze dag geen toetsen in het toetslokaal gepland.</div>`;
+  document.getElementById('tl-body').innerHTML=html;
+}
+
+// Bezetting van het toetslokaal tijdens het inplannen van een toets
+function _tipLokaalHint(){
+  const el=document.getElementById('tip-lokaal-hint');
+  if(!el) return;
+  const {begintijd,dur}=_tipGetFormData();
+  const di=_tipSelectedDag??_tipSelectedDi;
+  if(!begintijd||di===null||di===undefined||!_tipWy){ el.style.display='none'; return; }
+  const dt=weekDates(_tipWy.year,_tipWy.week)[di];
+  if(!dt){ el.style.display='none'; return; }
+  const van=_parseTime(begintijd), tot=van+dur, N=_tlPlekken();
+  const e=_tipEditing;
+  const toetsen=_tlToetsenOp(dt).filter(t=>!(e&&t.stu.id===e.stuId&&t.key===e.key&&t.di===e.di&&t.originId===e.originId));
+  const bez=_tlBezetting(toetsen,van,tot);
+  const erbij=Math.max(1,_tipStuIds.length);
+  const vrij=N-bez;
+  el.className='tip-lokaal-hint '+(bez+erbij>N?'vol':(bez+erbij>=N*.8?'krap':''));
+  el.innerHTML=`🏫 Toetslokaal ${_fmtMin(van)}–${_fmtMin(tot)}: <b>${bez}/${N} bezet</b> · `+
+    (vrij<=0?'geen plek meer vrij':(bez+erbij>N?`nog ${vrij} plek${vrij===1?'':'ken'} vrij, te weinig voor ${erbij} leerlingen`:`nog ${vrij} plek${vrij===1?'':'ken'} vrij`))+
+    ` <u>bekijk</u>`;
+  el.title='Open het toetslokaal op deze dag';
+  el.onclick=()=>openToetslokaal(dt);
+  el.style.display='';
 }
 
 /* ══ ZERMELO ════════════════════════════════════════ */
@@ -8532,6 +8780,7 @@ function _tipFormChange(){
       prev.textContent=`Duur: ${dur} min`;
     }
   }
+  _tipLokaalHint();
   // Als dag + begintijd ingevuld → auto-select slot & toon direct-plan knop
   _tipAutoSelectFromForm();
   // Herbereken confirm bar als slot handmatig geselecteerd (geen auto)
