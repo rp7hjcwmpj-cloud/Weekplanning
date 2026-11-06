@@ -1577,6 +1577,34 @@ body.dark .stu-sport-chip {
 .tip-dag-btn.selected { border-color:var(--brand); background:var(--brand); color:#fff; }
 .tip-direct-plan-bar { display:none; }
 .tip-stu-results { margin-top:.2rem; background:var(--surface); border:1.5px solid var(--brand); border-radius:7px; max-height:170px; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.rk-list { display:flex; flex-direction:column; gap:.35rem; }
+.rk-row { display:flex; align-items:center; gap:.6rem; background:var(--surf-2); border:1px solid var(--border); border-radius:9px; padding:.45rem .7rem; flex-wrap:wrap; }
+.rk-row .naam { font-weight:600; font-size:.86rem; color:var(--tx); }
+.rk-row .mail { font-size:.76rem; color:var(--tx3); word-break:break-all; flex:1; min-width:150px; }
+.rk-row .tags { display:flex; gap:.25rem; flex-wrap:wrap; }
+.rk-tag { font-size:.68rem; font-weight:700; padding:.12rem .5rem; border-radius:999px; background:var(--brand-light); color:var(--brand); }
+.rk-tag.sa { background:#1D6FA5; color:#fff; }
+.rk-x { background:none; border:none; color:var(--tx3); cursor:pointer; font-size:.9rem; padding:.15rem .35rem; border-radius:5px; }
+.rk-x:hover { color:#C0392B; background:rgba(192,57,43,.08); }
+.rk-add { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.7rem; align-items:center; }
+.rk-add .field-inp { margin:0; flex:1; min-width:160px; }
+.rk-empty { font-size:.82rem; color:var(--tx3); }
+.klas-card { border:1px solid var(--border); border-radius:12px; padding:.75rem .85rem; margin-bottom:.7rem; background:var(--surface); }
+.klas-card.leeg { border-style:dashed; }
+.klas-hdr { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+.klas-hdr h4 { margin:0; font-size:.98rem; color:var(--tx); flex:1; min-width:140px; }
+.klas-hdr .cnt { font-size:.74rem; color:var(--tx3); }
+.klas-sub { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin-top:.5rem; font-size:.78rem; color:var(--tx2); }
+.klas-chip { font-size:.74rem; font-weight:600; padding:.15rem .55rem; border-radius:999px; border:1.5px solid var(--border); background:var(--surf-2); color:var(--tx2); cursor:pointer; }
+.klas-chip.on { border-color:var(--brand); background:var(--brand-light); color:var(--brand); }
+.klas-stus { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.55rem; max-height:140px; overflow-y:auto; }
+.klas-stu { font-size:.74rem; padding:.12rem .5rem; border-radius:6px; background:var(--surf-2); color:var(--tx); cursor:pointer; }
+.klas-stu small { color:var(--tx3); margin-left:.25rem; }
+.klas-acts { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.6rem; }
+.klas-acts button { font-size:.76rem; padding:.3rem .7rem; border-radius:7px; border:1px solid var(--border); background:var(--surface); color:var(--tx); cursor:pointer; }
+.klas-acts button:hover { border-color:var(--brand); color:var(--brand); }
+.klas-acts button.del:hover { border-color:#C0392B; color:#C0392B; }
+.klas-msg { font-size:.78rem; margin-top:.45rem; color:#2D8B50; }
 .zrm-map { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:.45rem .9rem; }
 .zrm-map label { display:flex; align-items:center; gap:.5rem; font-size:.82rem; }
 .zrm-map label b { min-width:4.2rem; font-family:ui-monospace,Menlo,monospace; font-size:.78rem; }
@@ -1805,8 +1833,13 @@ body.dark .dash-bar { background: var(--surf-2); }
   grid-template-columns: minmax(0,.8fr) minmax(0,1.45fr) minmax(0,1fr);
   grid-template-areas: "toetsen aanw doc" "toetsen aanw verlof"; }
 .dash-toetsen { grid-area: toetsen; } .dash-aanw { grid-area: aanw; } .dash-doc { grid-area: doc; } .dash-verlof { grid-area: verlof; }
-@media (max-width: 1150px) { .dash-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "aanw aanw" "toetsen doc" "toetsen verlof"; } }
-@media (max-width: 720px) { .dash-view { padding: 1rem; } .dash-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "aanw" "toetsen" "verlof" "doc"; } }
+/* Verlof direct onder Docenten; Toetsen even hoog als Aanwezigheid en zelf scrollbaar */
+.dash-grid { grid-template-rows: auto 1fr; }
+.dash-verlof { align-self: start; }
+.dash-toetsen { contain: size; align-self: stretch; display: flex; flex-direction: column; min-height: 320px; }
+.dash-toetsen #dash-toetsen-body { flex: 1; min-height: 0; overflow-y: auto; margin-right: -.5rem; padding-right: .5rem; }
+@media (max-width: 1150px) { .dash-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "aanw aanw" "toetsen doc" "toetsen verlof"; grid-template-rows: auto auto 1fr; } .dash-toetsen { min-height: 420px; } }
+@media (max-width: 720px) { .dash-view { padding: 1rem; } .dash-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "aanw" "toetsen" "verlof" "doc"; grid-template-rows: none; } .dash-toetsen { contain: none; min-height: 0; max-height: 70vh; } }
 .dash-card { background: var(--surface); border: 1px solid #F3D4B4; border-radius: 20px; padding: 1rem 1.1rem; box-shadow: 0 2px 14px rgba(200,90,0,.05); min-width: 0; }
 body.dark .dash-card { border-color: var(--border); }
 .dash-card-hdr { display: flex; align-items: center; gap: .7rem; margin-bottom: .7rem; }
@@ -3050,13 +3083,12 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
   <!-- Tabbladen -->
   <div class="adm-tabs">
     <button class="adm-tab active" onclick="switchAdmTab(0)">🏫 School</button>
-    <button class="adm-tab" onclick="switchAdmTab(1)">🔑 Rollen</button>
+    <button class="adm-tab" onclick="switchAdmTab(1)">👥 Rollen &amp; klassen</button>
     <button class="adm-tab" onclick="switchAdmTab(2)">🗓️ Vakanties</button>
-    <button class="adm-tab" onclick="switchAdmTab(3)">👥 Leerlingen</button>
-    <button class="adm-tab" onclick="switchAdmTab(4)">☁️ Microsoft 365</button>
-    <button class="adm-tab" onclick="switchAdmTab(5)">📋 Aanwezigheid</button>
-    <button class="adm-tab" onclick="switchAdmTab(6)">🔐 Superadmin</button>
-    <button class="adm-tab" onclick="switchAdmTab(7)">📚 Zermelo</button>
+    <button class="adm-tab" onclick="switchAdmTab(3)">☁️ Microsoft 365</button>
+    <button class="adm-tab" onclick="switchAdmTab(4)">📋 Aanwezigheid</button>
+    <button class="adm-tab" onclick="switchAdmTab(5)">🔐 Superadmin</button>
+    <button class="adm-tab" onclick="switchAdmTab(6)">📚 Zermelo</button>
   </div>
 
   <div class="adm-body">
@@ -3158,10 +3190,107 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
     </div>
 
     <!-- Tabblad 2: Rollen (O365 e-mail → rol mapping) -->
+    <!-- Tabblad 2: Rollen & klassen -->
     <div class="adm-panel">
       <div class="adm-card">
-        <h3>🔑 Rollen — Microsoft 365 toegang</h3>
-        <p class="card-note" style="margin-bottom:1rem;">Koppel Microsoft 365 e-mailadressen aan een rol. Personeel en leerlingen loggen daarna in met hun schoolaccount — geen wachtwoord nodig.</p>
+        <h3>🎓 Coördinatoren <span class="cnt" id="coord-cnt"></span></h3>
+        <p class="card-note" style="margin-bottom:.8rem;">Coördinatoren zien alle klassen en leerlingen en kunnen bij Admin.</p>
+        <div id="coord-list" class="rk-list"></div>
+        <div class="rk-add">
+          <input class="field-inp" type="text" id="coord-naam" placeholder="Naam">
+          <input class="field-inp" type="email" id="coord-email" placeholder="naam@parmantscholen.nl" onkeydown="if(event.key==='Enter')addRolPersoon('coordinator')">
+          <button class="btn-save-sm" onclick="addRolPersoon('coordinator')">➕ Toevoegen</button>
+        </div>
+        <div class="err-msg" id="coord-err" style="display:none;margin-top:.4rem;"></div>
+      </div>
+
+      <div class="adm-card" style="margin-top:1.1rem;">
+        <h3>👤 Mentoren / coaches <span class="cnt" id="mentor-cnt"></span></h3>
+        <p class="card-note" style="margin-bottom:.8rem;">Een mentor of coach ziet alleen de leerlingen van de klas(sen) waaraan hij of zij gekoppeld is.</p>
+        <div id="mentor-list" class="rk-list"></div>
+        <div class="rk-add">
+          <input class="field-inp" type="text" id="mentor-naam" placeholder="Naam">
+          <input class="field-inp" type="email" id="mentor-email" placeholder="naam@parmantscholen.nl" onkeydown="if(event.key==='Enter')addRolPersoon('coach')">
+          <button class="btn-save-sm" onclick="addRolPersoon('coach')">➕ Toevoegen</button>
+        </div>
+        <div class="err-msg" id="mentor-err" style="display:none;margin-top:.4rem;"></div>
+      </div>
+
+      <div class="adm-card" style="margin-top:1.1rem;">
+        <h3>🏫 Klassenindeling <span class="cnt" id="klas-cnt"></span></h3>
+        <p class="card-note" style="margin-bottom:.8rem;">Maak klassen aan, koppel een mentor/coach en voeg leerlingen toe, los of via een Excel-bestand (naam, e-mail en eventueel schoolklas).</p>
+        <div id="klassen-list"></div>
+        <div class="rk-add" style="margin-top:.8rem;">
+          <input class="field-inp" type="text" id="klas-naam-inp" placeholder="Naam nieuwe klas, bijv. Topsport 3.0" onkeydown="if(event.key==='Enter')addKlas()">
+          <select class="field-inp" id="klas-mentor-inp"></select>
+          <button class="btn-save-sm" onclick="addKlas()">➕ Klas aanmaken</button>
+        </div>
+        <div class="err-msg" id="klas-err" style="display:none;margin-top:.4rem;"></div>
+        <input type="file" id="klas-import-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="_klasImportBestand(this.files[0])">
+      </div>
+
+      <div class="adm-card" style="margin-top:1.1rem;">
+        <h3>🎒 Alle leerlingen <span class="cnt" id="stu-cnt"></span></h3>
+        <div class="list-items" id="students-list"></div>
+        <div class="add-form" id="stu-form">
+          <div class="fw">
+            <label class="flabel">Naam leerling</label>
+            <input class="field-inp" type="text" id="stu-name-inp" placeholder="Voor- en achternaam" style="margin-bottom:0">
+          </div>
+          <div class="form-row" style="margin-top:.6rem;">
+            <div class="fw" style="margin-bottom:0">
+              <label class="flabel">Schoolklas</label>
+              <select class="field-inp" id="stu-class-inp" onchange="onClassChange()" style="margin-bottom:0">
+                <option value="JXT3">JXT3</option>
+                <option value="JXT4">JXT4</option>
+                <option value="JXH3">JXH3</option>
+                <option value="JXH4">JXH4</option>
+                <option value="JXH5">JXH5</option>
+                <option value="JXV3">JXV3</option>
+                <option value="JXV4">JXV4</option>
+                <option value="JXV5">JXV5</option>
+                <option value="JXV6">JXV6</option>
+              </select>
+            </div>
+            <div class="fw" id="stu-year-wrap" style="display:none;margin-bottom:0">
+              <label class="flabel">Jaar</label>
+              <div class="radio-group" style="margin-bottom:0;margin-top:.4rem;">
+                <label><input type="radio" name="stu-year" value="1" checked> 1e jaar</label>
+                <label><input type="radio" name="stu-year" value="2"> 2e jaar</label>
+              </div>
+            </div>
+          </div>
+          <div class="fw" style="margin-top:.6rem;margin-bottom:0">
+            <label class="flabel">Klas (indeling)</label>
+            <select class="field-inp" id="stu-klasid-inp" style="margin-bottom:0"></select>
+          </div>
+          <div class="form-actions" style="margin-top:.75rem;">
+            <button class="btn-save-sm" onclick="addStudent()">Toevoegen</button>
+            <button class="btn-cancel-sm" onclick="hideForm('stu-form','btn-add-stu')">Annuleren</button>
+          </div>
+        </div>
+        <button class="btn-add" id="btn-add-stu" onclick="showForm('stu-form','btn-add-stu')">+ Leerling toevoegen</button>
+        <div style="margin-top:.75rem;border-top:1px solid var(--border);padding-top:.75rem;display:flex;flex-wrap:wrap;gap:.5rem;">
+          <button class="btn-danger" style="font-size:.8rem;padding:.5rem 1.1rem;" onclick="resetAllStudentData()">🔄 Reset roosterdata alle leerlingen</button>
+          <button class="btn-danger" style="font-size:.8rem;padding:.5rem 1.1rem;" onclick="resetStudents()">🗑 Verwijder alle leerlingen</button>
+        </div>
+      </div>
+
+      <!-- Ouder toegangscode -->
+      <div class="adm-card" style="margin-top:1.1rem;">
+        <h3>🔑 Ouder toegangscode</h3>
+        <p class="card-note" style="margin-bottom:.8rem;">Stel per leerling een toegangscode in voor ouders. Ouders loggen in als 'Ouder', kiezen het kind en voeren deze code in.</p>
+        <div id="spw-list"></div>
+        <div style="display:flex;gap:.6rem;align-items:center;margin-top:.8rem;">
+          <button class="btn-save-sm" onclick="saveStudentPasswords()">💾 Opslaan</button>
+          <div class="ok-msg" id="spw-ok" style="display:none;margin:0;">✓ Opgeslagen</div>
+        </div>
+      </div>
+    
+      <div class="adm-card" style="margin-top:1.1rem;">
+
+        <h3>🔑 Alle accounts — Microsoft 365</h3>
+        <p class="card-note" style="margin-bottom:1rem;">Overzicht van alle gekoppelde schoolaccounts, ook docenten en leerlingen. Personeel en leerlingen loggen in met hun schoolaccount — geen wachtwoord nodig.</p>
         <div id="rol-list" style="margin-bottom:1rem;"></div>
         <!-- Nieuwe entry toevoegen -->
         <div class="adm-card" style="background:var(--surf-2);padding:1rem;margin-top:.5rem;">
@@ -3197,6 +3326,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
           <div class="ok-msg" id="rol-ok" style="display:none;margin:0;">✓ Opgeslagen</div>
         </div>
       </div>
+    
     </div>
 
     <!-- Tabblad 4: Vakanties & Studiedagen -->
@@ -3234,63 +3364,6 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <button class="btn-add" id="btn-add-sd" onclick="showForm('sd-form','btn-add-sd')">+ Vakantie of studiedag toevoegen</button>
         <div style="margin-top:.75rem;border-top:1px solid var(--border);padding-top:.75rem;">
           <button class="btn-danger" style="font-size:.8rem;padding:.5rem 1.1rem;" onclick="resetSpecDays()">🗑 Reset vakanties &amp; studiedagen</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tabblad 5: Leerlingen -->
-    <div class="adm-panel">
-      <div class="adm-card">
-        <h3>👥 Leerlingen <span class="cnt" id="stu-cnt"></span></h3>
-        <div class="list-items" id="students-list"></div>
-        <div class="add-form" id="stu-form">
-          <div class="fw">
-            <label class="flabel">Naam leerling</label>
-            <input class="field-inp" type="text" id="stu-name-inp" placeholder="Voor- en achternaam" style="margin-bottom:0">
-          </div>
-          <div class="form-row" style="margin-top:.6rem;">
-            <div class="fw" style="margin-bottom:0">
-              <label class="flabel">Klas</label>
-              <select class="field-inp" id="stu-class-inp" onchange="onClassChange()" style="margin-bottom:0">
-                <option value="JXT3">JXT3</option>
-                <option value="JXT4">JXT4</option>
-                <option value="JXH3">JXH3</option>
-                <option value="JXH4">JXH4</option>
-                <option value="JXH5">JXH5</option>
-                <option value="JXV3">JXV3</option>
-                <option value="JXV4">JXV4</option>
-                <option value="JXV5">JXV5</option>
-                <option value="JXV6">JXV6</option>
-              </select>
-            </div>
-            <div class="fw" id="stu-year-wrap" style="display:none;margin-bottom:0">
-              <label class="flabel">Jaar</label>
-              <div class="radio-group" style="margin-bottom:0;margin-top:.4rem;">
-                <label><input type="radio" name="stu-year" value="1" checked> 1e jaar</label>
-                <label><input type="radio" name="stu-year" value="2"> 2e jaar</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-actions" style="margin-top:.75rem;">
-            <button class="btn-save-sm" onclick="addStudent()">Toevoegen</button>
-            <button class="btn-cancel-sm" onclick="hideForm('stu-form','btn-add-stu')">Annuleren</button>
-          </div>
-        </div>
-        <button class="btn-add" id="btn-add-stu" onclick="showForm('stu-form','btn-add-stu')">+ Leerling toevoegen</button>
-        <div style="margin-top:.75rem;border-top:1px solid var(--border);padding-top:.75rem;display:flex;flex-wrap:wrap;gap:.5rem;">
-          <button class="btn-danger" style="font-size:.8rem;padding:.5rem 1.1rem;" onclick="resetAllStudentData()">🔄 Reset roosterdata alle leerlingen</button>
-          <button class="btn-danger" style="font-size:.8rem;padding:.5rem 1.1rem;" onclick="resetStudents()">🗑 Verwijder alle leerlingen</button>
-        </div>
-      </div>
-
-      <!-- Ouder toegangscode -->
-      <div class="adm-card" style="margin-top:1.1rem;">
-        <h3>🔑 Ouder toegangscode</h3>
-        <p class="card-note" style="margin-bottom:.8rem;">Stel per leerling een toegangscode in voor ouders. Ouders loggen in als 'Ouder', kiezen het kind en voeren deze code in.</p>
-        <div id="spw-list"></div>
-        <div style="display:flex;gap:.6rem;align-items:center;margin-top:.8rem;">
-          <button class="btn-save-sm" onclick="saveStudentPasswords()">💾 Opslaan</button>
-          <div class="ok-msg" id="spw-ok" style="display:none;margin:0;">✓ Opgeslagen</div>
         </div>
       </div>
     </div>
@@ -3582,6 +3655,8 @@ const S = {
   vergaderingen:[],      // [{id,date,week,year,aanwezigheid,puntenVorige,leerlingen,anderezaken,vakdocenten,ontwikkeling}]
   cijfers:[],            // [{id,ts,docentVak,studentId,studentName,vak,cijfer,onderwerp,pta,weging}]
   huiswerk:[],           // [{id,studentId,week,les,opmerking,weekKey,di,slotId,ts}] — weekKey/di/slotId null = ongeplaatst
+  klassen:[],            // [{id,naam,mentoren:[email]}] — klassenindeling; leerling.klasId verwijst hiernaar
+  klassenGemigreerd:false,
   superadmins:[],        // [email, ...] — wie de Admin-knop ziet; leeg = alle coaches/coordinatoren (backward compat)
   displayPassword:'',    // wachtwoord voor Display-rol (leeg = knop verborgen)
   schoolLogo:'',         // base64 data URL van het schoollogo
@@ -3694,7 +3769,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo','wp_klassen'
 ];
 
 let _graphToken = null;
@@ -4252,6 +4327,7 @@ function persist(){
     localStorage.setItem('wp_toetsenImport', JSON.stringify(S.toetsenImport));
     localStorage.setItem('wp_verlof', JSON.stringify(S.verlof));
     localStorage.setItem('wp_zermelo', JSON.stringify(S.zermelo));
+    localStorage.setItem('wp_klassen', JSON.stringify({lijst:S.klassen,gemigreerd:S.klassenGemigreerd}));
   }catch(e){}
   // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
   if(_graphToken){
@@ -4279,6 +4355,7 @@ function hydrate(){
     const spw=localStorage.getItem('wp_stuPw'); if(spw) S.studentPasswords=JSON.parse(spw);
     const bsc=localStorage.getItem('wp_besch'); if(bsc) S.beschikbaarheid=JSON.parse(bsc);
     const zrm=localStorage.getItem('wp_zermelo'); if(zrm) S.zermelo={...S.zermelo,...JSON.parse(zrm)};
+    const kls=localStorage.getItem('wp_klassen'); if(kls){ const k=JSON.parse(kls); S.klassen=k.lijst||[]; S.klassenGemigreerd=!!k.gemigreerd; }
     const rm=localStorage.getItem('wp_roleMap'); if(rm) S.roleMap=JSON.parse(rm);
     const cl=localStorage.getItem('wp_changeLog'); if(cl) S.changeLog=JSON.parse(cl);
     const cls=localStorage.getItem('wp_coachLastSeen'); if(cls) S.coachLastSeen=cls||null;
@@ -4470,10 +4547,10 @@ function logout(){
 function switchAdmTab(idx){
   document.querySelectorAll('.adm-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
   document.querySelectorAll('.adm-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
-  if(idx===2) renderRollenList();
-  if(idx===4) loadM365Cfg();
-  if(idx===6){ renderSuperadminList(); renderDisplayPwStatus(); }
-  if(idx===7) renderZrmAdmin();
+  if(idx===1){ renderKlassenAdmin(); renderRollenList(); renderStudentsList(); }
+  if(idx===3) loadM365Cfg();
+  if(idx===5){ renderSuperadminList(); renderDisplayPwStatus(); }
+  if(idx===6) renderZrmAdmin();
 }
 
 function showAdmin(){
@@ -4485,6 +4562,7 @@ function showAdmin(){
   // Terugknop alleen voor coach/coordinator (zij kunnen terug naar weekplanning)
   const backBtn=document.getElementById('btn-admin-back');
   if(backBtn) backBtn.style.display=(S.role==='coach'||S.role==='coordinator')?'':'none';
+  _migreerKlassen();
   switchAdmTab(0);
   // Automatisch M365 verbinden als er een geldig token is + item-IDs ophalen voor betrouwbare sync
   if(!_graphToken){ acquireToken(false).then(async t=>{ if(t){ _graphToken=t; setSyncChip('idle','☁️ M365'); await spFetchItemIds(); } }); }
@@ -4537,7 +4615,7 @@ function renderSuperadminList(){
   const ct=document.getElementById('sadm-list');
   if(!ct) return;
   if(!S.superadmins.length){
-    ct.innerHTML='<span style="color:var(--tx3);font-size:.83rem;">Geen superadmins ingesteld — alle coaches en coördinatoren hebben toegang tot Admin.</span>';
+    ct.innerHTML='<span style="color:var(--tx3);font-size:.83rem;">Geen superadmins ingesteld — alle coaches en coördinatoren hebben toegang tot Admin. Met een superadmin erbij kunnen alleen superadmins en coördinatoren bij Admin.</span>';
     return;
   }
   ct.innerHTML='';
@@ -4569,9 +4647,8 @@ function addSuperadmin(){
   inp.value='';
   renderSuperadminList();
   // herbereken zichtbaarheid admin-knop
-  const canAdmin = !S.superadmins.length || S.superadmins.includes(S.loggedInEmail||'');
   const btnAdm=document.getElementById('btn-admin-header');
-  if(btnAdm && (S.role==='coach'||S.role==='coordinator')) btnAdm.style.display=canAdmin?'':'none';
+  if(btnAdm && (S.role==='coach'||S.role==='coordinator')) btnAdm.style.display=_magAdmin()?'':'none';
   okEl.style.display='block'; setTimeout(()=>okEl.style.display='none',2000);
 }
 function removeSuperadmin(email){
@@ -4579,9 +4656,8 @@ function removeSuperadmin(email){
   persist();
   renderSuperadminList();
   // herbereken zichtbaarheid admin-knop
-  const canAdmin = !S.superadmins.length || S.superadmins.includes(S.loggedInEmail||'');
   const btnAdm=document.getElementById('btn-admin-header');
-  if(btnAdm && (S.role==='coach'||S.role==='coordinator')) btnAdm.style.display=canAdmin?'':'none';
+  if(btnAdm && (S.role==='coach'||S.role==='coordinator')) btnAdm.style.display=_magAdmin()?'':'none';
 }
 
 /* ── Display wachtwoord beheer ── */
@@ -4728,6 +4804,209 @@ function togglePwVis(vak){
   inp.type=inp.type==='password'?'text':'password';
 }
 
+/* ── KLASSEN, COÖRDINATOREN EN MENTOREN ──────────── */
+const _EERSTE_MENTOR='j.wollerich@parmantscholen.nl';
+function _isSuperadmin(){ return !!S.loggedInEmail&&S.superadmins.includes(S.loggedInEmail.toLowerCase()); }
+// Admin: superadmins en coördinatoren; zonder superadmins iedereen met bewerkrechten (zoals voorheen)
+function _magAdmin(){ return !S.superadmins.length||_isSuperadmin()||S.role==='coordinator'; }
+function _klasNaam(id){ return S.klassen.find(k=>k.id===id)?.naam||''; }
+function _persoonNaam(email){
+  const m=S.roleMap[email];
+  if(m?.naam) return m.naam;
+  return email.split('@')[0].split(/[._-]/).filter(Boolean).map(p=>p.length===1?p.toUpperCase()+'.':p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+}
+// Eenmalig: de bestaande klas wordt "Topsport 2.0" met Jordy als mentor (en superadmin)
+function _migreerKlassen(){
+  if(S.klassenGemigreerd||!S.students.length) return;
+  if(!S.klassen.some(k=>k.id==='topsport-2-0')) S.klassen.push({id:'topsport-2-0',naam:'Topsport 2.0',mentoren:[_EERSTE_MENTOR]});
+  S.students.forEach(st=>{ if(!st.klasId) st.klasId='topsport-2-0'; });
+  if(!S.roleMap[_EERSTE_MENTOR]) S.roleMap[_EERSTE_MENTOR]={role:'coach',naam:'Jordy Wollerich'};
+  if(!S.superadmins.includes(_EERSTE_MENTOR)) S.superadmins.push(_EERSTE_MENTOR);
+  S.klassenGemigreerd=true;
+  persist();
+}
+
+function renderKlassenAdmin(){
+  const personen=rol=>Object.entries(S.roleMap).filter(([,m])=>m.role===rol).map(([e])=>e).sort((a,b)=>_persoonNaam(a).localeCompare(_persoonNaam(b),'nl'));
+  const coords=personen('coordinator'), mentoren=personen('coach');
+  const rij=(email,tags,rol)=>`<div class="rk-row"><span class="naam">${_esc(_persoonNaam(email))}</span><span class="mail">${_esc(email)}</span><span class="tags">${tags}</span>
+    <button class="rk-x" title="Verwijderen" onclick="removeRolPersoon('${_esc(email)}','${rol}')">✕</button></div>`;
+  const sa=e=>S.superadmins.includes(e)?'<span class="rk-tag sa" title="Toegang tot alle klassen en onderdelen">superadmin</span>':'';
+  document.getElementById('coord-cnt').textContent=`(${coords.length})`;
+  document.getElementById('coord-list').innerHTML=coords.length?coords.map(e=>rij(e,sa(e),'coordinator')).join(''):'<span class="rk-empty">Nog geen coördinatoren.</span>';
+  document.getElementById('mentor-cnt').textContent=`(${mentoren.length})`;
+  document.getElementById('mentor-list').innerHTML=mentoren.length?mentoren.map(e=>{
+    const kl=S.klassen.filter(k=>(k.mentoren||[]).includes(e)).map(k=>`<span class="rk-tag">${_esc(k.naam)}</span>`).join('');
+    return rij(e,kl+sa(e)||'<span class="rk-empty">geen klas</span>','coach');
+  }).join(''):'<span class="rk-empty">Nog geen mentoren of coaches.</span>';
+  document.getElementById('klas-mentor-inp').innerHTML='<option value="">— mentor/coach (optioneel) —</option>'+mentoren.map(e=>`<option value="${_esc(e)}">${_esc(_persoonNaam(e))}</option>`).join('');
+
+  // Klassen
+  document.getElementById('klas-cnt').textContent=`(${S.klassen.length})`;
+  const klasKaart=(k,stus)=>{
+    const mentorChips=mentoren.length?mentoren.map(e=>`<button type="button" class="klas-chip${(k.mentoren||[]).includes(e)?' on':''}" onclick="toggleKlasMentor('${k.id}','${_esc(e)}')">${_esc(_persoonNaam(e))}</button>`).join(''):'<span class="rk-empty">Voeg eerst een mentor/coach toe.</span>';
+    return `<div class="klas-card" id="klas-${k.id}">
+      <div class="klas-hdr"><h4>${_esc(k.naam)}</h4><span class="cnt">${stus.length} leerling${stus.length===1?'':'en'}</span></div>
+      <div class="klas-sub">Mentor/coach: ${mentorChips}</div>
+      <div class="klas-stus">${stus.map(st=>`<span class="klas-stu" onclick="openEditStu('${st.id}')" title="Aanpassen">${_esc(st.name)}${st.klass?`<small>${_esc(st.klass)}</small>`:''}</span>`).join('')||'<span class="rk-empty">Nog geen leerlingen.</span>'}</div>
+      <div class="klas-acts">
+        <button type="button" onclick="_klasImportStart('${k.id}')">📥 Leerlingen importeren (Excel)</button>
+        <button type="button" onclick="_klasNieuweLeerling('${k.id}')">➕ Leerling toevoegen</button>
+        <button type="button" onclick="renameKlas('${k.id}')">✏️ Naam wijzigen</button>
+        <button type="button" class="del" onclick="deleteKlas('${k.id}')">🗑 Klas verwijderen</button>
+      </div>
+      <div class="klas-msg" id="klas-msg-${k.id}" style="display:none;"></div>
+    </div>`;
+  };
+  let html=S.klassen.map(k=>klasKaart(k,S.students.filter(st=>st.klasId===k.id))).join('');
+  const zonder=S.students.filter(st=>!st.klasId||!S.klassen.some(k=>k.id===st.klasId));
+  if(zonder.length) html+=`<div class="klas-card leeg"><div class="klas-hdr"><h4>Zonder klas</h4><span class="cnt">${zonder.length} leerling${zonder.length===1?'':'en'} · alleen zichtbaar voor coördinatoren en superadmins</span></div>
+    <div class="klas-stus">${zonder.map(st=>`<span class="klas-stu" onclick="openEditStu('${st.id}')">${_esc(st.name)}${st.klass?`<small>${_esc(st.klass)}</small>`:''}</span>`).join('')}</div></div>`;
+  document.getElementById('klassen-list').innerHTML=html||'<span class="rk-empty">Nog geen klassen.</span>';
+}
+function addRolPersoon(rol){
+  const pre=rol==='coordinator'?'coord':'mentor';
+  const email=(document.getElementById(pre+'-email').value||'').trim().toLowerCase();
+  const naam=(document.getElementById(pre+'-naam').value||'').trim();
+  const err=document.getElementById(pre+'-err');
+  err.style.display='none';
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='Voer een geldig e-mailadres in.'; err.style.display='block'; return; }
+  const was=S.roleMap[email];
+  if(was&&was.role!==rol&&!confirm(`${email} staat nu als ${ROL_LABELS[was.role]||was.role}. Wijzigen naar ${rol==='coordinator'?'coördinator':'mentor/coach'}?`)) return;
+  S.roleMap[email]={...(was?.role===rol?was:{}),role:rol,...(naam?{naam}:{})};
+  persist();
+  document.getElementById(pre+'-email').value=''; document.getElementById(pre+'-naam').value='';
+  renderKlassenAdmin(); renderRollenList();
+}
+function removeRolPersoon(email,rol){
+  askConfirm('Verwijderen',`${_persoonNaam(email)} verwijderen als ${rol==='coordinator'?'coördinator':'mentor/coach'}?`,()=>{
+    delete S.roleMap[email];
+    S.klassen.forEach(k=>{ k.mentoren=(k.mentoren||[]).filter(e=>e!==email); });
+    persist(); renderKlassenAdmin(); renderRollenList();
+  });
+}
+function addKlas(){
+  const naam=(document.getElementById('klas-naam-inp').value||'').trim();
+  const mentor=document.getElementById('klas-mentor-inp').value;
+  const err=document.getElementById('klas-err'); err.style.display='none';
+  if(!naam){ err.textContent='Geef de klas een naam.'; err.style.display='block'; return; }
+  if(S.klassen.some(k=>k.naam.toLowerCase()===naam.toLowerCase())){ err.textContent='Er bestaat al een klas met deze naam.'; err.style.display='block'; return; }
+  S.klassen.push({id:uid(),naam,mentoren:mentor?[mentor]:[]});
+  persist();
+  document.getElementById('klas-naam-inp').value='';
+  renderKlassenAdmin(); renderStudentsList();
+}
+function renameKlas(id){
+  const k=S.klassen.find(x=>x.id===id); if(!k) return;
+  const naam=(prompt('Nieuwe naam voor de klas:',k.naam)||'').trim();
+  if(!naam||naam===k.naam) return;
+  k.naam=naam; persist(); renderKlassenAdmin(); renderStudentsList();
+}
+function deleteKlas(id){
+  const k=S.klassen.find(x=>x.id===id); if(!k) return;
+  const n=S.students.filter(st=>st.klasId===id).length;
+  askConfirm('Klas verwijderen',`"${k.naam}" verwijderen?${n?` De ${n} leerling${n===1?'':'en'} blijven bestaan, maar zonder klas.`:''}`,()=>{
+    S.klassen=S.klassen.filter(x=>x.id!==id);
+    S.students.forEach(st=>{ if(st.klasId===id) st.klasId=null; });
+    persist(); renderKlassenAdmin(); renderStudentsList();
+  });
+}
+function toggleKlasMentor(id,email){
+  const k=S.klassen.find(x=>x.id===id); if(!k) return;
+  k.mentoren=(k.mentoren||[]).includes(email)?k.mentoren.filter(e=>e!==email):[...(k.mentoren||[]),email];
+  persist(); renderKlassenAdmin();
+}
+function _klasNieuweLeerling(id){
+  showForm('stu-form','btn-add-stu');
+  renderStudentsList();
+  document.getElementById('stu-klasid-inp').value=id;
+  document.getElementById('stu-form').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>document.getElementById('stu-name-inp').focus(),300);
+}
+
+// Leerlingen uit Excel aan een klas koppelen: naam, e-mail en eventueel schoolklas.
+// Werkt met en zonder kolomnamen; bij meerdere tabbladen geldt de tabnaam als schoolklas (bijv. JXH2).
+let _klasImportDoel=null;
+function _klasImportStart(id){
+  _klasImportDoel=id;
+  const inp=document.getElementById('klas-import-file'); inp.value=''; inp.click();
+}
+function _klasImportBestand(file){
+  if(!file||!_klasImportDoel) return;
+  const verwerk=()=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        const res=_klasImportVerwerk(wb,_klasImportDoel);
+        const msg=document.getElementById('klas-msg-'+_klasImportDoel);
+        renderKlassenAdmin(); renderStudentsList(); renderRollenList();
+        const m=document.getElementById('klas-msg-'+_klasImportDoel);
+        if(m){ m.innerHTML=res; m.style.display=''; }
+      }catch(err){ alert('Fout bij lezen van het bestand: '+err.message); }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  if(window.XLSX){ verwerk(); return; }
+  const sc=document.createElement('script');
+  sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  sc.onload=verwerk; sc.onerror=()=>alert('Kon de Excel-bibliotheek niet laden.');
+  document.head.appendChild(sc);
+}
+function _klasImportVerwerk(wb,klasId){
+  const KOP={naam:['naam','leerling','leerlingnaam','volledigenaam','name','roepnaam'],voornaam:['voornaam','roepnaam','firstname'],
+    tussen:['tussenvoegsel','tussenvoegsels','tv'],achternaam:['achternaam','lastname','familienaam'],
+    email:['email','emailadres','mail','mailadres','schoolmail','emailleerling'],klas:['klas','schoolklas','stamklas','groep','class'],sport:['sport','tak']};
+  const isMail=v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v).trim());
+  const isKlasCode=v=>/^[a-z]{1,5}\d{1,2}[a-z]?$/i.test(String(v).trim());
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const naamNorm=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
+  let nieuw=0, gekoppeld=0, mails=0;
+  wb.SheetNames.forEach(sheet=>{
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:''}).filter(r=>r.some(c=>String(c).trim()!==''));
+    if(!rows.length) return;
+    // Kolomnamen in de eerste rijen?
+    let kol=null, start=0;
+    for(let i=0;i<Math.min(5,rows.length)&&!kol;i++){
+      const m={};
+      rows[i].forEach((h,j)=>{ const n=norm(h); Object.entries(KOP).forEach(([veld,l])=>{ if(m[veld]===undefined&&l.includes(n)) m[veld]=j; }); });
+      if(m.naam!==undefined||m.achternaam!==undefined||m.voornaam!==undefined){ kol=m; start=i+1; }
+    }
+    const tabKlas=isKlasCode(sheet)?sheet.trim().toUpperCase():'';
+    rows.slice(start).forEach(r=>{
+      let naam='', email='', klas='', sport='';
+      if(kol){
+        naam=kol.naam!==undefined?String(r[kol.naam]).trim():[r[kol.voornaam],r[kol.tussen],r[kol.achternaam]].map(x=>String(x??'').trim()).filter(Boolean).join(' ');
+        email=kol.email!==undefined?String(r[kol.email]).trim().toLowerCase():(r.find(isMail)||'').toString().trim().toLowerCase();
+        klas=kol.klas!==undefined?String(r[kol.klas]).trim().toUpperCase():tabKlas;
+        sport=kol.sport!==undefined?String(r[kol.sport]).trim():'';
+      } else {
+        email=String(r.find(isMail)||'').trim().toLowerCase();
+        const tekst=r.map(c=>String(c).trim()).filter(c=>c&&!isMail(c));
+        const k=tekst.find(isKlasCode);
+        klas=(k||tabKlas||'').toUpperCase();
+        naam=tekst.filter(c=>c!==k).join(' ').replace(/\s+/g,' ').trim();
+      }
+      if(!naam) return;
+      // Bestaande leerling: via het gekoppelde account of dezelfde naam (+ schoolklas)
+      let stu=email&&S.roleMap[email]?.studentId?S.students.find(st=>st.id===S.roleMap[email].studentId):null;
+      // Op naam alleen als die leerling nog geen ander schoolaccount heeft (Devon ≠ Dévon met eigen e-mail)
+      const accountVan=id=>Object.keys(S.roleMap).find(e=>S.roleMap[e].studentId===id);
+      if(!stu) stu=S.students.find(st=>naamNorm(st.name)===naamNorm(naam)&&(!klas||!st.klass||norm(st.klass)===norm(klas))
+        &&!(email&&accountVan(st.id)&&accountVan(st.id)!==email));
+      if(stu){ gekoppeld++; if(klas&&!stu.klass) stu.klass=klas; }
+      else { stu={id:uid(),name:naam,klass:klas,year:null}; S.students.push(stu); nieuw++; }
+      stu.klasId=klasId;
+      if(sport&&!stu.sport) stu.sport=sport;
+      if(email&&(!S.roleMap[email]||S.roleMap[email].role==='leerling')){ S.roleMap[email]={role:'leerling',studentId:stu.id}; mails++; }
+    });
+  });
+  S.students.sort((a,b)=>a.name.localeCompare(b.name,'nl'));
+  persist();
+  if(!nieuw&&!gekoppeld) return '<span style="color:#C0392B;">Geen leerlingen gevonden in dit bestand.</span>';
+  return `✓ ${nieuw} nieuwe leerling${nieuw===1?'':'en'} aangemaakt, ${gekoppeld} bestaande gekoppeld${mails?`, ${mails} schoolaccount${mails===1?'':'s'} gekoppeld (inloggen als leerling)`:''}.`;
+}
+
 /* ── ROLLEN BEHEER ───────────────────────────────── */
 const ROL_LABELS = {admin:'🔧 Admin',coordinator:'Coördinator',coach:'Coach',docent:'Docent',leerling:'Leerling'};
 
@@ -4747,7 +5026,7 @@ function renderRollenList(){
     const roleLabel = ROL_LABELS[m.role]||m.role;
     const extra = m.vak ? ` — ${m.vak}` : (m.studentId ? ` — ${(S.students.find(s=>s.id===m.studentId)||{}).name||m.studentId}` : '');
     return `<div class="dpw-row" style="flex-wrap:wrap;gap:.4rem .55rem;border-bottom:1px solid var(--border);padding:.5rem 0;align-items:center;">
-      <span style="font-size:.83rem;flex:1;min-width:160px;word-break:break-all;">${email}</span>
+      <span style="font-size:.83rem;flex:1;min-width:160px;word-break:break-all;">${m.naam?`<b>${_esc(m.naam)}</b> · `:''}${email}</span>
       <span class="cnt" style="background:var(--brand-light);color:var(--brand);border-radius:6px;padding:.18rem .6rem;font-size:.75rem;font-weight:700;flex-shrink:0;">${roleLabel}${extra}</span>
       <button onclick="removeRolEntry('${email}')" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:.85rem;padding:.2rem .4rem;border-radius:5px;flex-shrink:0;" title="Verwijderen">✕</button>
     </div>`;
@@ -4810,13 +5089,13 @@ function addRolEntry(){
   document.getElementById('rol-role').value='';
   document.getElementById('rol-vak-wrap').style.display='none';
   document.getElementById('rol-stu-wrap').style.display='none';
-  renderRollenList();
+  renderRollenList(); renderKlassenAdmin();
 }
 
 function removeRolEntry(email){
   delete S.roleMap[email];
   persist(); // sla op in localStorage en sync naar SharePoint
-  renderRollenList();
+  renderRollenList(); renderKlassenAdmin();
 }
 
 function saveRollenMap(){
@@ -4933,14 +5212,14 @@ function onClassChange(){
 }
 
 function addStudent(){
-  if(S.students.length>=25){alert('Maximum van 25 leerlingen bereikt.');return;}
   const name=document.getElementById('stu-name-inp').value.trim();
   const klass=document.getElementById('stu-class-inp').value;
   if(!name){alert('Voer een naam in.');return;}
   const needsYear=NEEDS_YEAR.includes(klass);
   const year=needsYear ? parseInt(document.querySelector('input[name="stu-year"]:checked').value) : null;
   const id=uid();
-  S.students.push({id,name,klass,year});
+  const klasId=document.getElementById('stu-klasid-inp')?.value||null;
+  S.students.push({id,name,klass,year,klasId});
   S.students.sort((a,b)=>a.name.localeCompare(b.name,'nl'));
   if(!S.currentStudentId) S.currentStudentId=id;
   persist();
@@ -4948,16 +5227,16 @@ function addStudent(){
   document.getElementById('stu-class-inp').value='H2';
   document.getElementById('stu-year-wrap').style.display='none';
   hideForm('stu-form','btn-add-stu');
-  renderStudentsList();
+  renderStudentsList(); renderKlassenAdmin();
 }
 
 
 function renderStudentsList(){
   const list=document.getElementById('students-list');
   list.innerHTML='';
-  document.getElementById('stu-cnt').textContent='('+S.students.length+'/25)';
-  const btn=document.getElementById('btn-add-stu');
-  btn.disabled=S.students.length>=25;
+  document.getElementById('stu-cnt').textContent='('+S.students.length+')';
+  const kSel=document.getElementById('stu-klasid-inp');
+  if(kSel){ const cur=kSel.value; kSel.innerHTML='<option value="">— geen klas —</option>'+S.klassen.map(k=>`<option value="${k.id}">${_esc(k.naam)}</option>`).join(''); if(cur) kSel.value=cur; }
   if(!S.students.length){
     list.innerHTML='<p class="empty-note">Nog geen leerlingen toegevoegd.</p>';
     return;
@@ -4968,7 +5247,7 @@ function renderStudentsList(){
     const vkCount=[...new Set(allVakken)].length;
     d.innerHTML=`<div class="list-item-info">
       <span class="li-name">${stu.name}${stu.sport?' <span style="font-size:.75rem;color:var(--tx3);">· '+stu.sport+'</span>':''}</span>
-      <span class="li-meta">${stuLabel(stu)}${vkCount?' · '+vkCount+' vak'+(vkCount===1?'':'ken'):''}${stu.pws?' · PWS ✓':''}</span>
+      <span class="li-meta">${stuLabel(stu)}${stu.klasId&&_klasNaam(stu.klasId)?' · '+_esc(_klasNaam(stu.klasId)):' · <span style="color:#C05818;">geen klas</span>'}${vkCount?' · '+vkCount+' vak'+(vkCount===1?'':'ken'):''}${stu.pws?' · PWS ✓':''}</span>
     </div>
     <div class="li-actions">
       <button class="li-edit" onclick="openEditStu('${stu.id}')" title="Aanpassen">✏️</button>
@@ -5219,7 +5498,9 @@ function openEditStu(id){
   document.getElementById('estu-id').value=id;
   document.getElementById('estu-name').value=stu.name;
   document.getElementById('estu-sport').value=stu.sport||'';
-  document.getElementById('estu-class').value=stu.klass;
+  const ec=document.getElementById('estu-class');
+  if(stu.klass&&![...ec.options].some(o=>o.value===stu.klass)) ec.add(new Option(stu.klass,stu.klass)); // schoolklas uit een import
+  ec.value=stu.klass;
   onEstuClassChange();
   if(NEEDS_YEAR.includes(stu.klass)&&stu.year){
     const r=document.querySelector(`input[name="estu-year"][value="${stu.year}"]`);
@@ -5265,16 +5546,19 @@ function saveEditStu(){
     pwsDots[i]=parseInt(el.dataset.val||'0');
   });
   // Collect coach/coordinator assignments
-  const assignedCoaches=[...document.querySelectorAll('#estu-assign-coaches .estu-assign-chip.on')].map(c=>c.dataset.email);
-  const assignedCoords=[...document.querySelectorAll('#estu-assign-coords .estu-assign-chip.on')].map(c=>c.dataset.email);
   const stu=S.students.find(s=>s.id===id);
-  if(stu){ stu.name=name; stu.klass=klass; stu.year=year; stu.vakken=vakken; stu.sport=sport; stu.pws=hasPws; stu.pwsDots=hasPws?pwsDots:[0,0,0,0,0]; stu.coaches=assignedCoaches; stu.coordinators=assignedCoords; }
-  persist(); closeEditStu(); renderStudentsList();
+  const klasSel=document.getElementById('estu-klasid');
+  if(stu){ stu.name=name; stu.klass=klass; stu.year=year; stu.vakken=vakken; stu.sport=sport; stu.pws=hasPws; stu.pwsDots=hasPws?pwsDots:[0,0,0,0,0]; if(klasSel) stu.klasId=klasSel.value||null; }
+  persist(); closeEditStu(); renderStudentsList(); renderKlassenAdmin();
   if(S.currentStudentId===id) updateStudentBar();
 }
 
 function _buildEstuAssignSection(stu){
   const ct=document.getElementById('estu-assign-ct');
+  // Mentor/coach volgt uit de klas
+  ct.innerHTML=`<label class="flabel" style="display:block;margin-bottom:.35rem;">Klas (indeling)</label>
+    <select class="field-inp" id="estu-klasid" style="margin-bottom:0;"><option value="">— geen klas —</option>${S.klassen.map(k=>`<option value="${k.id}"${k.id===stu.klasId?' selected':''}>${_esc(k.naam)}${(k.mentoren||[]).length?' · '+_esc(k.mentoren.map(_persoonNaam).join(', ')):''}</option>`).join('')}</select>`;
+  return;
   ct.innerHTML='';
   // Get all coaches and coordinators from roleMap
   const coaches=Object.entries(S.roleMap).filter(([,m])=>m.role==='coach').map(([email])=>email);
@@ -8920,6 +9204,7 @@ function _doAanwExport(){
 
 /* ══ MAIN SCREEN ════════════════════════════════════ */
 function showMain(){
+  _migreerKlassen();
   setTimeout(_zrmAutoVernieuw,1500);
   const now=new Date();
   // Clamp start to school year boundaries
@@ -8946,8 +9231,7 @@ function showMain(){
   document.getElementById('hdr-edit-zone').style.display=canEdit?'flex':'none';
   // Admin-knop: zichtbaar voor coach/coordinator én alleen als superadmin (of lijst leeg = iedereen)
   const btnAdm=document.getElementById('btn-admin-header');
-  const isSuperadmin = !S.superadmins.length || S.superadmins.includes(S.loggedInEmail||'');
-  if(btnAdm) btnAdm.style.display=(canEdit && isSuperadmin)?'':'none';
+  if(btnAdm) btnAdm.style.display=(canEdit && _magAdmin())?'':'none';
   const sez=document.getElementById('stu-edit-zone');
   if(sez) sez.style.display=canEdit?'flex':'none';
   const cew=document.getElementById('csb-edit-win');
@@ -9053,13 +9337,13 @@ function visibleStudents(){
   if(S.role==='docent' && S.docentVak){
     return S.students.filter(stu=>getActiveVakken(stu).includes(S.docentVak));
   }
-  // Coach: toon alleen leerlingen waarbij deze coach gekoppeld is (of leerling zonder coaches)
+  // Superadmin en coördinator zien alle klassen
+  if(_isSuperadmin()||S.role==='coordinator') return S.students;
+  // Mentor/coach: alleen de leerlingen van de eigen klas(sen)
   if(S.role==='coach' && S.loggedInEmail){
-    return S.students.filter(stu=>!stu.coaches?.length || stu.coaches.includes(S.loggedInEmail));
-  }
-  // Coordinator: toon alleen leerlingen waarbij deze coordinator gekoppeld is (of leerling zonder coordinators)
-  if(S.role==='coordinator' && S.loggedInEmail){
-    return S.students.filter(stu=>!stu.coordinators?.length || stu.coordinators.includes(S.loggedInEmail));
+    const mail=S.loggedInEmail.toLowerCase();
+    const eigen=new Set(S.klassen.filter(k=>(k.mentoren||[]).includes(mail)).map(k=>k.id));
+    return S.students.filter(stu=>eigen.has(stu.klasId)||(stu.coaches||[]).includes(mail));
   }
   return S.students;
 }
