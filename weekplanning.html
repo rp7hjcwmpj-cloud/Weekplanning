@@ -1901,6 +1901,21 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .dash-chips { display: flex; flex-wrap: wrap; gap: .25rem; }
 .dash-chip { font-size: .66rem; font-weight: 700; border-radius: 6px; padding: .08rem .38rem; border: 1.5px solid var(--tx); color: var(--tx); }
 .dash-chip.les { background: var(--tx); color: var(--surface); }
+.dash-round-btn.dash-round-ghost { background: var(--surface); color: var(--tx2); border: 1px solid var(--border); margin-right: .3rem; }
+.dash-round-btn.dash-round-ghost:hover { border-color: var(--brand); color: var(--brand); }
+#modal-verlof-overzicht { z-index: 410; }
+.vh-card { max-width: 620px; width: 94vw; max-height: 88vh; display: flex; flex-direction: column; padding: 1.3rem 1.4rem; }
+.vh-head { display: flex; gap: .8rem; align-items: flex-start; margin-bottom: .8rem; }
+.vh-head > div { flex: 1; min-width: 0; }
+.vh-head h2 { margin: 0; }
+.vh-head p { margin: .15rem 0 0; font-size: .82rem; color: var(--tx3); }
+.vh-filters { display: flex; gap: .5rem; flex-wrap: wrap; }
+.vh-filters .field-inp { margin-bottom: 0; flex: 1; min-width: 160px; }
+.vh-tabs { display: flex; gap: .35rem; margin: .7rem 0 .6rem; flex-wrap: wrap; }
+.vh-tab { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: .25rem .75rem; font: inherit; font-size: .78rem; font-weight: 600; color: var(--tx2); cursor: pointer; }
+.vh-tab.on { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.vh-body { flex: 1; min-height: 0; overflow-y: auto; }
+.vh-meta { font-size: .72rem; color: var(--tx3); margin-top: .3rem; }
 .dash-vrow { border: 1px solid var(--border); border-radius: 14px; padding: .7rem .85rem; margin-bottom: .6rem; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .dash-vrow:hover { border-color: var(--brand); box-shadow: 0 2px 10px rgba(0,0,0,.06); }
 .vo-card { max-width: 980px; width: 100%; max-height: 94vh; overflow-y: auto; }
@@ -2465,6 +2480,7 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         <div class="dash-card-hdr">
           <span class="dash-ico" data-ico="hand"></span>
           <div><h3>Verlof<span class="toets-badge dash-inline-badge" id="dash-verlof-badge" style="display:none;"></span></h3><p>Aanvragen en toetsen herplannen</p></div>
+          <button type="button" class="dash-round-btn dash-round-ghost" title="Afgehandelde verlofaanvragen bekijken" onclick="openVerlofHistorie()"><span data-ico="clock"></span></button>
           <button type="button" class="dash-round-btn" title="Verlof invoeren voor een leerling" onclick="openVerlofModal()"><span data-ico="plus"></span></button>
         </div>
         <div id="dash-verlof-body"></div>
@@ -2527,6 +2543,26 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 </div>
 
 <!-- ══ VERLOF AANVRAGEN ══════════════════════════════ -->
+<!-- ══ AFGEHANDELDE VERLOFAANVRAGEN ═══════════════════ -->
+<div class="overlay" id="modal-verlof-historie" onclick="if(event.target===this)closeVerlofHistorie()">
+  <div class="modal-card vh-card">
+    <div class="vh-head">
+      <div><h2>Afgehandelde verlofaanvragen</h2><p id="vh-sub"></p></div>
+      <button type="button" class="btn-ghost" style="flex:none;width:auto;" onclick="closeVerlofHistorie()">✕ Sluiten</button>
+    </div>
+    <div class="vh-filters">
+      <select id="vh-periode" class="field-inp" onchange="renderVerlofHistorie()">
+        <option value="1" selected>Afgelopen maand</option>
+        <option value="3">Afgelopen 3 maanden</option>
+        <option value="sj">Dit schooljaar</option>
+      </select>
+      <input id="vh-zoek" class="field-inp" type="search" placeholder="Zoek leerling…" oninput="renderVerlofHistorie()">
+    </div>
+    <div class="vh-tabs" id="vh-tabs"></div>
+    <div class="vh-body" id="vh-body"></div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-verlof-overzicht" onclick="if(event.target===this)closeVerlofOverzicht()">
   <div class="modal-card vo-card">
     <div class="vo-head">
@@ -11952,6 +11988,53 @@ function _renderDashVerlof(v){
   document.getElementById('dash-verlof-body').innerHTML=html||'<div class="dash-empty">Er staat niets open.</div>';
   _updateVerlofBadge();
 }
+
+// Afgehandelde verlofaanvragen (goedgekeurd en afgewezen), gefilterd op de datum van beoordeling
+let _vhStatus='alle';
+function openVerlofHistorie(){
+  document.getElementById('vh-periode').value='1';
+  document.getElementById('vh-zoek').value='';
+  _vhStatus='alle';
+  document.getElementById('modal-verlof-historie').classList.add('show');
+  renderVerlofHistorie();
+}
+function closeVerlofHistorie(){ document.getElementById('modal-verlof-historie').classList.remove('show'); }
+function _vhVanaf(periode){
+  const d=new Date(); d.setHours(0,0,0,0);
+  if(periode==='sj'){ // schooljaar loopt van 1 augustus t/m 31 juli
+    return new Date(d.getMonth()>=7?d.getFullYear():d.getFullYear()-1,7,1);
+  }
+  d.setMonth(d.getMonth()-parseInt(periode));
+  return d;
+}
+function renderVerlofHistorie(){
+  const periode=document.getElementById('vh-periode').value;
+  const zoek=document.getElementById('vh-zoek').value.trim().toLowerCase();
+  const vanaf=_vhVanaf(periode);
+  const ids=new Set(visibleStudents().map(s=>s.id));
+  const naam=id=>S.students.find(s=>s.id===id)?.name||'Onbekende leerling';
+  const datum=r=>r.beoordeeldOp||r.gewijzigdOp||r.aangevraagdOp||(r.van+'T12:00:00');
+  const inPeriode=(S.verlof||[]).filter(r=>ids.has(r.studentId)&&(r.status==='goedgekeurd'||r.status==='afgewezen')
+    &&new Date(datum(r))>=vanaf&&(!zoek||naam(r.studentId).toLowerCase().includes(zoek)))
+    .sort((a,b)=>datum(b).localeCompare(datum(a)));
+  const n={alle:inPeriode.length,goedgekeurd:inPeriode.filter(r=>r.status==='goedgekeurd').length,afgewezen:inPeriode.filter(r=>r.status==='afgewezen').length};
+  const lbl={alle:'Alle',goedgekeurd:'Goedgekeurd',afgewezen:'Afgewezen'};
+  document.getElementById('vh-tabs').innerHTML=Object.keys(lbl).map(k=>
+    `<button type="button" class="vh-tab${_vhStatus===k?' on':''}" onclick="_vhStatus='${k}';renderVerlofHistorie()">${lbl[k]} (${n[k]})</button>`).join('');
+  const vanafTxt=`${vanaf.getDate()} ${MONTHS_FULL[vanaf.getMonth()].toLowerCase()} ${vanaf.getFullYear()}`;
+  document.getElementById('vh-sub').textContent=`Beoordeeld vanaf ${vanafTxt} · ${n.goedgekeurd} goedgekeurd, ${n.afgewezen} afgewezen`;
+  const lijst=_vhStatus==='alle'?inPeriode:inPeriode.filter(r=>r.status===_vhStatus);
+  const door=e=>e?(_persoonNaam(e)||e):'';
+  document.getElementById('vh-body').innerHTML=lijst.map(r=>{
+    const op=new Date(datum(r));
+    return `<div class="dash-vrow" title="Bekijk de 4 weken rondom dit verlof" onclick="openVerlofOverzicht('${r.id}')">
+      <div class="dash-vrow-top"><span class="dash-vrow-naam">${_esc(naam(r.studentId))}</span><span class="dash-status ${r.status}">${r.status}</span></div>
+      <div class="dash-vrow-per">${_verlofPeriode(r)}</div>
+      <div class="dash-vrow-reden">${_verlofRedenHtml(r)}</div>
+      <div class="vh-meta">${r.status==='goedgekeurd'?'Goedgekeurd':'Afgewezen'} op ${op.getDate()} ${MONTHS[op.getMonth()]} ${op.getFullYear()}${r.beoordeeldDoor?' door '+_esc(door(r.beoordeeldDoor)):''}</div>
+    </div>`;
+  }).join('')||`<div class="dash-empty">Geen ${_vhStatus==='alle'?'afgehandelde':lbl[_vhStatus].toLowerCase()+'e'} verlofaanvragen in deze periode.</div>`;
+}
 // Overzicht van 4 weken rond een verlofaanvraag: week ervoor, verlofweek en de 2 weken erna
 let _voId=null;
 function openVerlofOverzicht(id){
@@ -12020,6 +12103,7 @@ function _voBeoordeel(status){
   const id=_voId;
   closeVerlofOverzicht();
   beoordeelVerlof(id,status);
+  if(document.getElementById('modal-verlof-historie').classList.contains('show')) renderVerlofHistorie();
 }
 function beoordeelVerlof(id,status){
   const r=(S.verlof||[]).find(x=>x.id===id);
