@@ -1576,6 +1576,20 @@ body.dark .stu-sport-chip {
 .tip-confirm-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
 .tip-no-toetsen { font-size:.82rem; color:var(--tx3); text-align:center; padding:1.5rem .5rem; }
 .tip-form-row { display:flex; flex-direction:column; gap:.2rem; }
+.tip-koppel-sec { border:1.5px dashed var(--b-bd); background:color-mix(in srgb, var(--b-bg) 40%, var(--surface)); border-radius:10px; padding:.55rem .6rem; }
+.tip-koppel-sec.gekoppeld { border-style:solid; border-color:#2471A3; }
+.tip-koppel-kop { font-size:.78rem; font-weight:700; color:var(--b-tx); }
+.tip-koppel-uitleg { font-size:.69rem; color:var(--tx3); margin:.1rem 0 .4rem; line-height:1.35; }
+.tip-koppel-opt { display:flex; align-items:center; gap:.5rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:.4rem .5rem; margin-top:.3rem; }
+.tip-koppel-opt.on { border-color:#2471A3; box-shadow:0 0 0 1px #2471A3; }
+.tip-koppel-opt > div { flex:1; min-width:0; }
+.tip-koppel-opt b { display:block; font-size:.76rem; color:var(--tx); }
+.tip-koppel-opt span { display:block; font-size:.68rem; color:var(--tx3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tip-koppel-opt .ok { color:#2D8B50; font-weight:700; }
+.tip-koppel-opt button { flex:none; border:1px solid #2471A3; background:#2471A3; color:#fff; border-radius:7px; padding:.28rem .6rem; font:inherit; font-size:.72rem; font-weight:700; cursor:pointer; }
+.tip-koppel-opt.on button { background:var(--surface); color:#2471A3; }
+.toets-card-link{font-size:.58rem;font-weight:700;opacity:.9;}
+.tl-blok .tl-link{font-weight:700;}
 .tip-form-lbl { font-size:.7rem; font-weight:700; color:var(--tx3); }
 .tip-form-inp {
   width:100%; padding:.35rem .6rem; border:1.5px solid var(--border); border-radius:7px;
@@ -2955,6 +2969,9 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
           <label class="tip-form-lbl">Onderwerp <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
           <input id="tip-onderwerp" class="tip-form-inp" type="text" placeholder="Bijv. Hoofdstuk 4…" oninput="_tipFormChange()">
         </div>
+
+        <!-- Koppelen aan een al geplande toets (zelfde vak en niveau) -->
+        <div id="tip-koppel-sec" class="tip-koppel-sec" style="display:none;"></div>
 
         <div class="tip-form-row">
           <label class="tip-form-lbl">Dag</label>
@@ -5902,6 +5919,121 @@ function _renderDashZiek(v){
   document.getElementById('dash-ziek-body').innerHTML=html||'<div class="dash-empty">Niemand ziek gemeld.</div>';
 }
 
+
+/* ══ TOETSEN KOPPELEN ═══════════════════════════════ */
+// Leerlingen met dezelfde toets (vak + niveau) op hetzelfde moment delen een koppel-id: de docent maakt één versie.
+function _stuNiveau(stu){
+  const m=String(stu?.klass||'').toUpperCase().match(/([TMHV])\s?([1-6])/);
+  return m?m[1]+m[2]:'';
+}
+function _toetsVak(rec){ return String(rec?.subject||'').split(' – ')[0].trim(); }
+let _koppelCache={t:0,idx:null};
+function _koppelIndex(){
+  if(_koppelCache.idx&&Date.now()-_koppelCache.t<400) return _koppelCache.idx;
+  const idx=new Map();
+  Object.entries(S.studentData||{}).forEach(([stuId,sd])=>{
+    Object.entries(sd?.toets||{}).forEach(([key,dagen])=>Object.entries(dagen||{}).forEach(([di,uren])=>
+      Object.entries(uren||{}).forEach(([originId,rec])=>{
+        if(!rec?.koppel) return;
+        if(!idx.has(rec.koppel)) idx.set(rec.koppel,[]);
+        idx.get(rec.koppel).push({stuId,key,di:+di,originId,rec});
+      })));
+  });
+  _koppelCache={t:Date.now(),idx};
+  return idx;
+}
+function _koppelLeden(koppel){ return (_koppelIndex().get(koppel)||[]).filter(l=>S.students.some(s=>s.id===l.stuId)); }
+function _koppelZetOntvangen(koppel,ontvangen){
+  _koppelCache.idx=null;
+  _koppelLeden(koppel).forEach(l=>{
+    if(ontvangen) l.rec.ontvangen=ontvangen; else delete l.rec.ontvangen;
+    const t=S.toetsenImport.find(x=>x.matchedStudentId===l.stuId&&x.geplandWeekKey===l.key&&x.geplandDi===l.di&&x.geplandSlot===l.originId);
+    if(t) t.ontvangen=ontvangen||null;
+  });
+}
+// Geplande toetsen (vanaf vandaag) met hetzelfde vak en niveau als de gekozen leerlingen, per moment gebundeld
+function _tipKoppelKandidaten(){
+  const {vak}=_tipGetFormData();
+  if(!vak||!_tipStuIds.length) return [];
+  const niveaus=new Set(_tipStuIds.map(id=>_stuNiveau(S.students.find(s=>s.id===id))).filter(Boolean));
+  if(!niveaus.size) return [];
+  const gekozen=new Set(_tipStuIds);
+  const e=_tipEditing;
+  const vandaag=toDS(new Date());
+  const groepen=new Map();
+  S.students.forEach(stu=>{
+    if(gekozen.has(stu.id)||!niveaus.has(_stuNiveau(stu))) return;
+    const sd=S.studentData[stu.id];
+    Object.entries(sd?.toets||{}).forEach(([key,dagen])=>{
+      const [y,w]=key.split('-').map(Number);
+      const dates=weekDates(y,w);
+      Object.entries(dagen||{}).forEach(([di,uren])=>{
+        const dt=dates[+di]; if(!dt||toDS(dt)<vandaag) return;
+        _toetsTijden(key,+di,sd).forEach(t=>{
+          if(_toetsVak(t.rec).toLowerCase()!==vak.toLowerCase()) return;
+          if(e&&e.stuId===stu.id&&e.key===key&&e.di===+di&&e.originId===t.originId) return;
+          const g=t.rec.koppel||`${key}|${di}|${t.start}|${t.end}`;
+          if(!groepen.has(g)) groepen.set(g,{id:g,koppel:t.rec.koppel||null,key,di:+di,ds:toDS(dt),start:t.start,dur:t.end-t.start,originId:t.originId,
+            onderwerp:String(t.rec.subject||'').split(' – ').slice(1).join(' – '),leden:[],ontvangen:null,niveau:_stuNiveau(stu)});
+          const gr=groepen.get(g);
+          gr.leden.push({stuId:stu.id,key,di:+di,originId:t.originId});
+          if(!gr.ontvangen) gr.ontvangen=_toetsOntvangen(stu.id,key,+di,t.originId,t.rec);
+        });
+      });
+    });
+  });
+  return [...groepen.values()].sort((a,b)=>a.ds.localeCompare(b.ds)||a.start-b.start).slice(0,6);
+}
+// Klopt het formulier nog met de gekozen gekoppelde toets?
+function _tipKoppelGeldig(){
+  const k=_tipKoppel; if(!k||!_tipWy) return false;
+  const {begintijd,dur,vak}=_tipGetFormData();
+  return wk(_tipWy.year,_tipWy.week)===k.key&&_tipSelectedDag===k.di&&begintijd&&_parseTime(begintijd)===k.start&&dur===k.dur
+    &&vak.toLowerCase()===String(k.vak||vak).toLowerCase();
+}
+function _tipRenderKoppel(){
+  const sec=document.getElementById('tip-koppel-sec');
+  if(!sec) return;
+  if(_tipKoppel&&!_tipKoppelGeldig()) _tipKoppel=null; // dag/tijd/vak gewijzigd: niet meer gekoppeld
+  const kand=_tipKoppelKandidaten();
+  if(!kand.length){ sec.style.display='none'; return; }
+  const niv=[...new Set(kand.map(k=>k.niveau))].join(', ');
+  const {vak}=_tipGetFormData();
+  sec.classList.toggle('gekoppeld',!!_tipKoppel);
+  sec.innerHTML=`<div class="tip-koppel-kop">🔗 ${_tipKoppel?'Gekoppeld aan een geplande toets':`${vak} ${niv} staat al gepland`}</div>
+    <div class="tip-koppel-uitleg">${_tipKoppel?'Dag, tijd en duur zijn overgenomen. Wijzig je die, dan vervalt de koppeling.':'Koppel de leerling aan dezelfde toets, dan hoeft de docent maar één versie te maken.'}</div>`+
+    kand.map(k=>{
+      const on=_tipKoppel?.id===k.id;
+      const namen=k.leden.map(l=>S.students.find(s=>s.id===l.stuId)?.name||'').filter(Boolean);
+      return `<div class="tip-koppel-opt${on?' on':''}"><div>
+        <b>${_fmtDag(k.ds)} · ${_fmtMin(k.start)}–${_fmtMin(k.start+k.dur)} (${k.dur} min)${k.onderwerp?' · '+_esc(k.onderwerp):''}</b>
+        <span title="${_esc(namen.join(', '))}">${_esc(namen.length>3?namen.slice(0,3).join(', ')+' +'+(namen.length-3):namen.join(', '))}${k.ontvangen?' · <span class="ok">✓ versie al binnen</span>':''}</span>
+      </div><button type="button" onclick="${on?'_tipOntkoppel()':`_tipKoppelAan('${_esc(k.id)}')`}">${on?'Ontkoppelen':'Koppelen'}</button></div>`;
+    }).join('');
+  sec.style.display='';
+}
+function _tipKoppelAan(id){
+  const k=_tipKoppelKandidaten().find(x=>x.id===id); if(!k) return;
+  const [y,w]=k.key.split('-').map(Number);
+  _tipWy={week:w,year:y};
+  _tipRenderDagBtns();
+  document.getElementById('tip-begintijd').value=_fmtMin(k.start).padStart(5,'0');
+  let radio=document.querySelector(`input[name="tip-dur"][value="${k.dur}"]`);
+  if(!radio){
+    const lbl=document.createElement('label'); lbl.className='tip-dur-opt tip-dur-extra';
+    lbl.innerHTML=`<input type="radio" name="tip-dur" value="${k.dur}" onchange="_tipFormChange()"> ${k.dur} min`;
+    document.querySelector('input[name="tip-dur"]').closest('div').appendChild(lbl);
+    radio=lbl.querySelector('input');
+  }
+  radio.checked=true;
+  const ond=document.getElementById('tip-onderwerp');
+  if(k.onderwerp&&!ond.value) ond.value=k.onderwerp;
+  _tipKoppel={...k,vak:_tipGetFormData().vak};
+  _tipSelectDag(k.di);
+  _tipFormChange();
+}
+function _tipOntkoppel(){ _tipKoppel=null; _tipRenderKoppel(); }
+
 /* ══ TOETSLOKAAL ════════════════════════════════════ */
 // Eén gedeeld toetslokaal voor alle klassen: we tellen de toetsen van álle leerlingen, niet alleen de zichtbare.
 let _tlDatum=null;
@@ -6015,7 +6147,7 @@ function renderToetslokaal(){
     html+=`<div class="tl-blok ${t.plek>=N?'te-veel':(ontv?'ontvangen':'')} ${klik?'klik':''}" title="${_esc(tip)}"
       style="top:${y(t.start)+1}px;height:${Math.max(18,y(t.end)-y(t.start)-2)}px;left:calc(${links(t.plek)} + 2px);width:calc(${kolW} - 4px);"
       ${klik?`onclick="closeToetslokaal();openToetsInplanModal({stuId:'${t.stu.id}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})"`:''}>
-      <b>${_esc(t.stu.name)}</b><span>${_esc(vak)}</span><span>${_fmtMin(t.start)}–${_fmtMin(t.end)}</span><span>${_esc(klas||t.stu.klass||'')}</span></div>`;
+      <b>${_esc(t.stu.name)}</b><span>${_esc(vak)}${t.rec.koppel&&_koppelLeden(t.rec.koppel).length>1?' <span class="tl-link" style="display:inline">🔗</span>':''}</span><span>${_fmtMin(t.start)}–${_fmtMin(t.end)}</span><span>${_esc(klas||t.stu.klass||'')}</span></div>`;
   });
   if(toDS(dt)===vandaag){
     const n=new Date(), m=n.getHours()*60+n.getMinutes();
@@ -8631,6 +8763,7 @@ function _setToetsInPlanner(studentId, weekKey, di, slotId, toets){
   if(!sd.toets[weekKey][di]) sd.toets[weekKey][di]={};
   const rec={subject:toets.vak+(toets.onderwerp?' – '+toets.onderwerp:''), lokaal:toets.lokaal||''};
   if(toets.ontvangen) rec.ontvangen=toets.ontvangen;
+  if(toets.koppel) rec.koppel=toets.koppel;
   sd.toets[weekKey][di][slotId]=rec;
   // Uur geel maken; een eigen status van deze week bewaren we, zodat hij zichtbaar blijft onder de kaart
   const _markYellow=sid=>{
@@ -8727,11 +8860,13 @@ let _tipCollegas = [];          // [{email,naam}] extra genodigden
 let _tipInviteSkip = new Set(); // gekozen leerlingen die géén uitnodiging krijgen
 let _tipStuIds = [];        // gekozen leerlingen; de toets komt alleen in hun rooster
 let _tipViewStuId = null;   // leerling van wie het mini-rooster getoond wordt
+let _tipKoppel = null;      // gekozen geplande toets om aan te koppelen: {koppel,key,di,originId,start,dur,leden,...}
 let _tipEditing = null;     // {stuId,key,di,originId} bij aanpassen van een bestaande toets
 
 // edit: {stuId,key,di,originId} om een geplande toets aan te passen of te verplaatsen
 function openToetsInplanModal(edit){
   _tipEditing=edit||null;
+  _tipKoppel=null;
   if(_tipEditing){
     const [y,w]=_tipEditing.key.split('-').map(Number);
     _tipWy={week:w, year:y};
@@ -8942,6 +9077,7 @@ function _tipRenderStuChips(){
     chip.appendChild(del);
     ct.appendChild(chip);
   });
+  _tipRenderKoppel();
 }
 
 // Vakken van alle gekozen leerlingen; een al gekozen vak blijft staan
@@ -9044,6 +9180,7 @@ function _tipFormChange(){
     }
   }
   _tipLokaalHint();
+  _tipRenderKoppel();
   // Als dag + begintijd ingevuld → auto-select slot & toon direct-plan knop
   _tipAutoSelectFromForm();
   // Herbereken confirm bar als slot handmatig geselecteerd (geen auto)
@@ -9468,7 +9605,7 @@ function confirmToetsInplan(){
 
   if(!_tipSelectedToetsId && !vak){ alert('Kies eerst een vak.'); return; }
   const wasEditing=!!_tipEditing;
-  let ontvangen=null, alleenOntvangen=false;
+  let ontvangen=null, alleenOntvangen=false, behoudKoppel=null;
   if(_tipEditing){
     // Oude toets weghalen; een geïmporteerde toets wordt hieronder bijgewerkt
     const {stuId:eStu,key:eKey,di:eDi,originId:eOrigin}=_tipEditing;
@@ -9488,7 +9625,18 @@ function confirmToetsInplan(){
       const old=S.toetsenImport.find(x=>x._handmatig&&x.matchedStudentId===eStu&&x.geplandWeekKey===eKey&&x.geplandDi===eDi&&x.geplandSlot===eOrigin);
       if(old) S.toetsenImport=S.toetsenImport.filter(x=>x!==old);
     }
+    // Blijft de toets op hetzelfde moment, dan blijft hij gekoppeld
+    if(eKey===weekKey&&eDi===_tipSelectedDi&&zelfdeTijd&&(oud.duration||(oudSlot?_slotDuration(oudSlot):50))===dur&&oud.koppel) behoudKoppel=oud.koppel;
     _tipEditing=null;
+  }
+
+  // Koppelen aan een geplande toets: zelfde koppel-id; een al ontvangen versie geldt ook voor de nieuwe leerlingen
+  const koppelGroep=_tipKoppelGeldig()?_tipKoppel:null;
+  let koppel=behoudKoppel||null;
+  if(koppelGroep){
+    koppel=koppelGroep.koppel||uid();
+    koppelGroep.leden.forEach(l=>{ const r=S.studentData[l.stuId]?.toets?.[l.key]?.[l.di]?.[l.originId]; if(r) r.koppel=koppel; });
+    if(!ontvangen&&koppelGroep.ontvangen) ontvangen=koppelGroep.ontvangen;
   }
 
   // Bepaal effectieve begintijd
@@ -9509,7 +9657,8 @@ function confirmToetsInplan(){
     if(onderwerp) t.onderwerp=onderwerp;
     t.tijdstip=effectiefTijdstip;
     t._dur=dur;
-    if(wasEditing) t.ontvangen=ontvangen;
+    if(wasEditing||ontvangen) t.ontvangen=ontvangen;
+    t.koppel=koppel||undefined;
     _setToetsInPlanner(t.matchedStudentId, weekKey, _tipSelectedDi, _tipSelectedSlotId, t);
     t.datum=datum; t.status='gepland'; t.geplandWeekKey=weekKey; t.geplandDi=_tipSelectedDi; t.geplandSlot=_tipSelectedSlotId;
     planned=t; plannedIds=[t.matchedStudentId];
@@ -9534,7 +9683,8 @@ function confirmToetsInplan(){
         geplandSlot:_tipSelectedSlotId,
         _dur:dur,
         _handmatig:true,
-        ontvangen
+        ontvangen,
+        koppel:koppel||undefined
       };
       S.toetsenImport.push(newT);
       _setToetsInPlanner(stuId, weekKey, _tipSelectedDi, _tipSelectedSlotId, newT);
@@ -9543,6 +9693,10 @@ function confirmToetsInplan(){
     });
   }
   const stuNamen=_tipStuNamen(plannedIds);
+  // Versie ontvangen geldt voor alle gekoppelde leerlingen
+  _koppelCache.idx=null;
+  if(koppel&&wasEditing) _koppelZetOntvangen(koppel,ontvangen);
+  _tipKoppel=null;
 
   persist(); renderToetsenCards(); updateToetsBadge(); renderSchedule();
 
@@ -9566,6 +9720,7 @@ function confirmToetsInplan(){
   const bar=document.getElementById('tip-success-bar');
   bar.style.display='';
   bar.innerHTML=`<div style="color:#2D8B50;font-weight:700;">✓ Toets ${wasEditing?'aangepast':'ingepland'} voor ${stuNamen}: ${planned.tijdstip} – ${_fmtMin(_parseTime(planned.tijdstip)+planned._dur)} (${planned._dur} min)</div>
+    ${koppelGroep?`<div style="font-size:.8rem;color:#2471A3;font-weight:600;">🔗 Gekoppeld aan de toets van ${_esc(_tipStuNamen(koppelGroep.leden.map(l=>l.stuId)))}: de docent maakt één versie.</div>`:''}
     <div id="tip-invite-status" style="font-size:.8rem;"></div>
     <div class="tip-confirm-actions">
       <button class="btn-p" onclick="closeToetsInplanModal()">Klaar</button>
@@ -10898,7 +11053,13 @@ function _placeToetsCards(root){
         const tm=document.createElement('div'); tm.className='toets-card-time';
         tm.textContent=`${_fmtMin(t.start)}–${_fmtMin(t.end)} · ${t.end-t.start} min`;
         card.appendChild(tm);
-        card.title=`${t.rec.subject||'Toets'} — ${tm.textContent}`;
+        const genoten=t.rec.koppel?_koppelLeden(t.rec.koppel).filter(l=>l.stuId!==S.currentStudentId):[];
+        if(genoten.length){
+          const lk=document.createElement('div'); lk.className='toets-card-link';
+          lk.textContent=`🔗 samen met ${genoten.length}`;
+          card.appendChild(lk);
+        }
+        card.title=`${t.rec.subject||'Toets'} — ${tm.textContent}${genoten.length?' — gekoppeld met '+genoten.map(l=>S.students.find(x=>x.id===l.stuId)?.name||'').join(', '):''}`;
         if(showEdit){
           const ed=document.createElement('button');
           ed.type='button'; ed.className='toets-card-edit'; ed.textContent='✏️'; ed.title='Toets aanpassen of verplaatsen';
@@ -11938,7 +12099,8 @@ function renderDashboard(){
 }
 
 function _dashToetsRow(t,metDag){
-  const sub=[t.rec.subject||'Toets',`${t.end-t.start} min`].join(' · ');
+  const genoten=t.rec.koppel?_koppelLeden(t.rec.koppel).filter(l=>l.stuId!==t.stu.id).length:0;
+  const sub=[t.rec.subject||'Toets',`${t.end-t.start} min`,genoten?`🔗 +${genoten}`:''].filter(Boolean).join(' · ');
   const ontvRec=_toetsOntvangen(t.stu.id,t.key,t.di,t.originId,t.rec), ontv=!!ontvRec;
   const regulier=ontv&&ontvRec.via==='administratie';
   return `<div class="dash-trow ${ontv?'ontvangen':'wacht'}">
