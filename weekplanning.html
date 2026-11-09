@@ -33,6 +33,7 @@
   --y-bg:#FFFDE7; --y-tx:#5D4000; --y-bd:#D4AC00;
   --o-bg:#FFD9A8; --o-tx:#6B2800; --o-bd:#C05A00;
   --ro-bg:#FFE2DC; --ro-tx:#8B1A0A; --ro-bd:#FF9A88;
+  --zk-bg:#CFF4EF; --zk-tx:#0B5A52; --zk-bd:#2BB3A3; --zk-hard:#0F9B8E;
 
   --vak-bg:#F0F0F0; --vak-tx:#606060; --vak-hdr:rgba(140,140,140,.35);
   --std-bg:#F0F0F0; --std-tx:#606060; --std-hdr:rgba(140,140,140,.35);
@@ -50,6 +51,7 @@ body.dark {
   --y-bg:#2A2200; --y-tx:#E8C040; --y-bd:#6A5800;
   --o-bg:#3D1E00; --o-tx:#FF9A3C; --o-bd:#8A4200;
   --ro-bg:#3D0E08; --ro-tx:#FF8878; --ro-bd:#6E1810;
+  --zk-bg:#0E3A36; --zk-tx:#6FE3D4; --zk-bd:#1F7F75; --zk-hard:#23B5A5;
   --vak-bg:#222222; --vak-tx:#909090; --vak-hdr:rgba(140,140,140,.18);
   --std-bg:#222222; --std-tx:#909090; --std-hdr:rgba(140,140,140,.18);
 }
@@ -197,6 +199,15 @@ body.dark .toets-dur-opt:has(input:checked){background:rgba(74,128,200,.18);}
   font-size:.66rem;cursor:pointer;background:#fff;border:1.5px solid #D4A800;border-radius:6px;}
 .toets-card-edit:hover{background:#FFF8D6;}
 .four-wk-body .toets-card{padding:1px 2px;}
+/* Ziek: hele dag vaag, met een turquoise kaart in het midden */
+.dc.ziek-under::after{content:'';position:absolute;inset:0;background:var(--surface);opacity:.62;pointer-events:none;z-index:1;border-radius:inherit;}
+.ziek-card{position:absolute;z-index:4;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  pointer-events:none;color:var(--zk-tx);background:var(--zk-bg);border:2px solid var(--zk-hard);border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.2);padding:6px 4px;text-align:center;overflow:hidden;}
+.ziek-card-ico{font-size:1.5rem;line-height:1;}
+.ziek-card-tag{background:var(--zk-hard);color:#fff;font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 12px;}
+.ziek-card-sub{font-size:.62rem;font-weight:600;opacity:.85;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.four-wk-body .ziek-card-ico{font-size:1rem;} .four-wk-body .ziek-card-tag{font-size:.6rem;padding:1px 6px;} .four-wk-body .ziek-card-sub{display:none;}
+.sched-wrap.editing .ziek-card{opacity:.45;box-shadow:none;}
 /* Bewerkmodus: kaart doorzichtig zodat de status eronder te wijzigen is */
 .sched-wrap.editing .toets-card{opacity:.5;box-shadow:none;}
 .sched-wrap.editing .toets-card-txt,.sched-wrap.editing .toets-card-time{display:none;}
@@ -1842,15 +1853,16 @@ body.dark .dash-bar { background: var(--surf-2); }
 .dash-now b { color: var(--tx); font-weight: 600; }
 .dash-grid { display: grid; gap: 1rem; margin-top: 1.1rem; align-items: start;
   grid-template-columns: minmax(0,.8fr) minmax(0,1.45fr) minmax(0,1fr);
-  grid-template-areas: "toetsen aanw doc" "toetsen aanw verlof"; }
+  grid-template-areas: "toetsen aanw doc" "toetsen aanw verlof" "toetsen aanw ziek"; }
 .dash-toetsen { grid-area: toetsen; } .dash-aanw { grid-area: aanw; } .dash-doc { grid-area: doc; } .dash-verlof { grid-area: verlof; }
 /* Verlof direct onder Docenten; Toetsen even hoog als Aanwezigheid en zelf scrollbaar */
-.dash-grid { grid-template-rows: auto 1fr; }
+.dash-grid { grid-template-rows: auto auto 1fr; }
+.dash-ziek { grid-area: ziek; align-self: start; }
 .dash-verlof { align-self: start; }
 .dash-toetsen { contain: size; align-self: stretch; display: flex; flex-direction: column; min-height: 320px; }
 .dash-toetsen #dash-toetsen-body { flex: 1; min-height: 0; overflow-y: auto; margin-right: -.5rem; padding-right: .5rem; }
-@media (max-width: 1150px) { .dash-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "aanw aanw" "toetsen doc" "toetsen verlof"; grid-template-rows: auto auto 1fr; } .dash-toetsen { min-height: 420px; } }
-@media (max-width: 720px) { .dash-view { padding: 1rem; } .dash-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "aanw" "toetsen" "verlof" "doc"; grid-template-rows: none; } .dash-toetsen { contain: none; min-height: 0; max-height: 70vh; } }
+@media (max-width: 1150px) { .dash-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "aanw aanw" "toetsen doc" "toetsen verlof" "toetsen ziek"; grid-template-rows: auto auto auto 1fr; } .dash-toetsen { min-height: 420px; } }
+@media (max-width: 720px) { .dash-view { padding: 1rem; } .dash-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "aanw" "toetsen" "ziek" "verlof" "doc"; grid-template-rows: none; } .dash-toetsen { contain: none; min-height: 0; max-height: 70vh; } }
 .dash-card { background: var(--surface); border: 1px solid #F3D4B4; border-radius: 20px; padding: 1rem 1.1rem; box-shadow: 0 2px 14px rgba(200,90,0,.05); min-width: 0; }
 body.dark .dash-card { border-color: var(--border); }
 .dash-card-hdr { display: flex; align-items: center; gap: .7rem; margin-bottom: .7rem; }
@@ -1911,6 +1923,20 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 .dash-chips { display: flex; flex-wrap: wrap; gap: .25rem; }
 .dash-chip { font-size: .66rem; font-weight: 700; border-radius: 6px; padding: .08rem .38rem; border: 1.5px solid var(--tx); color: var(--tx); }
 .dash-chip.les { background: var(--tx); color: var(--surface); }
+.dash-round-btn.dash-round-ziek { background: var(--zk-hard); }
+.dash-ico.dash-ico-ziek { background: var(--zk-bg); font-size: 1.05rem; }
+.dash-ziek-badge { background: var(--zk-hard) !important; animation: none !important; }
+.btn-p.btn-ziek { background: var(--zk-hard); }
+.dash-tag.ziek { background: var(--zk-hard); color: #fff; }
+.dash-aanw-ziek .dash-sq { opacity: .3; }
+.dash-zrow { border: 1px solid var(--zk-bd); border-left: 4px solid var(--zk-hard); background: color-mix(in srgb, var(--zk-bg) 45%, var(--surface)); border-radius: 12px; padding: .6rem .8rem; margin-bottom: .55rem; cursor: pointer; }
+.dash-zrow:hover { box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+.dash-zrow-top { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.dash-zrow-naam { font-weight: 600; font-size: .9rem; color: var(--tx); }
+.dash-zrow-per { font-size: .78rem; color: var(--zk-tx); font-weight: 600; }
+.dash-zrow-meta { font-size: .72rem; color: var(--tx3); margin-top: .15rem; }
+.dash-zrow-acts { display: flex; gap: .35rem; margin-top: .45rem; flex-wrap: wrap; }
+.dash-ztag { font-size: .68rem; font-weight: 800; color: #fff; background: var(--zk-hard); border-radius: 999px; padding: .08rem .5rem; letter-spacing: .03em; }
 .dash-round-btn.dash-round-ghost { background: var(--surface); color: var(--tx2); border: 1px solid var(--border); margin-right: .3rem; }
 .dash-round-btn.dash-round-ghost:hover { border-color: var(--brand); color: var(--brand); }
 #modal-verlof-overzicht { z-index: 410; }
@@ -2495,6 +2521,14 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
         </div>
         <div id="dash-verlof-body"></div>
       </section>
+      <section class="dash-card dash-ziek">
+        <div class="dash-card-hdr">
+          <span class="dash-ico dash-ico-ziek">🤒</span>
+          <div><h3>Ziek melden<span class="toets-badge dash-inline-badge dash-ziek-badge" id="dash-ziek-badge" style="display:none;"></span></h3><p>Zieke leerlingen uit je klas</p></div>
+          <button type="button" class="dash-round-btn dash-round-ziek" title="Leerling ziek melden" onclick="openZiekModal()"><span data-ico="plus"></span></button>
+        </div>
+        <div id="dash-ziek-body"></div>
+      </section>
     </div>
   </div>
 </div>
@@ -2553,6 +2587,25 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
 </div>
 
 <!-- ══ VERLOF AANVRAGEN ══════════════════════════════ -->
+<!-- ══ ZIEK MELDEN ════════════════════════════════════ -->
+<div class="overlay" id="modal-ziek" onclick="if(event.target===this)closeZiekModal()">
+  <div class="modal-card" style="max-width:420px;">
+    <h2>🤒 Leerling ziek melden</h2>
+    <label class="flabel">Leerling</label>
+    <input class="field-inp" type="text" id="zk-zoek" placeholder="Zoek leerling…" autocomplete="off" oninput="_zkFilter(this.value)" style="margin-bottom:.35rem;">
+    <select class="field-inp" id="zk-stu" size="6" style="height:auto;"></select>
+    <div class="form-row" style="gap:.7rem;">
+      <div class="fw" style="margin-bottom:0"><label class="flabel">Ziek vanaf</label><input class="field-inp" type="date" id="zk-van" onchange="const t=document.getElementById('zk-tot');if(!t.value||t.value<this.value)t.value=this.value"></div>
+      <div class="fw" style="margin-bottom:0"><label class="flabel">Tot en met</label><input class="field-inp" type="date" id="zk-tot"></div>
+    </div>
+    <label class="flabel">Toelichting <span style="font-weight:400;opacity:.6;">(optioneel)</span></label>
+    <input class="field-inp" type="text" id="zk-toel" placeholder="Bijv. griep, gebeld door ouder">
+    <div class="err-msg" id="zk-err"></div>
+    <button class="btn-p btn-ziek" onclick="saveZiek()">Ziek melden</button>
+    <button class="btn-g" onclick="closeZiekModal()">Annuleren</button>
+  </div>
+</div>
+
 <!-- ══ AFGEHANDELDE VERLOFAANVRAGEN ═══════════════════ -->
 <div class="overlay" id="modal-verlof-historie" onclick="if(event.target===this)closeVerlofHistorie()">
   <div class="modal-card vh-card">
@@ -3767,6 +3820,7 @@ const S = {
   },
   toetsenImport:[],      // [{id,studentNaam,klas,vak,datum,tijdstip,lokaal,status:'open'|'gepland',matchedStudentId,geplandWeekKey,geplandDi,geplandSlot}]
   zermelo:{actief:false,portal:'',docenten:[],vakMap:{},klasMap:{},rooster:{},laatst:''}, // rooster: {weekKey:{di:{slotId:[{d,s,g,l,x}]}}}; token staat alleen lokaal (wp_zrm_token)
+  ziek:[],               // [{id,studentId,van,tot,toelichting,gemeldOp,gemeldDoor}] — ziekmeldingen, hele dagen
   verlof:[],             // [{id,studentId,van,vanSlot,tot,totSlot,reden:statuskleur,toelichting,status:'aangevraagd'|'goedgekeurd'|'afgewezen',aangevraagdOp,aangevraagdDoor,beoordeeldDoor,beoordeeldOp,gewijzigdOp,toegepast}]
   mainView:null,         // 'dash' | 'planner' — startscherm coach/coördinator is het dashboard
 };
@@ -3868,7 +3922,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo','wp_klassen','wp_toetslokaal'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo','wp_klassen','wp_toetslokaal','wp_ziek'
 ];
 
 let _graphToken = null;
@@ -4425,6 +4479,7 @@ function persist(){
     localStorage.setItem('wp_displayPw', S.displayPassword||'');
     localStorage.setItem('wp_toetsenImport', JSON.stringify(S.toetsenImport));
     localStorage.setItem('wp_verlof', JSON.stringify(S.verlof));
+    localStorage.setItem('wp_ziek', JSON.stringify(S.ziek));
     localStorage.setItem('wp_zermelo', JSON.stringify(S.zermelo));
     localStorage.setItem('wp_klassen', JSON.stringify({lijst:S.klassen,gemigreerd:S.klassenGemigreerd}));
     localStorage.setItem('wp_toetslokaal', JSON.stringify(S.toetslokaal));
@@ -4469,6 +4524,7 @@ function hydrate(){
     const dpw=localStorage.getItem('wp_displayPw'); if(dpw!==null) S.displayPassword=dpw;
     const tsi=localStorage.getItem('wp_toetsenImport'); if(tsi) S.toetsenImport=JSON.parse(tsi);
     const vlf=localStorage.getItem('wp_verlof'); if(vlf) S.verlof=JSON.parse(vlf);
+    const zk=localStorage.getItem('wp_ziek'); if(zk) S.ziek=JSON.parse(zk)||[];
     const prd=localStorage.getItem('wp_periods');
     if(prd){ const p=JSON.parse(prd);
       if(p.exam) S.schoolPeriods.exam=Object.assign(S.schoolPeriods.exam,p.exam);
@@ -5704,6 +5760,148 @@ function _zetStuAccount(id,email){
   return '';
 }
 
+
+/* ══ ZIEK MELDEN ════════════════════════════════════ */
+// Een ziekmelding geldt voor hele dagen (van t/m tot); het rooster zelf blijft ongewijzigd
+function _ziekOp(stuId,ds){
+  if(!stuId||!S.ziek?.length) return null;
+  return S.ziek.find(z=>z.studentId===stuId&&ds>=z.van&&ds<=(z.tot||z.van))||null;
+}
+function _placeZiekCards(wrap,key){
+  if(!S.currentStudentId||!S.ziek?.length) return;
+  const [y,w]=key.split('-').map(Number);
+  const dates=weekDates(y,w);
+  const wr=wrap.getBoundingClientRect();
+  const dis=[...new Set([...wrap.querySelectorAll('.dc[data-di]')].map(c=>+c.dataset.di))];
+  dis.forEach(di=>{
+    const z=dates[di]&&_ziekOp(S.currentStudentId,toDS(dates[di]));
+    if(!z) return;
+    // Over de lesuren van deze dag, verticaal in het midden
+    const cells=[...wrap.querySelectorAll(`.dc[data-di="${di}"]`)].filter(c=>SCHOOL.some(s=>s.id===c.dataset.slot));
+    if(!cells.length) return;
+    const r0=cells[0].getBoundingClientRect(), r1=cells[cells.length-1].getBoundingClientRect();
+    const hoogte=r1.bottom-r0.top;
+    const h=Math.min(hoogte-8,Math.max(70,hoogte*.34));
+    const wdt=r0.width*.88;
+    const card=document.createElement('div');
+    card.className='ziek-card';
+    card.style.cssText=`top:${r0.top-wr.top+(hoogte-h)/2}px;height:${h}px;left:${r0.left-wr.left+(r0.width-wdt)/2}px;width:${wdt}px;`;
+    const door=z.gemeldDoor?(_persoonNaam(z.gemeldDoor)||z.gemeldDoor):'';
+    card.innerHTML=`<div class="ziek-card-ico">🤒</div><div class="ziek-card-tag">Ziek!</div>${z.toelichting?`<div class="ziek-card-sub">${_esc(z.toelichting)}</div>`:''}${door?`<div class="ziek-card-sub">gemeld door ${_esc(door)}</div>`:''}`;
+    card.title=`Ziek gemeld${door?' door '+door:''}${z.toelichting?' — '+z.toelichting:''}`;
+    wrap.appendChild(card);
+  });
+}
+function _zkKiesbaar(){ return visibleStudents().slice().sort((a,b)=>a.name.localeCompare(b.name,'nl')); }
+function _zkFilter(q){
+  q=(q||'').trim().toLowerCase();
+  const sel=document.getElementById('zk-stu'), was=sel.value;
+  const lijst=_zkKiesbaar().filter(st=>!q||st.name.toLowerCase().includes(q)||(st.klass||'').toLowerCase().includes(q));
+  sel.innerHTML=lijst.map(st=>`<option value="${st.id}">${_esc(st.name)}${st.klass?' · '+_esc(st.klass):''}</option>`).join('');
+  if(lijst.some(st=>st.id===was)) sel.value=was; else if(lijst.length===1) sel.value=lijst[0].id;
+}
+function openZiekModal(stuId){
+  const vandaag=toDS(new Date());
+  document.getElementById('zk-zoek').value='';
+  _zkFilter('');
+  document.getElementById('zk-stu').value=stuId||'';
+  document.getElementById('zk-van').value=vandaag;
+  document.getElementById('zk-tot').value=vandaag;
+  document.getElementById('zk-toel').value='';
+  document.getElementById('zk-err').style.display='none';
+  document.getElementById('modal-ziek').classList.add('show');
+  setTimeout(()=>document.getElementById('zk-zoek').focus(),60);
+}
+function closeZiekModal(){ document.getElementById('modal-ziek').classList.remove('show'); }
+function saveZiek(){
+  const stuId=document.getElementById('zk-stu').value;
+  const van=document.getElementById('zk-van').value;
+  let tot=document.getElementById('zk-tot').value||van;
+  const err=document.getElementById('zk-err');
+  const fout=t=>{ err.textContent=t; err.style.display='block'; };
+  if(!stuId) return fout('Kies een leerling.');
+  if(!visibleStudents().some(st=>st.id===stuId)) return fout('Je kunt alleen leerlingen uit je eigen klas ziek melden.');
+  if(!van) return fout('Kies de eerste ziektedag.');
+  if(tot<van) return fout('"Tot en met" ligt vóór de eerste ziektedag.');
+  // Overlappende melding van dezelfde leerling samenvoegen
+  const oud=S.ziek.find(z=>z.studentId===stuId&&van<=(z.tot||z.van)&&tot>=z.van);
+  if(oud){
+    oud.van=van<oud.van?van:oud.van; oud.tot=tot>(oud.tot||oud.van)?tot:(oud.tot||oud.van);
+    if(document.getElementById('zk-toel').value.trim()) oud.toelichting=document.getElementById('zk-toel').value.trim();
+  } else {
+    S.ziek.push({id:uid(),studentId:stuId,van,tot,toelichting:document.getElementById('zk-toel').value.trim(),
+      gemeldOp:new Date().toISOString(),gemeldDoor:S.loggedInEmail||''});
+  }
+  persist(); closeZiekModal(); renderDashboard(); renderSchedule();
+}
+function _volgendeSchooldag(ds){
+  const d=new Date(ds+'T12:00:00');
+  do{ d.setDate(d.getDate()+1); }while(d.getDay()===0||d.getDay()===6);
+  return toDS(d);
+}
+function ziekVerlengen(id){
+  const z=S.ziek.find(x=>x.id===id); if(!z) return;
+  z.tot=_volgendeSchooldag(z.tot||z.van);
+  persist(); renderDashboard(); renderSchedule();
+}
+function ziekBeter(id){
+  const z=S.ziek.find(x=>x.id===id); if(!z) return;
+  const naam=S.students.find(st=>st.id===z.studentId)?.name||'De leerling';
+  const vandaag=toDS(new Date());
+  askConfirm('Beter melden',`${naam} beter melden? ${z.van<vandaag?'De ziekmelding loopt dan tot en met gisteren.':'De ziekmelding wordt verwijderd.'}`,()=>{
+    if(z.van<vandaag){ const g=new Date(); g.setDate(g.getDate()-1); z.tot=toDS(g); }
+    else S.ziek=S.ziek.filter(x=>x.id!==id);
+    persist(); renderDashboard(); renderSchedule();
+  });
+}
+function _ziekNaarPlanner(stuId,ds){
+  S.currentStudentId=stuId;
+  S.wy=weekYear(new Date(ds+'T12:00:00'));
+  persist(); showPlanner(); updateStudentBar(); renderSchedule();
+}
+function _renderDashZiek(v){
+  const ids=new Set(visibleStudents().map(st=>st.id));
+  const naam=id=>S.students.find(st=>st.id===id);
+  const lijst=(S.ziek||[]).filter(z=>ids.has(z.studentId)&&(z.tot||z.van)>=v.ds).sort((a,b)=>a.van.localeCompare(b.van)||(naam(a.studentId)?.name||'').localeCompare(naam(b.studentId)?.name||'','nl'));
+  const vandaag=lijst.filter(z=>z.van<=v.ds);
+  const badge=document.getElementById('dash-ziek-badge');
+  badge.textContent=vandaag.length; badge.style.display=vandaag.length?'inline-flex':'none';
+  const per=z=>{
+    const tot=z.tot||z.van;
+    if(z.van===tot) return z.van===v.ds?'Vandaag':_fmtDag(z.van);
+    return `${z.van===v.ds?'Vandaag':(z.van<v.ds?'Sinds '+_fmtDag(z.van):_fmtDag(z.van))} t/m ${_fmtDag(tot)}`;
+  };
+  const rij=z=>{
+    const st=naam(z.studentId);
+    const nu=z.van<=v.ds;
+    // Toetsen die tijdens de ziekte gepland staan
+    const toetsen=[];
+    for(let d=new Date(Math.max(new Date(z.van+'T12:00:00'),new Date(v.ds+'T12:00:00'))),eind=new Date((z.tot||z.van)+'T12:00:00');d<=eind;d.setDate(d.getDate()+1)){
+      const sd=S.studentData[z.studentId]; if(!sd) break;
+      const {year,week}=weekYear(d), key=wk(year,week), di=(d.getDay()+6)%7;
+      _toetsTijden(key,di,sd).forEach(t=>toetsen.push({...t,key,di,ds:toDS(d)}));
+    }
+    const conf=toetsen.map(t=>`<span class="dash-conflict">⚠ Toets ${_esc(t.rec.subject||'')} · ${_fmtDag(t.ds)} ${_fmtMin(t.start)}
+      <button type="button" title="Toets herplannen" onclick="openToetsInplanModal({stuId:'${z.studentId}',key:'${t.key}',di:${t.di},originId:'${t.originId}'})">${_ico('pencil')}</button></span>`).join('');
+    const door=z.gemeldDoor?(_persoonNaam(z.gemeldDoor)||z.gemeldDoor):'';
+    const op=z.gemeldOp?new Date(z.gemeldOp):null;
+    return `<div class="dash-zrow" title="Bekijk het rooster van ${_esc(st?.name||'')}" onclick="if(!event.target.closest('button'))_ziekNaarPlanner('${z.studentId}','${nu?v.ds:z.van}')">
+      <div class="dash-zrow-top"><span class="dash-zrow-naam">${_esc(st?.name||'Onbekende leerling')}${st?.klass?` <small style="color:var(--tx3);font-weight:500;">${_esc(st.klass)}</small>`:''}</span>${nu?'<span class="dash-ztag">ZIEK</span>':''}</div>
+      <div class="dash-zrow-per">${per(z)}${z.toelichting?` · <span style="font-weight:500;">${_esc(z.toelichting)}</span>`:''}</div>
+      ${door||op?`<div class="dash-zrow-meta">Gemeld${door?' door '+_esc(door):''}${op?` op ${_fmtDag(toDS(op))} ${_fmtMin(op.getHours()*60+op.getMinutes())}`:''}</div>`:''}
+      ${conf?`<div>${conf}</div>`:''}
+      <div class="dash-zrow-acts">
+        <button type="button" class="dash-btn" onclick="ziekVerlengen('${z.id}')" title="Ook de volgende schooldag ziek">＋1 dag</button>
+        <button type="button" class="dash-btn ok" onclick="ziekBeter('${z.id}')">✓ Beter gemeld</button>
+      </div>
+    </div>`;
+  };
+  let html=vandaag.map(rij).join('');
+  const later=lijst.filter(z=>z.van>v.ds);
+  if(later.length) html+=`<div class="dash-sublbl">Komende dagen</div>`+later.map(rij).join('');
+  document.getElementById('dash-ziek-body').innerHTML=html||'<div class="dash-empty">Niemand ziek gemeld.</div>';
+}
+
 /* ══ TOETSLOKAAL ════════════════════════════════════ */
 // Eén gedeeld toetslokaal voor alle klassen: we tellen de toetsen van álle leerlingen, niet alleen de zichtbare.
 let _tlDatum=null;
@@ -5886,14 +6084,20 @@ async function _zrmGet(path,params){
   const j=await r.json();
   return j.response?.data||[];
 }
-// Een koppelcode (12 cijfers uit het portaal) omwisselen voor een token
+// Een koppelcode (12 cijfers uit het portaal) omwisselen voor een token; gooit een fout met uitleg
 async function _zrmWisselKoppelcode(code){
+  let r;
   try{
-    const r=await fetch(`${_zrmBase()}/oauth/token`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    r=await fetch(`${_zrmBase()}/oauth/token`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:'grant_type=authorization_code&code='+encodeURIComponent(code.replace(/\s/g,''))});
-    if(!r.ok) return null;
-    return (await r.json()).access_token||null;
-  }catch(e){ return null; }
+  }catch(e){
+    throw new Error('Zermelo weigert het verzoek vanuit de browser of het portaaladres klopt niet. Haal het token op via de Terminal (zie uitleg) en plak het hier.');
+  }
+  if(r.status===400||r.status===401||r.status===404) throw new Error('De koppelcode is ongeldig, verlopen of al gebruikt. Maak in Zermelo een nieuwe aan en gebruik die direct.');
+  if(!r.ok) throw new Error('Zermelo gaf foutcode '+r.status+' bij het omwisselen van de koppelcode.');
+  const tok=(await r.json().catch(()=>({}))).access_token;
+  if(!tok) throw new Error('Zermelo gaf geen token terug.');
+  return tok;
 }
 function _zrmStatus(msg,kleur){
   const el=document.getElementById('zrm-status');
@@ -5910,16 +6114,14 @@ async function zrmTest(){
   if(!_zrmToken()){ _zrmStatus('Vul eerst het token in.','#C0392B'); return; }
   _zrmStatus('Verbinding testen…');
   try{
-    let me;
-    try{ me=(await _zrmGet('/users/~me',{fields:'code,firstName,prefix,lastName'}))[0]; }
-    catch(e){
-      if(e.code!==401||!/^\d[\d\s]{9,}$/.test(_zrmToken())) throw e;
+    // Alleen cijfers = koppelcode uit het portaal: eerst omwisselen voor een echt token (kan maar één keer)
+    if(/^\d[\d\s]{9,}$/.test(_zrmToken())){
+      _zrmStatus('Koppelcode omwisselen voor een token…');
       const tok=await _zrmWisselKoppelcode(_zrmToken());
-      if(!tok) throw new Error('De koppelcode is ongeldig of al gebruikt. Maak in Zermelo een nieuwe aan.');
       localStorage.setItem('wp_zrm_token',tok);
       document.getElementById('zrm-token').value=tok;
-      me=(await _zrmGet('/users/~me',{fields:'code,firstName,prefix,lastName'}))[0];
     }
+    const me=(await _zrmGet('/users/~me',{fields:'code,firstName,prefix,lastName'}))[0];
     _zrmStatus(`✓ Verbonden als ${[me?.firstName,me?.prefix,me?.lastName].filter(Boolean).join(' ')||me?.code||'gebruiker'}.`,'#2D8B50');
     _zrmMedewerkers=null; _zrmLaadMedewerkers();
   }catch(e){ _zrmStatus('⚠ '+e.message,'#C0392B'); }
@@ -10483,6 +10685,7 @@ function buildGrid(slots,dates,dayIdxs,dayNames,key,editable){
       cell.dataset.di=String(di);
       cell.dataset.slot=slot.id;
       if(weekendStart>=0 && i===weekendStart) cell.style.borderLeft='2px solid var(--border-s)';
+      if(dates[di]&&_ziekOp(S.currentStudentId,toDS(dates[di]))) cell.classList.add('ziek-under');
       if(spec){
         /* Vacation / studiedag cell */
         if(!pause){
@@ -10657,8 +10860,9 @@ function _verlofOpDag(stuId, ds){
 function _placeToetsCards(root){
   if(!root) return;
   root.querySelectorAll('.sched-wrap[data-key]').forEach(wrap=>{
-    wrap.querySelectorAll('.toets-card').forEach(c=>c.remove());
+    wrap.querySelectorAll('.toets-card,.ziek-card').forEach(c=>c.remove());
     const key=wrap.dataset.key;
+    _placeZiekCards(wrap,key);
     const showEdit=wrap.dataset.edit==='1';
     const wr=wrap.getBoundingClientRect();
     const dis=[...new Set([...wrap.querySelectorAll('.dc[data-di]')].map(c=>+c.dataset.di))];
@@ -11729,6 +11933,7 @@ function renderDashboard(){
   _renderDashAanw(v,lessen,nuSlot);
   _renderDashDocenten(v,nuSlot);
   _renderDashVerlof(v);
+  _renderDashZiek(v);
   _fillIcons(document.getElementById('dash-view'));
 }
 
@@ -11789,10 +11994,11 @@ function _renderDashAanw(v,lessen,nuSlot){
   let html=`<table class="dash-aanw-tbl"><thead><tr><th></th>${lessen.map((s,i)=>`<th class="${s.id===nuId?'now':''}">${i+1}</th>`).join('')}</tr></thead><tbody>`;
   stus.forEach(stu=>{
     const verlof=_verlofOpDag(stu.id,v.ds).length>0;
-    html+=`<tr><td class="dash-aanw-naam" title="${_esc(stu.name)}">${_esc(stu.name)}${verlof?'<span class="dash-tag verlof">verlof</span>':''}</td>`;
+    const ziek=!!_ziekOp(stu.id,v.ds);
+    html+=`<tr class="${ziek?'dash-aanw-ziek':''}"><td class="dash-aanw-naam" title="${_esc(stu.name)}">${_esc(stu.name)}${ziek?'<span class="dash-tag ziek">ziek</span>':''}${verlof?'<span class="dash-tag verlof">verlof</span>':''}</td>`;
     lessen.forEach(s=>{
       const c=_aanwSlotColor(stu.id,v.key,v.di,s.id);
-      html+=`<td class="${s.id===nuId?'now':''}"><span class="dash-sq" style="${_plKleur(c)}" title="${s.label}: ${c?(COLOR_LBL[c]||c):'leeg'}"></span></td>`;
+      html+=`<td class="${s.id===nuId?'now':''}"><span class="dash-sq" style="${_plKleur(c)}" title="${s.label}: ${ziek?'ziek gemeld':(c?(COLOR_LBL[c]||c):'leeg')}"></span></td>`;
     });
     html+=`</tr>`;
   });
