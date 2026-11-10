@@ -821,6 +821,12 @@ body.dark .student-bar{background:#3D1C00;}
 .adm-tab.active{color:var(--brand);border-bottom-color:var(--brand);}
 .adm-panel{display:none;padding-top:1.5rem;}
 .adm-panel.active{display:block;}
+.herstel-uitkomst{margin-top:.8rem;font-size:.82rem;color:var(--tx2);}
+.herstel-stu{border:1px solid var(--border);border-radius:9px;padding:.5rem .7rem;margin-bottom:.45rem;background:var(--surf-2);}
+.herstel-stu b{display:block;margin-bottom:.25rem;color:var(--tx);}
+.herstel-stu label{display:flex;gap:.45rem;align-items:baseline;padding:.12rem 0;cursor:pointer;}
+.herstel-stu small{color:var(--tx3);}
+.herstel-acties{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0;}
 .adm-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:0 1px 6px rgba(0,0,0,.06);}
 .adm-card h3{font-size:.93rem;font-weight:700;margin-bottom:1rem;color:var(--tx);display:flex;align-items:center;justify-content:space-between;}
 .adm-card h3 .cnt{font-size:.75rem;font-weight:600;color:var(--tx3);margin-left:.5rem;}
@@ -3600,6 +3606,12 @@ body.dark .dash-drow.now { background: rgba(247,148,29,.1); }
           </p>
         </div>
       </div>
+      <div class="adm-card" style="margin-top:1rem;">
+        <h3>🩹 Lege planningen herstellen</h3>
+        <p class="card-note" style="margin-bottom:.8rem;">Zoekt in de versiegeschiedenis van SharePoint naar standaardroosters en weekplanningen die nu leeg zijn maar eerder gevuld waren, en naar toetsen die verdwenen zijn. Je kiest zelf wat terugkomt; wat nu ingevuld is blijft staan.</p>
+        <button class="hb" style="background:var(--brand);color:#fff;" onclick="herstelScan()">🔍 Zoek lege planningen</button>
+        <div id="herstel-uitkomst" class="herstel-uitkomst"></div>
+      </div>
     </div>
 
     <!-- Tabblad 7: Superadmin -->
@@ -4314,7 +4326,30 @@ function _spLijstNaarMap(a){
   (Array.isArray(a)?a:[]).forEach((x,i)=>{ m[x&&x.id!=null?'i:'+x.id:'n:'+i]=x; });
   return m;
 }
+// De app wist nooit een heel standaardrooster, een hele week of een bestaande leerling.
+// Ontbreekt dat op SharePoint terwijl wij het hebben, dan schreef een oude versie
+// verouderde data terug: lokale versie behouden (en zo weer terugzetten).
+function _spHerstelStuData(merged,lokaal){
+  if(!_spIsObj(merged)||!_spIsObj(lokaal)) return merged;
+  const bestaand=new Set((S.students||[]).map(x=>x.id));
+  const vol=v=>_spIsObj(v)&&Object.values(v).some(d=>_spIsObj(d)?Object.keys(d).length:d!=null);
+  Object.keys(lokaal).forEach(id=>{
+    const l=lokaal[id];
+    if(!bestaand.has(id)||!_spIsObj(l)) return;
+    if(!_spIsObj(merged[id])){ merged[id]=l; _spHersteld++; return; }
+    const m=merged[id];
+    if(vol(l.std)&&!vol(m.std)){ m.std=l.std; _spHersteld++; }
+    if(_spIsObj(l.ovr)){
+      Object.keys(l.ovr).forEach(w=>{
+        if(vol(l.ovr[w])&&!vol(m.ovr?.[w])){ if(!_spIsObj(m.ovr)) m.ovr={}; m.ovr[w]=l.ovr[w]; _spHersteld++; }
+      });
+    }
+  });
+  return merged;
+}
+let _spHersteld=0;
 function _spMergeWaarde(key,base,lokaal,remote){
+  if(key==='wp_stuData') return _spHerstelStuData(_spMerge3(base,lokaal,remote),lokaal);
   if(!SP_MERGE[key].lijst) return _spMerge3(base,lokaal,remote);
   const rm=_spLijstNaarMap(remote), lm=_spLijstNaarMap(lokaal);
   const m=_spMerge3(_spLijstNaarMap(base),lm,rm);
@@ -4357,6 +4392,120 @@ function _spNaSamenvoegen(){
       if(S.mainView==='dash') renderDashboard();
     }
   }catch(e){}
+}
+
+/* ── Herstel uit de SharePoint-versiegeschiedenis ─────────────────────── */
+let _herstelVoorstel=[];
+function _herstelVol(v){ return _spIsObj(v)&&Object.values(v).some(d=>_spIsObj(d)?Object.keys(d).length:d!=null); }
+function _herstelWeekLbl(key,di){
+  const [y,w]=String(key).split('-').map(Number);
+  const d=di!=null?weekDates(y,w)[di]:null;
+  return d?d.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}):`week ${w} (${y})`;
+}
+async function herstelScan(){
+  const el=document.getElementById('herstel-uitkomst');
+  if(!_graphToken){ el.textContent='Meld je eerst aan bij Microsoft 365 (☁️ Nu synchroniseren).'; return; }
+  el.textContent='Eerst de huidige stand opslaan…';
+  try{
+    await spSyncAll();
+    if(!_spItemIds.wp_stuData) await spFetchItemIds();
+    const id=_spItemIds.wp_stuData;
+    if(!id) throw new Error('Geen leerlingdata op SharePoint gevonden.');
+    const vbase=`${_spListBase()}/items/${id}/versions`;
+    el.textContent='Versiegeschiedenis ophalen…';
+    let lijst=await graphFetchVerbose('GET',vbase+'?$expand=fields($select=Value)&$top=100');
+    if(lijst?.error) lijst=await graphFetchVerbose('GET',vbase+'?$top=100');
+    if(lijst?.error) throw new Error(lijst.error);
+    const versies=(lijst.value||[]).sort((a,b)=>new Date(b.lastModifiedDateTime)-new Date(a.lastModifiedDateTime));
+    if(versies.length<2){ el.textContent='Geen eerdere versies gevonden. Staat versiebeheer aan op de SharePoint-lijst?'; return; }
+    const huidig=S.studentData||{}, vandaag=toDS(new Date()), gevonden=new Map();
+    const voegToe=(sleutel,item)=>{ if(!gevonden.has(sleutel)) gevonden.set(sleutel,item); };
+    for(let i=0;i<versies.length;i++){
+      const v=versies[i];
+      el.textContent=`Versie ${i+1} van ${versies.length} bekijken…`;
+      let val=v.fields?.Value;
+      if(val===undefined){ const f=await graphFetchVerbose('GET',`${vbase}/${v.id}/fields`); val=f?.Value; }
+      if(!val) continue;
+      let sd; try{ sd=JSON.parse(val); }catch(e){ continue; }
+      const herkomst={op:v.lastModifiedDateTime,door:v.lastModifiedBy?.user?.displayName||''};
+      // Nieuwste versie eerst: de eerste vondst is de meest recente gevulde stand
+      (S.students||[]).forEach(stu=>{
+        const o=sd[stu.id], cur=huidig[stu.id]||{};
+        if(!_spIsObj(o)) return;
+        if(_herstelVol(o.std)&&!_herstelVol(cur.std)) voegToe(`${stu.id}|std`,{stuId:stu.id,soort:'std',val:o.std,...herkomst});
+        if(_spIsObj(o.ovr)) Object.keys(o.ovr).forEach(w=>{
+          // Alleen gele toets-uren hoort bij een toets, niet bij de weekplanning
+          const eigen=_spIsObj(o.ovr[w])&&Object.values(o.ovr[w]).some(d=>_spIsObj(d)&&Object.values(d).some(c=>c!=null&&c!=='yellow'));
+          if(eigen&&!_herstelVol(cur.ovr?.[w])) voegToe(`${stu.id}|ovr|${w}`,{stuId:stu.id,soort:'ovr',key:w,val:o.ovr[w],...herkomst});
+        });
+        if(_spIsObj(o.toets)) Object.entries(o.toets).forEach(([key,dagen])=>{
+          if(!_spIsObj(dagen)) return;
+          Object.entries(dagen).forEach(([di,recs])=>{
+            if(!_spIsObj(recs)) return;
+            const [y,w]=key.split('-').map(Number), dt=weekDates(y,w)[+di];
+            if(!dt||toDS(dt)<vandaag) return;
+            Object.entries(recs).forEach(([oid,rec])=>{
+              if(!_spIsObj(rec)||cur.toets?.[key]?.[di]?.[oid]) return;
+              voegToe(`${stu.id}|toets|${key}|${di}|${oid}`,{stuId:stu.id,soort:'toets',key,di:+di,oid,val:rec,dag:o.ovr?.[key]?.[di]||{},...herkomst});
+            });
+          });
+        });
+      });
+    }
+    _herstelVoorstel=[...gevonden.values()];
+    _herstelRender();
+  }catch(e){ el.textContent='⚠ '+e.message; }
+}
+function _herstelRender(){
+  const el=document.getElementById('herstel-uitkomst');
+  if(!_herstelVoorstel.length){ el.innerHTML='✓ Niets gevonden om te herstellen: er is geen planning leeg die eerder wel gevuld was.'; return; }
+  const perStu=new Map();
+  _herstelVoorstel.forEach((h,i)=>{ if(!perStu.has(h.stuId)) perStu.set(h.stuId,[]); perStu.get(h.stuId).push([h,i]); });
+  const wanneer=h=>`<small>stand van ${new Date(h.op).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}${h.door?' · '+_esc(h.door):''}</small>`;
+  const regel=(h,i)=>{
+    const txt=h.soort==='std'?'Standaardrooster'
+      :h.soort==='ovr'?`Weekplanning ${_herstelWeekLbl(h.key)}`
+      :`Toets ${_esc(h.val.subject||'')} — ${_herstelWeekLbl(h.key,h.di)} ${_esc(h.val.startTime||'')}${h.val.duration?' · '+h.val.duration+' min':''}`;
+    // Roosters standaard aan; toetsen uit (kan ook bewust verwijderd of verplaatst zijn)
+    return `<label><input type="checkbox" data-herstel="${i}" ${h.soort==='toets'?'':'checked'}> <span>${txt} ${wanneer(h)}</span></label>`;
+  };
+  const namen=[...perStu.keys()].sort((a,b)=>_persoonNaamStu(a).localeCompare(_persoonNaamStu(b),'nl'));
+  el.innerHTML=`<div>${_herstelVoorstel.length} onderdelen gevonden bij ${perStu.size} leerling(en). Toetsen staan uit: die kunnen ook bewust verwijderd of verplaatst zijn.</div>
+    <div class="herstel-acties"><button class="btn-save-sm" onclick="herstelToepassen()">✓ Herstel geselecteerde</button>
+    <button class="hb" onclick="document.querySelectorAll('[data-herstel]').forEach(c=>c.checked=true)">Alles aanvinken</button></div>
+    ${namen.map(id=>`<div class="herstel-stu"><b>${_esc(_persoonNaamStu(id))}</b>${perStu.get(id).map(([h,i])=>regel(h,i)).join('')}</div>`).join('')}`;
+}
+function _persoonNaamStu(id){ return S.students.find(x=>x.id===id)?.name||id; }
+function herstelToepassen(){
+  const keuze=[...document.querySelectorAll('[data-herstel]:checked')].map(c=>_herstelVoorstel[+c.dataset.herstel]).filter(Boolean);
+  if(!keuze.length) return;
+  keuze.forEach(h=>{
+    const sd=S.studentData[h.stuId]||(S.studentData[h.stuId]={});
+    const kopie=JSON.parse(JSON.stringify(h.val));
+    if(h.soort==='std'){ if(!_herstelVol(sd.std)) sd.std=kopie; }
+    else if(h.soort==='ovr'){ sd.ovr=sd.ovr||{}; if(!_herstelVol(sd.ovr[h.key])) sd.ovr[h.key]=kopie; }
+    else {
+      sd.toets=sd.toets||{}; sd.toets[h.key]=sd.toets[h.key]||{}; sd.toets[h.key][h.di]=sd.toets[h.key][h.di]||{};
+      if(sd.toets[h.key][h.di][h.oid]) return;
+      sd.toets[h.key][h.di][h.oid]=kopie;
+      // Gele uren onder de toets terugzetten zoals ze in die versie stonden
+      const slot0=SCHOOL.find(x=>x.id===h.oid);
+      const van=kopie.startTime?_parseTime(kopie.startTime):slot0?_parseTime(slot0.time.split('–')[0]):null;
+      const tot=kopie.endTime?_parseTime(kopie.endTime):van!=null&&kopie.duration?van+kopie.duration:null;
+      sd.ovr=sd.ovr||{}; sd.ovr[h.key]=sd.ovr[h.key]||{}; const dag=sd.ovr[h.key][h.di]=sd.ovr[h.key][h.di]||{};
+      SCHOOL.forEach(x=>{
+        if(h.dag[x.id]!=='yellow') return;
+        const [a,b]=x.time.split('–').map(_parseTime);
+        if(x.id===h.oid||(van!=null&&tot!=null&&a<tot&&b>van)) dag[x.id]='yellow';
+      });
+    }
+  });
+  _koppelCache.idx=null;
+  persist();
+  if(_graphToken) spSyncAll().catch(()=>{});
+  const el=document.getElementById('herstel-uitkomst');
+  el.innerHTML=`✓ ${keuze.length} onderdelen hersteld en opgeslagen.`;
+  _herstelVoorstel=[];
 }
 
 // Eén synchronisatie tegelijk; een verzoek tijdens het synchroniseren volgt direct erna
