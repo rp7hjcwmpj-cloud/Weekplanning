@@ -1589,6 +1589,9 @@ body.dark .stu-sport-chip {
 .tip-koppel-opt button { flex:none; border:1px solid #2471A3; background:#2471A3; color:#fff; border-radius:7px; padding:.28rem .6rem; font:inherit; font-size:.72rem; font-weight:700; cursor:pointer; }
 .tip-koppel-opt.on button { background:var(--surface); color:#2471A3; }
 .toets-card-link{font-size:.58rem;font-weight:700;opacity:.9;}
+.toets-card-tag.ontv-ja,.toets-card-tag.ontv-nee{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.toets-card-tag.ontv-ja{background:#2D8B50;}
+.toets-card-tag.ontv-nee{background:#C0392B;}
 .tl-blok .tl-link{font-weight:700;}
 .tip-form-lbl { font-size:.7rem; font-weight:700; color:var(--tx3); }
 .tip-form-inp {
@@ -3939,7 +3942,7 @@ const SP_KEYS = [
   'wp_schoolName','wp_schoolLogo','wp_year','wp_yearFrom','wp_yearTo',
   'wp_specDays','wp_students','wp_curStu','wp_stuData',
   'wp_teacherPw','wp_stuPw','wp_besch','wp_periods','wp_roleMap','wp_adminPw',
-  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo','wp_klassen','wp_toetslokaal','wp_ziek'
+  'wp_aanw','wp_verg','wp_cijfers','wp_huiswerk','wp_superadmins','wp_displayPw','wp_verlof','wp_zermelo','wp_klassen','wp_toetslokaal','wp_ziek','wp_toetsenImport'
 ];
 
 let _graphToken = null;
@@ -4199,12 +4202,25 @@ async function spLoad(){
   }
   if(!data?.value) return {ok:false, error:'Geen data ontvangen van SharePoint.'};
   _spItemIds = {};
+  let veranderd=false, afwijkend=false;
   for(const item of data.value){
     const key = item.fields?.Title;
     const val = item.fields?.Value;
     if(key){ _spItemIds[key] = item.id; }
-    if(key && val !== undefined && val !== null){ localStorage.setItem(key, val); }
+    if(key && val !== undefined && val !== null){
+      // Al geladen in deze sessie: samenvoegen, zodat eigen nog niet opgeslagen wijzigingen blijven staan
+      if(SP_MERGE[key] && _spBase[key]!==undefined){
+        const r=_spPasMergeToe(key,val);
+        if(r?.veranderd) veranderd=true;
+        if(r?.afwijkend) afwijkend=true;
+        continue;
+      }
+      localStorage.setItem(key, val);
+      if(SP_MERGE[key]){ try{ _spBase[key]=JSON.parse(val); }catch(e){} }
+    }
   }
+  if(veranderd) _spNaSamenvoegen();
+  if(afwijkend&&_graphToken){ clearTimeout(window._spSyncTimer); window._spSyncTimer=setTimeout(()=>spSyncAll().catch(()=>{}),3000); }
   return {ok:true};
 }
 
@@ -4250,8 +4266,113 @@ async function spSetKey(key, value){
   }
 }
 
-async function spSyncAll(){
+/* ── Samenvoegen bij synchroniseren ──────────────────────────────────────
+   Leerlingdata, toetsen en ziekmeldingen worden niet meer in hun geheel
+   overschreven ("laatste schrijver wint"), maar per veld samengevoegd met
+   wat er op SharePoint staat. Basis = de versie die we het laatst van
+   SharePoint kregen of er heen stuurden. Zo wist een collega (of een ander
+   apparaat) met oudere data geen net ingeplande toets meer.
+   ─────────────────────────────────────────────────────────────────────── */
+const SP_MERGE={
+  // Per leerling vervangen: verwijzingen naar ongewijzigde leerlingen blijven geldig
+  wp_stuData:{get:()=>S.studentData,set:v=>{
+    const cur=S.studentData||(S.studentData={}), nw=v||{};
+    Object.keys(cur).forEach(k=>{ if(!(k in nw)) delete cur[k]; });
+    Object.keys(nw).forEach(k=>{ if(!_spGelijk(cur[k],nw[k])) cur[k]=nw[k]; });
+  }},
+  wp_toetsenImport:{get:()=>S.toetsenImport,set:v=>{S.toetsenImport=Array.isArray(v)?v:[];},lijst:true},
+  wp_ziek:{get:()=>S.ziek,set:v=>{S.ziek=Array.isArray(v)?v:[];},lijst:true}
+};
+let _spBase={};
+function _spIsObj(v){ return v!==null&&typeof v==='object'&&!Array.isArray(v); }
+function _spGelijk(a,b){
+  if(a===b) return true;
+  if(a==null||b==null||typeof a!=='object'||typeof b!=='object') return false;
+  if(Array.isArray(a)!==Array.isArray(b)) return false;
+  if(Array.isArray(a)){ if(a.length!==b.length) return false; for(let i=0;i<a.length;i++) if(!_spGelijk(a[i],b[i])) return false; return true; }
+  const ka=Object.keys(a).filter(k=>a[k]!==undefined), kb=Object.keys(b).filter(k=>b[k]!==undefined);
+  if(ka.length!==kb.length) return false;
+  for(const k of ka) if(!_spGelijk(a[k],b[k])) return false;
+  return true;
+}
+// Drieweg: wat alleen lokaal veranderde gaat mee, wat alleen op SharePoint veranderde ook; botsing op hetzelfde veld → lokaal wint
+function _spMerge3(base,lokaal,remote){
+  if(_spGelijk(lokaal,base)) return remote;
+  if(_spGelijk(remote,base)) return lokaal;
+  if(_spIsObj(lokaal)&&_spIsObj(remote)){
+    const b=_spIsObj(base)?base:{}, uit={};
+    new Set([...Object.keys(lokaal),...Object.keys(remote)]).forEach(k=>{
+      const v=_spMerge3(b[k],lokaal[k],remote[k]);
+      if(v!==undefined) uit[k]=v;
+    });
+    return uit;
+  }
+  return lokaal;
+}
+function _spLijstNaarMap(a){
+  const m={};
+  (Array.isArray(a)?a:[]).forEach((x,i)=>{ m[x&&x.id!=null?'i:'+x.id:'n:'+i]=x; });
+  return m;
+}
+function _spMergeWaarde(key,base,lokaal,remote){
+  if(!SP_MERGE[key].lijst) return _spMerge3(base,lokaal,remote);
+  const rm=_spLijstNaarMap(remote), lm=_spLijstNaarMap(lokaal);
+  const m=_spMerge3(_spLijstNaarMap(base),lm,rm);
+  const gezien=new Set(), uit=[];
+  [...Object.keys(rm),...Object.keys(lm)].forEach(k=>{ if(k in m&&!gezien.has(k)){ gezien.add(k); uit.push(m[k]); } });
+  return uit;
+}
+// Voeg de SharePoint-versie (tekst) samen met de huidige staat
+function _spPasMergeToe(key,remoteStr){
+  const cfg=SP_MERGE[key];
+  let remote;
+  try{ remote=JSON.parse(remoteStr); }catch(e){ return null; }
+  const lokaal=cfg.get();
+  const base=_spBase[key]!==undefined?_spBase[key]:null;
+  const merged=_spMergeWaarde(key,base,lokaal,remote);
+  const tekst=JSON.stringify(merged);
+  const veranderd=!_spGelijk(merged,lokaal);
+  // Losse kopieën: de staat mag later wijzigen zonder de basis te raken
+  if(veranderd){
+    cfg.set(JSON.parse(tekst));
+    try{ localStorage.setItem(key,tekst); }catch(e){}
+  }
+  _spBase[key]=JSON.parse(remoteStr);
+  return {veranderd,afwijkend:tekst!==remoteStr&&!_spGelijk(merged,remote),tekst};
+}
+async function _spHaalWaarde(key){
+  const id=_spItemIds[key];
+  if(!id) return null;
+  const d=await graphFetch('GET',`${_spListBase()}/items/${id}?$expand=fields($select=Value)`);
+  if(!d) throw new Error('Ophalen mislukt voor '+key+' (niet opgeslagen om overschrijven te voorkomen)');
+  const v=d.fields?.Value;
+  return v==null?null:v;
+}
+// Wijzigingen van anderen zichtbaar maken
+function _spNaSamenvoegen(){
+  try{
+    _koppelCache.idx=null;
+    if(document.getElementById('screen-main')?.classList.contains('show')){
+      renderSchedule(); renderToetsenCards(); updateToetsBadge();
+      if(S.mainView==='dash') renderDashboard();
+    }
+  }catch(e){}
+}
+
+// Eén synchronisatie tegelijk; een verzoek tijdens het synchroniseren volgt direct erna
+let _spSyncBezig=null, _spSyncOpnieuw=false;
+function spSyncAll(){
+  if(_spSyncBezig){ _spSyncOpnieuw=true; return _spSyncBezig; }
+  _spSyncBezig=(async()=>{
+    try{ do{ _spSyncOpnieuw=false; await _spSyncAllRun(); }while(_spSyncOpnieuw&&_graphToken); }
+    finally{ _spSyncBezig=null; }
+  })();
+  return _spSyncBezig;
+}
+async function _spSyncAllRun(){
   if(!_graphToken){ m365StatusMsg('Niet aangemeld bij Microsoft 365.'); return; }
+  // Altijd de actuele staat versturen, niet wat er (mogelijk verouderd) in localStorage staat
+  _persistLokaal();
   // Haal item-IDs op als die nog niet bekend zijn — anders mislukken PATCHes stilletjes
   if(!Object.keys(_spItemIds).length){
     setSyncChip('syncing','⟳ Voorbereiding…');
@@ -4260,13 +4381,31 @@ async function spSyncAll(){
   setSyncChip('syncing','⟳ Synchroniseren…');
   m365StatusMsg('Bezig met synchroniseren…');
   const fouten = [];
+  let veranderd=false;
   // Promise.allSettled zodat één mislukking niet de rest blokkeert
   await Promise.allSettled(SP_KEYS.map(async k=>{
-    const v = localStorage.getItem(k);
-    if(v === null) return;
-    try{ await spSetKey(k, v); }
+    try{
+      let v;
+      if(SP_MERGE[k]){
+        // Eerst de SharePoint-versie ophalen en samenvoegen, dan pas opslaan
+        const remote=await _spHaalWaarde(k);
+        if(remote!==null){
+          const r=_spPasMergeToe(k,remote);
+          if(!r) throw new Error('SharePoint-data van '+k+' onleesbaar; niet overschreven');
+          if(r.veranderd) veranderd=true;
+          if(!r.afwijkend) return;
+          v=r.tekst;
+        } else v=JSON.stringify(SP_MERGE[k].get());
+      } else {
+        v = localStorage.getItem(k);
+        if(v === null) return;
+      }
+      await spSetKey(k, v);
+      if(SP_MERGE[k]) _spBase[k]=JSON.parse(v);
+    }
     catch(e){ fouten.push(e.message); }
   }));
+  if(veranderd) _spNaSamenvoegen();
   if(fouten.length){
     setSyncChip('err','✕ ' + fouten.length + ' fout(en)');
     m365StatusMsg('⚠️ ' + fouten.length + ' item(s) niet opgeslagen:\n' + fouten.join('\n'));
@@ -4470,6 +4609,18 @@ async function loginWithMicrosoft(){
 
 /* ══ PERSIST / HYDRATE ══════════════════════════════ */
 function persist(){
+  _persistLokaal();
+  // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
+  if(_graphToken){
+    clearTimeout(window._spSyncTimer);
+    setSyncChip('idle','☁️ Opslaan…');
+    window._spSyncTimer = setTimeout(()=>{
+      setSyncChip('syncing','⟳ Opslaan…');
+      spSyncAll().catch(()=>{});
+    }, 3000);
+  }
+}
+function _persistLokaal(){
   try{
     localStorage.setItem('wp_schoolName', S.schoolName);
     localStorage.setItem('wp_schoolLogo', S.schoolLogo||'');
@@ -4501,15 +4652,6 @@ function persist(){
     localStorage.setItem('wp_klassen', JSON.stringify({lijst:S.klassen,gemigreerd:S.klassenGemigreerd}));
     localStorage.setItem('wp_toetslokaal', JSON.stringify(S.toetslokaal));
   }catch(e){}
-  // Debounced auto-sync naar SharePoint (wacht 3 seconden na laatste wijziging)
-  if(_graphToken){
-    clearTimeout(window._spSyncTimer);
-    setSyncChip('idle','☁️ Opslaan…');
-    window._spSyncTimer = setTimeout(()=>{
-      setSyncChip('syncing','⟳ Opslaan…');
-      spSyncAll().catch(()=>{});
-    }, 3000);
-  }
 }
 function hydrate(){
   try{
@@ -11044,7 +11186,10 @@ function _placeToetsCards(root){
         card.className='toets-card';
         const w=col.width*.82;
         card.style.cssText=`top:${top}px;height:${h}px;left:${col.left-wr.left+(col.width-w)/2}px;width:${w}px;`;
-        const tag=document.createElement('div'); tag.className='toets-card-tag'; tag.textContent='Toets';
+        // Label toont meteen of de versie van de docent binnen is
+        const ontv=t.rec.ontvangen;
+        const tag=document.createElement('div'); tag.className='toets-card-tag '+(ontv?'ontv-ja':'ontv-nee');
+        tag.textContent=ontv?'Toets ✓ ontvangen':'Toets ✕ niet ontvangen';
         card.appendChild(tag);
         if(t.rec.subject){
           const tx=document.createElement('div'); tx.className='toets-card-txt'; tx.textContent=t.rec.subject;
@@ -11059,7 +11204,8 @@ function _placeToetsCards(root){
           lk.textContent=`🔗 samen met ${genoten.length}`;
           card.appendChild(lk);
         }
-        card.title=`${t.rec.subject||'Toets'} — ${tm.textContent}${genoten.length?' — gekoppeld met '+genoten.map(l=>S.students.find(x=>x.id===l.stuId)?.name||'').join(', '):''}`;
+        const ontvTxt=ontv?`versie ontvangen${ontv.via==='administratie'?' via administratie':''}${ontv.op?' op '+new Date(ontv.op).toLocaleDateString('nl-NL'):''}`:'versie nog niet ontvangen';
+        card.title=`${t.rec.subject||'Toets'} — ${tm.textContent} — ${ontvTxt}${genoten.length?' — gekoppeld met '+genoten.map(l=>S.students.find(x=>x.id===l.stuId)?.name||'').join(', '):''}`;
         if(showEdit){
           const ed=document.createElement('button');
           ed.type='button'; ed.className='toets-card-edit'; ed.textContent='✏️'; ed.title='Toets aanpassen of verplaatsen';
